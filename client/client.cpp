@@ -4,8 +4,10 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <string.h>
 #include <netdb.h>
-#define PORT “58001”
+
+#define DEFAULT_PORT 58090
 
 int fd,errcode;
 ssize_t n;
@@ -14,16 +16,74 @@ struct addrinfo hints,*res;
 struct sockaddr_in addr;
 char buffer[128];
 
-// DEFAULT PORT
-// 58000 + group number
+int main(int argc, char** argv) {
 
-int main() {
+    // check if command is complete
+
+    if (argc == 1) {
+        // run AS on localhost
+        // no port needed to be specified
+
+
+    }
+
+    else if (argc == 3) {
+        // run AS on specified IP
+        // no port needed to be specified
+
+        if (strcmp(argv[1], "-n") != 0) {
+            // error
+            // incomplete command, missing -n
+            exit(1);
+        }
+
+        int ip = atoi(argv[2]);
+
+        // connect to server on specified IP via socket
+        // then listen to the terminal for commands
+
+        // code here ---------
+    }
+    else if (argc == 5) {
+        // run AS on specified IP
+        // run AS on specified port
+
+        if (strcmp(argv[1], "-n") != 0) {
+            // error
+            // incomplete command, missing -n
+
+            exit(1);
+        }
+        else if (strcmp(argv[3], "-p") != 0) {
+            // error
+            // incomplete command, missing -p
+
+            exit(1);
+        }
+
+        int ip = atoi(argv[2]);
+        int port = atoi(argv[4]);
+
+        // connect to server on specified IP and port via socket
+        // then listen to the terminal for commands
+
+        // code here ---------
+    }
+    else {
+        // error
+        // incomplete command, missing either ASIP or ASport
+        exit(1);
+    }
+
     // initialize variables
     int fd, n;
 
     // Create a socket
     fd=socket(AF_INET,SOCK_DGRAM,0);
-    if(fd==-1) /*error*/exit(1);
+    if (fd==-1) {
+        /*error*/
+        exit(1);
+    }
 
     memset(&hints,0,sizeof hints);
     hints.ai_family=AF_INET;
