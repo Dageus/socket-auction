@@ -63,7 +63,7 @@ int validate_args(int argc, char** argv) {
         port = atoi(argv[2]);
         verbose = TRUE;
 
-        printf("Running AS on specified IP: %d and specified port: %d\n", ip, port);
+        printf("Running AS on specified port: %d\n", port);
     }
 }
 
@@ -72,6 +72,13 @@ int main(int argc, char** argv){
     // validate arguments
     validate_args(argc, argv);
 
+    // main code
+    while (TRUE) {
+
+        // listen to the sockets (UDP and TCP)
+        // create them , dunno where yet
+
+    }
 
     return 0;
 }
