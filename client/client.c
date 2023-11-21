@@ -8,6 +8,7 @@
 #include <string.h>
 #include <netdb.h>
 #include "commands.h"
+#include "UDP/login.h"
 
 #define TRUE 1
 
@@ -38,7 +39,8 @@ int validate_args(int argc, char** argv) {
     while ((opt = getopt(argc, argv, "n:p:")) != -1) {
         switch (opt) {
             case 'n':
-                char *ip = optarg;
+                ip = (char *) malloc(sizeof(char) * strlen(optarg));
+                ip = optarg;
                 printf("ip: %s\n", ip);
                 break;
             case 'p':
@@ -57,29 +59,41 @@ int validate_args(int argc, char** argv) {
 
 void process_cmd(char* input){
     if (strcmp(input, "login") == 0) {
-        // process_login();
+        if (process_login() == -1)
+            printf("error: login\n");
     } else if (strcmp(input, "logout") == 0) {
-        // process_logout();
+        if (process_logout() == -1)
+            printf("error: logout\n");
     } else if (strcmp(input, "unregister") == 0) {
-        // process_unregister();
+        if (process_unregister() == -1)
+            printf("error: unregister\n");
     } else if (strcmp(input, "exit") == 0) {
-        // process_exit();
+        if (process_exit() == -1)
+            printf("error: exit\n");
     } else if (strcmp(input, "open") == 0) {
-        // process_open();
+        if (process_open() == -1)
+            printf("error: open\n");
     } else if (strcmp(input, "close") == 0) {
-        // process_close();
+        if (process_close() == -1)
+            printf("error: close\n");
     } else if (strcmp(input, "myauctions") == 0 || strcmp(input, "ma") == 0) {
-        // process_auctions();
+        if (process_auctions() == -1)
+            printf("error: auctions\n");
     } else if (strcmp(input, "mybids") == 0 || strcmp(input, "mb") == 0) {
-        // process_bids();
+        if (process_bids() == -1)
+            printf("error: bids\n");
     } else if (strcmp(input, "list") == 0 || strcmp(input, "l") == 0) {
-        // process_list();
+        if (process_list() == -1)
+            printf("error: list\n");
     } else if (strcmp(input, "show_asset") == 0 || strcmp(input, "sa") == 0) {
-        // process_asset();
+        if (process_asset() == -1)
+            printf("error: asset\n");
     } else if (strcmp(input, "bid") == 0 || strcmp(input, "b") == 0) {
-        // process_bid();
+        if (process_bid() == -1)
+            printf("error: bid\n");
     } else if (strcmp(input, "show_record") == 0 || strcmp(input, "sr") == 0) {
-        // process_record();
+        if (process_record() == -1)
+            printf("error: record\n");
         
     } else {
         fprintf(stderr, "error: unkown_command\n");
