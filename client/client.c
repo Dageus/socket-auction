@@ -7,14 +7,15 @@
 #include <arpa/inet.h>
 #include <string.h>
 #include <netdb.h>
-#include "commands.h"
-#include "UDP/login.h"
+#include "constants.h"
+#include "UDP/commands.h"
 
 #define TRUE 1
+#define FALSE 0
 
 #define SERVER_IP "tejo.tecnico.ulisboa.pt"
 #define TEST_PORT 58011
-#define DEFAULT_PORT 58090
+#define DEFAULT_PORT "58090"
 
 #define LOCAL_SERVER_IP "localhost"
 
@@ -29,8 +30,9 @@ char buffer[128];
 
 // initialize default values in case of incomplete command
 
+int uid = -1;
 char *ip = LOCAL_SERVER_IP;
-int port = DEFAULT_PORT;
+char *port = DEFAULT_PORT;
 
 int validate_args(int argc, char** argv) {
 
@@ -58,43 +60,54 @@ int validate_args(int argc, char** argv) {
 }
 
 void process_cmd(char* input){
-    if (strcmp(input, "login") == 0) {
-        if (process_login() == -1)
+
+    char* response;
+
+    char *n_cmd = strtok(input, " ");
+
+    if (strcmp(n_cmd, "login") == 0) {
+        if (process_login(input, response) == -1){}
             printf("error: login\n");
-    } else if (strcmp(input, "logout") == 0) {
-        if (process_logout() == -1)
+    } else if (strcmp(n_cmd, "logout") == 0) {
+        response = (char *) malloc(sizeof(char) * LOGOUT_LEN);
+        if (process_logout(uid, response) == -1)
             printf("error: logout\n");
-    } else if (strcmp(input, "unregister") == 0) {
+    } else if (strcmp(n_cmd, "unregister") == 0) {
+        response = (char *) malloc(sizeof(char) * UNREGISTER_LEN);
         if (process_unregister() == -1)
             printf("error: unregister\n");
-    } else if (strcmp(input, "exit") == 0) {
+    } else if (strcmp(n_cmd, "exit") == 0) {
         if (process_exit() == -1)
-            printf("error: exit\n");
-    } else if (strcmp(input, "open") == 0) {
+            printf("error: please log out first\n");
+    } else if (strcmp(n_cmd, "open") == 0) {
+        // ? TCP command, dont do yet
+        response = (char *) malloc(sizeof(char) * OPEN_LEN);
         if (process_open() == -1)
             printf("error: open\n");
-    } else if (strcmp(input, "close") == 0) {
+    } else if (strcmp(n_cmd, "close") == 0) {
         if (process_close() == -1)
             printf("error: close\n");
-    } else if (strcmp(input, "myauctions") == 0 || strcmp(input, "ma") == 0) {
-        if (process_auctions() == -1)
+    } else if (strcmp(n_cmd, "myauctions") == 0 || strcmp(n_cmd, "ma") == 0) {
+        response = (char *) malloc(sizeof(char) * MYAUCTIONS_LEN);
+        if (process_auctions(uid) == -1)
             printf("error: auctions\n");
-    } else if (strcmp(input, "mybids") == 0 || strcmp(input, "mb") == 0) {
+    } else if (strcmp(n_cmd, "mybids") == 0 || strcmp(n_cmd, "mb") == 0) {
         if (process_bids() == -1)
             printf("error: bids\n");
-    } else if (strcmp(input, "list") == 0 || strcmp(input, "l") == 0) {
-        if (process_list() == -1)
+    } else if (strcmp(n_cmd, "list") == 0 || strcmp(n_cmd, "l") == 0) {
+        response = (char *) malloc(sizeof(char) * LIST_LEN);
+        if (process_list(uid) == -1)
             printf("error: list\n");
-    } else if (strcmp(input, "show_asset") == 0 || strcmp(input, "sa") == 0) {
+    } else if (strcmp(n_cmd, "show_asset") == 0 || strcmp(n_cmd, "sa") == 0) {
         if (process_asset() == -1)
             printf("error: asset\n");
-    } else if (strcmp(input, "bid") == 0 || strcmp(input, "b") == 0) {
+    } else if (strcmp(n_cmd, "bid") == 0 || strcmp(n_cmd, "b") == 0) {
         if (process_bid() == -1)
             printf("error: bid\n");
-    } else if (strcmp(input, "show_record") == 0 || strcmp(input, "sr") == 0) {
-        if (process_record() == -1)
+    } else if (strcmp(n_cmd, "show_record") == 0 || strcmp(n_cmd, "sr") == 0) {
+        response = (char *) malloc(sizeof(char) * SHOW_RECORD_LEN);
+        if (process_record(input) == -1)
             printf("error: record\n");
-        
     } else {
         fprintf(stderr, "error: unkown_command\n");
     }
@@ -122,7 +135,9 @@ int main(int argc, char** argv) {
         char *input = (char *) malloc(sizeof(char) * MAX_COMMAND_LEN);
 
         // read from terminal
-        scanf("%s", input);
+        fgets(input, MAX_COMMAND_LEN, stdin);
+
+        printf("input: %s\n", input);
 
         // see which command was inputted
         process_cmd(input);

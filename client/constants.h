@@ -1,0 +1,18 @@
+#ifndef CONSTANTS_H
+#define CONSTANTS_H
+
+#define MAX_COMMAND_LEN 56
+
+#define UID_LENGTH 6
+#define PASSWORD_LEN 8
+
+#define MAX_AUCTION_NAME 10
+
+#define MAX_START_ORDER 6
+#define MAX_DURATION_ORDER 5
+
+#define AID_LEN 3
+
+#define MAX_FILENAME_LEN 24
+
+#endif // CONSTANTS_H
