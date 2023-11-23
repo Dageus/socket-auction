@@ -6,6 +6,9 @@
 #include <string.h>
 #include <ctype.h>
 
+#define LOGIN_CMD "LIN"
+#define LOGIN_LEN 21
+
 int process_login();
 
 #endif // LOGIN_H

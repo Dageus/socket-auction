@@ -19,6 +19,18 @@
 
 #define LOCAL_SERVER_IP "localhost"
 
+struct addrinfo
+{
+  int ai_flags;			/* Input flags.  */
+  int ai_family;		/* Protocol family for socket.  */
+  int ai_socktype;		/* Socket type.  */
+  int ai_protocol;		/* Protocol for socket.  */
+  socklen_t ai_addrlen;		/* Length of socket address.  */
+  struct sockaddr *ai_addr;	/* Socket address for socket.  */
+  char *ai_canonname;		/* Canonical name for service location.  */
+  struct addrinfo *ai_next;	/* Pointer to next in list.  */
+};
+
 
 int fd,errcode;
 ssize_t n;
@@ -33,6 +45,25 @@ char buffer[128];
 int uid = -1;
 char *ip = LOCAL_SERVER_IP;
 char *port = DEFAULT_PORT;
+
+void sendUDP(char* msg) {
+    fd = socket(AF_INET,SOCK_DGRAM,0);
+
+    memset(&hints, 0, sizeof hints);
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_DGRAM;
+
+    errcode = getaddrinfo(SERVER_IP, TEST_PORT, &hints, &res);
+
+
+    n = sendto(fd, msg, strlen(msg), 0, res->ai_addr, res->ai_addrlen);
+       
+    addrlen = sizeof(addr);
+    n = recvfrom(fd, buffer, 128, 0, (struct sockaddr*)&addr, &addrlen);
+
+
+    close(fd);
+}
 
 int validate_args(int argc, char** argv) {
 
@@ -67,6 +98,7 @@ void process_cmd(char* input){
 
     if (strcmp(n_cmd, "login") == 0) {
         if (process_login(input, response) == -1){}
+        response = (char*) malloc(sizeof(char) * LOGIN_LEN);
             printf("error: login\n");
     } else if (strcmp(n_cmd, "logout") == 0) {
         response = (char *) malloc(sizeof(char) * LOGOUT_LEN);
