@@ -9,6 +9,7 @@
 #include <netdb.h>
 #include "constants.h"
 #include "UDP/commands.h"
+#include "TCP/commands.h"
 
 #define TRUE 1
 #define FALSE 0
@@ -31,8 +32,7 @@ struct addrinfo
   struct addrinfo *ai_next;	/* Pointer to next in list.  */
 };
 
-
-int fd,errcode;
+int udp_fd, tcp_fd, errcode;
 ssize_t n;
 socklen_t addrlen;
 struct addrinfo hints, *res;
@@ -45,25 +45,6 @@ char buffer[128];
 int uid = -1;
 char *ip = LOCAL_SERVER_IP;
 char *port = DEFAULT_PORT;
-
-void sendUDP(char* msg) {
-    fd = socket(AF_INET,SOCK_DGRAM,0);
-
-    memset(&hints, 0, sizeof hints);
-    hints.ai_family = AF_INET;
-    hints.ai_socktype = SOCK_DGRAM;
-
-    errcode = getaddrinfo(SERVER_IP, TEST_PORT, &hints, &res);
-
-
-    n = sendto(fd, msg, strlen(msg), 0, res->ai_addr, res->ai_addrlen);
-       
-    addrlen = sizeof(addr);
-    n = recvfrom(fd, buffer, 128, 0, (struct sockaddr*)&addr, &addrlen);
-
-
-    close(fd);
-}
 
 int validate_args(int argc, char** argv) {
 
@@ -109,7 +90,7 @@ void process_cmd(char* input){
         if (process_unregister() == -1)
             printf("error: unregister\n");
     } else if (strcmp(n_cmd, "exit") == 0) {
-        if (process_exit() == -1)
+        if (process_exit(uid) == -1)
             printf("error: please log out first\n");
     } else if (strcmp(n_cmd, "open") == 0) {
         // ? TCP command, dont do yet
@@ -145,6 +126,17 @@ void process_cmd(char* input){
     }
 }
 
+int create_UDP(){
+
+    int fd = socket(AF_INET,SOCK_DGRAM,0);
+    if (fd == -1) {
+        /*error*/
+        return -1;
+    }
+
+    return 1;
+}
+
 int main(int argc, char** argv) {
 
     // check if command is complete
@@ -153,10 +145,14 @@ int main(int argc, char** argv) {
 
 
     // Create a socket
-    fd = socket(AF_INET,SOCK_DGRAM,0);
-    if (fd == -1) {
-        /*error*/
-        exit(1);
+
+    
+
+    udp_fd = create_UDP();
+
+    if (udp_fd == -1) {
+        fprintf(stderr, "error: udp socket\n");
+        exit(EXIT_FAILURE);
     }
 
     int tries = 0;

@@ -6,6 +6,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include "login.h"
+#include "../UDP.h"
 
 
 #define LOGIN_CMD "LIN"
@@ -36,14 +37,8 @@ int process_login(char* input, char* response) {
         }
         i++;
     }
+
     sendUDP(response);
-    
 
     return 0;
 }
-
-
-
-
-
-    
