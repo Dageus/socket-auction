@@ -58,64 +58,84 @@ void validate_args(int argc, char** argv) {
         printf("ip: %s\n", ip);
 }
 
-void process_cmd(char* input){
-
+void check_UDP_cmd(char* input, char* cmd) {
+    
     char* response;
 
-    char *n_cmd = strtok(input, " ");
-
-    if (strcmp(n_cmd, "login") == 0) {
+    if (strcmp(cmd, "login") == 0) {
         response = (char*) malloc(sizeof(char) * LOGIN_LEN);
         if (process_login(input, &response) == -1)
             printf("error: login\n");
-    } else if (strcmp(n_cmd, "logout") == 0) {
+    } else if (strcmp(cmd, "logout") == 0) {
         response = (char *) malloc(sizeof(char) * LOGOUT_LEN);
-        if (process_logout(uid, response) == -1)
+        if (process_logout(uid, &response) == -1)
             printf("error: logout\n");
-    } else if (strcmp(n_cmd, "unregister") == 0) {
+    } else if (strcmp(cmd, "unregister") == 0) {
         response = (char *) malloc(sizeof(char) * UNREGISTER_LEN);
         if (process_unregister() == -1)
             printf("error: unregister\n");
-    } else if (strcmp(n_cmd, "exit") == 0) {
+    } else if (strcmp(cmd, "exit") == 0) {
         if (process_exit(uid) == -1)
             printf("error: please log out first\n");
-    } else if (strcmp(n_cmd, "open") == 0) {
-        response = (char *) malloc(sizeof(char) * OPEN_LEN);
-        if (process_open() == -1)
-            printf("error: open\n");
-    } else if (strcmp(n_cmd, "close") == 0) {
-        response = (char *) malloc(sizeof(char) * CLOSE_LEN);
-        if (process_close(input, uid, pwd, response) == -1)
-            printf("error: close\n");
-    } else if (strcmp(n_cmd, "myauctions") == 0 || strcmp(n_cmd, "ma") == 0) {
+    } else if (strcmp(cmd, "myauctions") == 0 || strcmp(cmd, "ma") == 0) {
         response = (char *) malloc(sizeof(char) * MYAUCTIONS_LEN);
-        if (process_myauctions(uid, response) == -1)
+        if (process_myauctions(uid, &response) == -1)
             printf("error: auctions\n");
-    } else if (strcmp(n_cmd, "mybids") == 0 || strcmp(n_cmd, "mb") == 0) {
+    } else if (strcmp(cmd, "mybids") == 0 || strcmp(cmd, "mb") == 0) {
         response = (char *) malloc(sizeof(char) * MYBIDS_LEN);
-        if (process_my_bids(uid, response) == -1)
+        if (process_my_bids(uid, &response) == -1)
             printf("error: bids\n");
-    } else if (strcmp(n_cmd, "list") == 0 || strcmp(n_cmd, "l") == 0) {
+    } else if (strcmp(cmd, "list") == 0 || strcmp(cmd, "l") == 0) {
         response = (char *) malloc(sizeof(char) * LIST_LEN);
-        if (process_list(uid) == -1)
+        if (process_list(&response) == -1)
             printf("error: list\n");
-    } else if (strcmp(n_cmd, "show_asset") == 0 || strcmp(n_cmd, "sa") == 0) {
-        response = (char *) malloc(sizeof(char) * SHOW_ASSET_LEN);
-        if (process_show_asset(input, uid, pwd, response) == -1)
-            printf("error: asset\n");
-    } else if (strcmp(n_cmd, "bid") == 0 || strcmp(n_cmd, "b") == 0) {
-        response = (char *) malloc(sizeof(char) * BID_LEN);
-        if (process_bid(input, uid, pwd, response) == -1)
-            printf("error: bid\n");
-    } else if (strcmp(n_cmd, "show_record") == 0 || strcmp(n_cmd, "sr") == 0) {
-        response = (char *) malloc(sizeof(char) * SHOW_RECORD_LEN);
-        if (process_show_record(input) == -1)
-            printf("error: record\n");
     } else {
         fprintf(stderr, "error: unkown_command\n");
     }
 
     printf("response: %s\n", response);
+}
+
+void check_TCP_cmd(char* input, char* cmd) {
+
+    char* response;
+
+    if (strcmp(cmd, "bid") == 0 || strcmp(cmd, "b") == 0) {
+        response = (char *) malloc(sizeof(char) * BID_LEN);
+        if (process_bid(input, uid, pwd, &response) == -1)
+            printf("error: bid\n");
+    } else if (strcmp(cmd, "show_record") == 0 || strcmp(cmd, "sr") == 0) {
+        response = (char *) malloc(sizeof(char) * SHOW_RECORD_LEN);
+        if (process_show_record(input, &response) == -1)
+            printf("error: record\n");
+    } else if (strcmp(cmd, "show_asset") == 0 || strcmp(cmd, "sa") == 0) {
+        response = (char *) malloc(sizeof(char) * SHOW_ASSET_LEN);
+        if (process_show_asset(input, uid, pwd, &response) == -1)
+            printf("error: asset\n");
+    } else if (strcmp(cmd, "open") == 0) {
+        response = (char *) malloc(sizeof(char) * OPEN_LEN);
+        if (process_open() == -1)
+            printf("error: open\n");
+    } else if (strcmp(cmd, "close") == 0) {
+        response = (char *) malloc(sizeof(char) * CLOSE_LEN);
+        if (process_close(input, uid, pwd, &response) == -1)
+            printf("error: close\n");
+    }
+}
+
+void process_cmd(char* input){
+
+    char *input_copy, *cmd;
+
+    input_copy = (char *) malloc(sizeof(char) * MAX_COMMAND_LEN);
+
+    strncpy(input_copy, input, strlen(input) - 1);
+
+    cmd = strtok(input, " ");
+
+    check_UDP_cmd(input_copy, cmd);
+
+    check_TCP_cmd(input_copy, cmd);
 }
 
 
@@ -134,8 +154,6 @@ int main(int argc, char** argv) {
 
         // read from terminal
         fgets(input, MAX_COMMAND_LEN, stdin);
-
-        printf("input: %s\n", input);
 
         // see which command was inputted
         process_cmd(input);

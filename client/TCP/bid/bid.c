@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-int process_bid(char *input, char *uid, char* pwd, char* response){
+int process_bid(char *input, char *uid, char* pwd, char** response){
 
     char* token;
     int i = 0;
@@ -17,19 +17,19 @@ int process_bid(char *input, char *uid, char* pwd, char* response){
     while (token != NULL) {
         token = strtok(NULL, " ");
         if (i == 0) {
-            strcpy(response, BID_CMD);
+            strcpy(*response, BID_CMD);
         } else if (i == 1 && strlen(token) <= MAX_NAME) {
-            strcat(response, " ");
-            strcat(response, token);
+            strcat(*response, " ");
+            strcat(*response, token);
         } else if (i == 2 && strlen(token) <= PASSWORD_LEN) {
-            strcat(response, " ");
-            strcat(response, token);
+            strcat(*response, " ");
+            strcat(*response, token);
         } else if (i == 3 && strlen(token) <= MAX_START_ORDER){
-            strcat(response, " ");
-            strcat(response, token);
+            strcat(*response, " ");
+            strcat(*response, token);
         } else if (i == 4 && strlen(token) <= MAX_DURATION_ORDER){
-            strcat(response, " ");
-            strcat(response, token);
+            strcat(*response, " ");
+            strcat(*response, token);
         } else {
             printf("Invalid UID or PWD\n");
             return -1;
@@ -37,7 +37,7 @@ int process_bid(char *input, char *uid, char* pwd, char* response){
         i++;
     }
 
-    sprintf(response, "%s %s %s %s %s", BID_CMD, uid, pwd, "1", "1");
+    sprintf(*response, "%s %s %s %s %s", BID_CMD, uid, pwd, "1", "1");
 
     return 0;
 

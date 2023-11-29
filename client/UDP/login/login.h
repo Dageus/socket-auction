@@ -7,8 +7,8 @@
 #include <ctype.h>
 
 #define LOGIN_CMD "LIN"
-#define LOGIN_LEN 21
+#define LOGIN_LEN 20
 
-int process_login();
+int process_login(char* input, char** response);
 
 #endif // LOGIN_H
