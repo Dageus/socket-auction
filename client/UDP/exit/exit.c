@@ -1,13 +1,17 @@
 #include "exit.h"
+#include "../../constants.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
-int process_exit(int uid) {
+int process_exit(char *uid) {
 
-    if (uid != -1)
+    if (strcmp(uid, NO_UID) == 0) 
         return -1;
-    else
+    else {
+        printf("Exiting client...\n");
         exit(EXIT_SUCCESS);
+    }
 
     return 0;
 }

@@ -3,6 +3,6 @@
 
 #include <stdio.h>
 
-int process_exit(int uid);
+int process_exit(char *uid);
 
 #endif  // EXIT_H

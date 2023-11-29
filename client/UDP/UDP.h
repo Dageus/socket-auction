@@ -9,12 +9,6 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-#define SERVER_IP "tejo.tecnico.ulisboa.pt"
-#define TEST_PORT 58011
-#define DEFAULT_PORT "58090"
-
-#define LOCAL_SERVER_IP "localhost"
-
 int create_UDP();
 int send_UDP(int socket, char *message, struct sockaddr_in *server_addr);
 

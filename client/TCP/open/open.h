@@ -1,8 +1,10 @@
 #ifndef OPEN_H
 #define OPEN_H
 
-#define OPEN_LEN 3 + 1 + 6 + 1 + 8 + 1 + 10 + 1 + 6 + 1 + 5 + 1 + 24 + 1 + 8
+#define OPEN_LEN 78
 
-int process_open(int sockfd, char *path);
+#define OPEN_CMD "OPA"
+
+int process_open();
 
 #endif  // OPEN_H

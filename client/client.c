@@ -8,45 +8,32 @@
 #include <string.h>
 #include <netdb.h>
 #include "constants.h"
-#include "UDP/commands.h"
-#include "TCP/commands.h"
+#include "UDP/commands_udp.h"
+#include "TCP/commands_tcp.h"
 
-#define TRUE 1
-#define FALSE 0
+// struct addrinfo
+// {
+//   int ai_flags;			/* Input flags.  */
+//   int ai_family;		/* Protocol family for socket.  */
+//   int ai_socktype;		/* Socket type.  */
+//   int ai_protocol;		/* Protocol for socket.  */
+//   socklen_t ai_addrlen;		/* Length of socket address.  */
+//   struct sockaddr *ai_addr;	/* Socket address for socket.  */
+//   char *ai_canonname;		/* Canonical name for service location.  */
+//   struct addrinfo *ai_next;	/* Pointer to next in list.  */
+// };
 
-#define SERVER_IP "tejo.tecnico.ulisboa.pt"
-#define TEST_PORT 58011
-#define DEFAULT_PORT "58090"
-
-#define LOCAL_SERVER_IP "localhost"
-
-struct addrinfo
-{
-  int ai_flags;			/* Input flags.  */
-  int ai_family;		/* Protocol family for socket.  */
-  int ai_socktype;		/* Socket type.  */
-  int ai_protocol;		/* Protocol for socket.  */
-  socklen_t ai_addrlen;		/* Length of socket address.  */
-  struct sockaddr *ai_addr;	/* Socket address for socket.  */
-  char *ai_canonname;		/* Canonical name for service location.  */
-  struct addrinfo *ai_next;	/* Pointer to next in list.  */
-};
-
-int udp_fd, tcp_fd, errcode;
-ssize_t n;
-socklen_t addrlen;
-struct addrinfo hints, *res;
-struct sockaddr_in addr;
-char buffer[128];
+int udp_fd, tcp_fd;
 
 
 // initialize default values in case of incomplete command
 
-int uid = -1;
+char *uid = "000000";
+char *pwd = "00000000";
 char *ip = LOCAL_SERVER_IP;
 char *port = DEFAULT_PORT;
 
-int validate_args(int argc, char** argv) {
+void validate_args(int argc, char** argv) {
 
     int opt;
 
@@ -58,8 +45,8 @@ int validate_args(int argc, char** argv) {
                 printf("ip: %s\n", ip);
                 break;
             case 'p':
-                port = atoi(optarg);
-                printf("port: %d\n", port);
+                port = optarg;
+                printf("port: %s\n", port);
                 break;
             default:
                 fprintf(stderr, "Usage: %s [-n ip] [-p port]\n", argv[0]);
@@ -78,8 +65,8 @@ void process_cmd(char* input){
     char *n_cmd = strtok(input, " ");
 
     if (strcmp(n_cmd, "login") == 0) {
-        if (process_login(input, response) == -1){}
         response = (char*) malloc(sizeof(char) * LOGIN_LEN);
+        if (process_login(input, &response) == -1)
             printf("error: login\n");
     } else if (strcmp(n_cmd, "logout") == 0) {
         response = (char *) malloc(sizeof(char) * LOGOUT_LEN);
@@ -93,49 +80,44 @@ void process_cmd(char* input){
         if (process_exit(uid) == -1)
             printf("error: please log out first\n");
     } else if (strcmp(n_cmd, "open") == 0) {
-        // ? TCP command, dont do yet
         response = (char *) malloc(sizeof(char) * OPEN_LEN);
         if (process_open() == -1)
             printf("error: open\n");
     } else if (strcmp(n_cmd, "close") == 0) {
-        if (process_close() == -1)
+        response = (char *) malloc(sizeof(char) * CLOSE_LEN);
+        if (process_close(input, uid, pwd, response) == -1)
             printf("error: close\n");
     } else if (strcmp(n_cmd, "myauctions") == 0 || strcmp(n_cmd, "ma") == 0) {
         response = (char *) malloc(sizeof(char) * MYAUCTIONS_LEN);
-        if (process_auctions(uid) == -1)
+        if (process_myauctions(uid, response) == -1)
             printf("error: auctions\n");
     } else if (strcmp(n_cmd, "mybids") == 0 || strcmp(n_cmd, "mb") == 0) {
-        if (process_bids() == -1)
+        response = (char *) malloc(sizeof(char) * MYBIDS_LEN);
+        if (process_my_bids(uid, response) == -1)
             printf("error: bids\n");
     } else if (strcmp(n_cmd, "list") == 0 || strcmp(n_cmd, "l") == 0) {
         response = (char *) malloc(sizeof(char) * LIST_LEN);
         if (process_list(uid) == -1)
             printf("error: list\n");
     } else if (strcmp(n_cmd, "show_asset") == 0 || strcmp(n_cmd, "sa") == 0) {
-        if (process_asset() == -1)
+        response = (char *) malloc(sizeof(char) * SHOW_ASSET_LEN);
+        if (process_show_asset(input, uid, pwd, response) == -1)
             printf("error: asset\n");
     } else if (strcmp(n_cmd, "bid") == 0 || strcmp(n_cmd, "b") == 0) {
-        if (process_bid() == -1)
+        response = (char *) malloc(sizeof(char) * BID_LEN);
+        if (process_bid(input, uid, pwd, response) == -1)
             printf("error: bid\n");
     } else if (strcmp(n_cmd, "show_record") == 0 || strcmp(n_cmd, "sr") == 0) {
         response = (char *) malloc(sizeof(char) * SHOW_RECORD_LEN);
-        if (process_record(input) == -1)
+        if (process_show_record(input) == -1)
             printf("error: record\n");
     } else {
         fprintf(stderr, "error: unkown_command\n");
     }
+
+    printf("response: %s\n", response);
 }
 
-int create_UDP(){
-
-    int fd = socket(AF_INET,SOCK_DGRAM,0);
-    if (fd == -1) {
-        /*error*/
-        return -1;
-    }
-
-    return 1;
-}
 
 int main(int argc, char** argv) {
 
@@ -143,19 +125,7 @@ int main(int argc, char** argv) {
 
     validate_args(argc, argv);
 
-
-    // Create a socket
-
-    
-
-    udp_fd = create_UDP();
-
-    if (udp_fd == -1) {
-        fprintf(stderr, "error: udp socket\n");
-        exit(EXIT_FAILURE);
-    }
-
-    int tries = 0;
+    // int tries = 0;
 
     // main code
     while (TRUE) {
