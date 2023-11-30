@@ -11,6 +11,8 @@
 
 
 int process_login(char* input, char** response) {
+
+    *response = (char*) malloc(sizeof(char) * LOGIN_LEN);
     
     // extract string from the pointer to response
     char* token, *uid, *pwd;

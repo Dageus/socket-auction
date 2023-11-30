@@ -6,6 +6,8 @@
 
 int process_bid(char *input, char *uid, char* pwd, char** response){
 
+    *response = (char *) malloc(sizeof(char) * BID_LEN);
+
     char* token;
     int i = 0;
 

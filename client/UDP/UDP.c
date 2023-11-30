@@ -29,6 +29,30 @@ struct addrinfo hints, *res;
 struct sockaddr_in addr;
 char buffer[128];
 
+const char* UDP_commands[] = {
+    "login",
+    "logout",
+    "unregister",
+    "myauctions",
+    "ma",
+    "mybids",
+    "mb",
+    "list",
+    "l",
+    "show_record",
+    "sr"
+};
+
+int UDP_cmd(char* cmd){
+    int i;
+    for (i = 0; i < 11; i++) {
+        if (strcmp(cmd, UDP_commands[i]) == 0) {
+            return 1;
+        }
+    }
+    return -1;
+}
+
 void sendUDP(char* msg) {
 
 	int fd = socket(AF_INET,SOCK_DGRAM,0);

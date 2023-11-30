@@ -5,6 +5,6 @@
 
 #define OPEN_CMD "OPA"
 
-int process_open();
+int process_open(char* input, char** response);
 
 #endif  // OPEN_H

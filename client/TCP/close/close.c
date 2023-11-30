@@ -8,6 +8,8 @@
 
 int process_close(char *input, char *uid, char* pwd, char** response){
 
+    *response = (char *) malloc(sizeof(char) * CLOSE_LEN);
+
     char* token;
     int i = 0;
 

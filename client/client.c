@@ -10,6 +10,8 @@
 #include "constants.h"
 #include "UDP/commands_udp.h"
 #include "TCP/commands_tcp.h"
+#include "UDP/UDP.h"
+#include "TCP/TCP.h"
 
 // struct addrinfo
 // {
@@ -63,37 +65,39 @@ void check_UDP_cmd(char* input, char* cmd) {
     char* response;
 
     if (strcmp(cmd, "login") == 0) {
-        response = (char*) malloc(sizeof(char) * LOGIN_LEN);
         if (process_login(input, &response) == -1)
             printf("error: login\n");
     } else if (strcmp(cmd, "logout") == 0) {
-        response = (char *) malloc(sizeof(char) * LOGOUT_LEN);
-        if (process_logout(uid, &response) == -1)
+        if (process_logout(uid, pwd, &response) == -1)
             printf("error: logout\n");
     } else if (strcmp(cmd, "unregister") == 0) {
-        response = (char *) malloc(sizeof(char) * UNREGISTER_LEN);
-        if (process_unregister() == -1)
+        if (process_unregister(uid, pwd, &response) == -1)
             printf("error: unregister\n");
     } else if (strcmp(cmd, "exit") == 0) {
         if (process_exit(uid) == -1)
             printf("error: please log out first\n");
+        else
+            // change uid and pwd to null
+            uid = "000000";
     } else if (strcmp(cmd, "myauctions") == 0 || strcmp(cmd, "ma") == 0) {
-        response = (char *) malloc(sizeof(char) * MYAUCTIONS_LEN);
         if (process_myauctions(uid, &response) == -1)
             printf("error: auctions\n");
     } else if (strcmp(cmd, "mybids") == 0 || strcmp(cmd, "mb") == 0) {
-        response = (char *) malloc(sizeof(char) * MYBIDS_LEN);
         if (process_my_bids(uid, &response) == -1)
             printf("error: bids\n");
     } else if (strcmp(cmd, "list") == 0 || strcmp(cmd, "l") == 0) {
-        response = (char *) malloc(sizeof(char) * LIST_LEN);
         if (process_list(&response) == -1)
             printf("error: list\n");
-    } else {
-        fprintf(stderr, "error: unkown_command\n");
+    } else if (strcmp(cmd, "show_record") == 0 || strcmp(cmd, "sr") == 0){
+        if (process_show_record(input, &response) == -1)
+            printf("error: show_record\n"); 
     }
 
-    printf("response: %s\n", response);
+    printf("UDP response: %s\n", response);
+
+    // send_UDP_cmd(response);
+
+    free(response);
 }
 
 void check_TCP_cmd(char* input, char* cmd) {
@@ -101,26 +105,22 @@ void check_TCP_cmd(char* input, char* cmd) {
     char* response;
 
     if (strcmp(cmd, "bid") == 0 || strcmp(cmd, "b") == 0) {
-        response = (char *) malloc(sizeof(char) * BID_LEN);
         if (process_bid(input, uid, pwd, &response) == -1)
             printf("error: bid\n");
-    } else if (strcmp(cmd, "show_record") == 0 || strcmp(cmd, "sr") == 0) {
-        response = (char *) malloc(sizeof(char) * SHOW_RECORD_LEN);
-        if (process_show_record(input, &response) == -1)
-            printf("error: record\n");
     } else if (strcmp(cmd, "show_asset") == 0 || strcmp(cmd, "sa") == 0) {
-        response = (char *) malloc(sizeof(char) * SHOW_ASSET_LEN);
         if (process_show_asset(input, uid, pwd, &response) == -1)
             printf("error: asset\n");
     } else if (strcmp(cmd, "open") == 0) {
-        response = (char *) malloc(sizeof(char) * OPEN_LEN);
-        if (process_open() == -1)
+        if (process_open(input, &response) == -1)
             printf("error: open\n");
     } else if (strcmp(cmd, "close") == 0) {
-        response = (char *) malloc(sizeof(char) * CLOSE_LEN);
         if (process_close(input, uid, pwd, &response) == -1)
             printf("error: close\n");
     }
+
+    printf("TCP response: %s\n", response);
+
+    // send_TCP_cmd(response);
 }
 
 void process_cmd(char* input){
@@ -133,9 +133,14 @@ void process_cmd(char* input){
 
     cmd = strtok(input, " ");
 
-    check_UDP_cmd(input_copy, cmd);
+    printf("cmd: %s\n", cmd);
 
-    check_TCP_cmd(input_copy, cmd);
+    if (UDP_cmd(cmd))
+        check_UDP_cmd(input_copy, cmd);
+    else if (TCP_cmd(cmd))
+        check_TCP_cmd(input_copy, cmd);
+    else
+        fprintf(stderr, "error: unkown_command\n");
 }
 
 
@@ -149,7 +154,6 @@ int main(int argc, char** argv) {
 
     // main code
     while (TRUE) {
-
         char *input = (char *) malloc(sizeof(char) * MAX_COMMAND_LEN);
 
         // read from terminal

@@ -1,10 +1,14 @@
 #include "myauctions.h"
+#include "../../constants.h"
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 int process_myauctions(char *uid, char** response){
 
-    if (strcmp(uid, "000000") == 0) {
+    *response = (char *) malloc(sizeof(char) * MYAUCTIONS_LEN);
+
+    if (strcmp(uid, NO_UID) == 0) {
         printf("error: please login first\n");
         return -1;
     }
