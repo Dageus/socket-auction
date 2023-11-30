@@ -1,6 +1,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -30,8 +31,8 @@ int udp_fd, tcp_fd;
 
 // initialize default values in case of incomplete command
 
-char *uid = "000000";
-char *pwd = "00000000";
+char *uid;
+char *pwd;
 char *ip = LOCAL_SERVER_IP;
 char *port = DEFAULT_PORT;
 
@@ -165,6 +166,13 @@ int main(int argc, char** argv) {
     // check if command is complete
 
     validate_args(argc, argv);
+
+    // initialize uid and pwd
+    uid = (char *) malloc(sizeof(char) * UID_LENGTH);
+    strcpy(uid, NO_UID);
+
+    pwd = (char *) malloc(sizeof(char) * PASSWORD_LEN);
+    strcpy(pwd, NO_PWD);
 
     // int tries = 0;
 
