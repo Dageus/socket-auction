@@ -8,6 +8,7 @@
 #include <arpa/inet.h>
 #include <string.h>
 #include <netdb.h>
+#include <bits/getopt_core.h>
 #include "constants.h"
 #include "UDP/commands_udp.h"
 #include "TCP/commands_tcp.h"
