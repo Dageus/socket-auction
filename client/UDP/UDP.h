@@ -10,7 +10,6 @@
 #include <arpa/inet.h>
 
 int UDP_cmd(char* cmd);
-int create_UDP();
-int send_UDP(int socket, char *message, struct sockaddr_in *server_addr);
+int send_UDP(char *msg);
 
 #endif // UDP_H

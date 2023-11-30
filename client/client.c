@@ -27,7 +27,7 @@
 //   struct addrinfo *ai_next;	/* Pointer to next in list.  */
 // };
 
-int udp_fd, tcp_fd;
+int tcp_fd;
 
 
 // initialize default values in case of incomplete command
@@ -66,9 +66,6 @@ void check_UDP_cmd(char* input, char* cmd) {
     
     char* response = NULL;
 
-
-    printf("%d\n", strcmp(cmd, "logout"));
-
     if (strcmp(cmd, "login") == 0) {
         if (process_login(input, &uid, &pwd, &response) == -1)
             printf("error: login\n");
@@ -101,9 +98,9 @@ void check_UDP_cmd(char* input, char* cmd) {
             printf("error: show_record\n"); 
     }
 
-    printf("UDP response: %s\n", response);
+    printf("UDP response: %s", response);
 
-    // send_UDP_cmd(response);
+    send_UDP(response);
 
     if (response != NULL)
         free(response);
@@ -149,7 +146,6 @@ void process_cmd(char* input){
         cmd[strlen(cmd) - 1] = '\0';
 
     if (UDP_cmd(cmd)){
-        printf("UDP command\n");
         check_UDP_cmd(input_copy, cmd);
     }
     else if (TCP_cmd(cmd))

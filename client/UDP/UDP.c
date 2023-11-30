@@ -53,13 +53,13 @@ int UDP_cmd(char* cmd){
     return -1;
 }
 
-void sendUDP(char* msg) {
+int send_UDP(char* msg) {
 
-	int fd = socket(AF_INET,SOCK_DGRAM,0);
+	int fd = socket(AF_INET,SOCK_DGRAM, 0);
     if (fd == -1) {
         /*error*/
 		fprintf(stderr, "Error creating socket\n");
-		exit(EXIT_FAILURE);
+		return -1;
     }
 
     memset(&hints, 0, sizeof(hints));
@@ -72,13 +72,16 @@ void sendUDP(char* msg) {
 	if (n == -1) {
 		/*error*/
 		fprintf(stderr, "Error sending message to server\n");
+        return -1;
 	}
        
     addrlen = sizeof(addr);
     n = recvfrom(fd, buffer, 128, 0, (struct sockaddr*)&addr, &addrlen);
 
-    printf("Received from server: %s\n", buffer);
+    printf("Received from server: %s", buffer);
 
 	freeaddrinfo(res);
     close(fd);
+
+    return 1;
 }
