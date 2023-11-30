@@ -62,11 +62,17 @@ void validate_args(int argc, char** argv) {
 
 void check_UDP_cmd(char* input, char* cmd) {
     
-    char* response;
+    char* response = NULL;
+
+
+    printf("%d\n", strcmp(cmd, "logout"));
 
     if (strcmp(cmd, "login") == 0) {
-        if (process_login(input, &response) == -1)
+        if (process_login(input, &uid, &pwd, &response) == -1)
             printf("error: login\n");
+        else
+            // login was successful, change uid and pwd
+            printf("uid: %s\npwd: %s\n", uid, pwd);
     } else if (strcmp(cmd, "logout") == 0) {
         if (process_logout(uid, pwd, &response) == -1)
             printf("error: logout\n");
@@ -97,12 +103,13 @@ void check_UDP_cmd(char* input, char* cmd) {
 
     // send_UDP_cmd(response);
 
-    free(response);
+    if (response != NULL)
+        free(response);
 }
 
 void check_TCP_cmd(char* input, char* cmd) {
 
-    char* response;
+    char* response = NULL;
 
     if (strcmp(cmd, "bid") == 0 || strcmp(cmd, "b") == 0) {
         if (process_bid(input, uid, pwd, &response) == -1)
@@ -121,6 +128,9 @@ void check_TCP_cmd(char* input, char* cmd) {
     printf("TCP response: %s\n", response);
 
     // send_TCP_cmd(response);
+
+    if (response != NULL)
+        free(response);
 }
 
 void process_cmd(char* input){
@@ -133,14 +143,20 @@ void process_cmd(char* input){
 
     cmd = strtok(input, " ");
 
-    printf("cmd: %s\n", cmd);
+    if (cmd[strlen(cmd) - 1] == '\n')
+        cmd[strlen(cmd) - 1] = '\0';
 
-    if (UDP_cmd(cmd))
+    if (UDP_cmd(cmd)){
+        printf("UDP command\n");
         check_UDP_cmd(input_copy, cmd);
+    }
     else if (TCP_cmd(cmd))
         check_TCP_cmd(input_copy, cmd);
     else
         fprintf(stderr, "error: unkown_command\n");
+
+    free(input_copy);
+    free(cmd);
 }
 
 
