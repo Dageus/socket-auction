@@ -4,7 +4,6 @@
 #include <stdio.h>
 
 int TCP_cmd(char* cmd);
-int create_TCP();
-int send_TCP();
+int send_TCP(char* msg);
 
 #endif // TCP_H

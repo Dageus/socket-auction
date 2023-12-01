@@ -6,12 +6,14 @@
 
 
 
-int process_close(char *input, char *uid, char* pwd, char** response){
+int process_close(char *input, client** user, char** response){
 
     *response = (char *) malloc(sizeof(char) * CLOSE_LEN);
 
-    char* token;
+    char* token, *aid;
     int i = 0;
+
+    aid = (char*) malloc(sizeof(char) * AID_LEN);
 
     // ! ta tudo mal, so fiz isto pra compilar
 
@@ -19,28 +21,16 @@ int process_close(char *input, char *uid, char* pwd, char** response){
     token = strtok(input, " ");
     while (token != NULL) {
         token = strtok(NULL, " ");
-        if (i == 0) {
-            strcpy(*response, CLOSE_CMD);
-        } else if (i == 1 && strlen(token) <= MAX_NAME) {
-            strcat(*response, " ");
-            strcat(*response, token);
-        } else if (i == 2 && strlen(token) <= PASSWORD_LEN) {
-            strcat(*response, " ");
-            strcat(*response, token);
-        } else if (i == 3 && strlen(token) <= MAX_START_ORDER){
-            strcat(*response, " ");
-            strcat(*response, token);
-        } else if (i == 4 && strlen(token) <= MAX_DURATION_ORDER){
-            strcat(*response, " ");
-            strcat(*response, token);
+        if (i == 1 && strlen(token) <= AID_LEN) {
+            strcpy(aid, token);
         } else {
-            printf("Invalid UID or PWD\n");
+            printf("Invalid AID\n");
             return -1;
         }
         i++;
     }
 
-    sprintf(*response, "%s %s %s %s %s", CLOSE_CMD, uid, pwd, "1", "1");
+    sprintf(*response, "%s %s %s %s\n", CLOSE_CMD, (*user)->uid, (*user)->pwd, aid);
 
     return 0;
 

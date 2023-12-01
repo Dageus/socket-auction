@@ -36,11 +36,6 @@ int TCP_cmd(char* cmd){
     return -1;
 }
 
-int create_TCP(){
-
-    return 0;
-}
-
 int send_TCP(char* msg){
     int fd = socket(AF_INET, SOCK_STREAM, 0);
     if (fd == -1) {
@@ -67,13 +62,28 @@ int send_TCP(char* msg){
         return -1;
     }
 
-    /* Escreve a mensagem "Hello!\n" para o servidor, especificando o seu tamanho */
-    tcp_n = write(fd, msg, strlen(msg));
-    if (tcp_n == -1) {
-        /*error*/
-		fprintf(stderr, "Error sending message to server\n");
-        return -1;
+    FILE *file = fopen("path/to/your/image.jpg", "rb");
+    if (!file) {
+        fprintf(stderr, "Error opening file\n");
+        freeaddrinfo(tcp_res);
+        close(fd);
+        exit(EXIT_FAILURE);
     }
+
+    char buffer[TRANSMISSION_RATE];
+    size_t bytesRead;
+
+    while ((bytesRead = fread(buffer, 1, sizeof(buffer), file)) > 0) {
+        if (send(fd, buffer, bytesRead, 0) == -1) {
+            fprintf(stderr, "Error sending data\n");
+            fclose(file);
+            close(fd);
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    // Close the file
+    fclose(file);
 
     /* Lê 128 Bytes do servidor e guarda-os no buffer. */
     tcp_n = read(fd, tcp_buffer, 128);

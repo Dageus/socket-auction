@@ -3,6 +3,6 @@
 
 #include <stdio.h>
 
-int process_exit(char *uid);
+int process_exit(client** user);
 
 #endif  // EXIT_H

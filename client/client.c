@@ -15,6 +15,8 @@
 #include "UDP/UDP.h"
 #include "TCP/TCP.h"
 
+
+
 // struct addrinfo
 // {
 //   int ai_flags;			/* Input flags.  */
@@ -32,8 +34,7 @@ int tcp_fd;
 
 // initialize default values in case of incomplete command
 
-char *uid;
-char *pwd;
+client* user;
 char *ip = LOCAL_SERVER_IP;
 char *port = DEFAULT_PORT;
 
@@ -67,19 +68,19 @@ void check_UDP_cmd(char* input, char* cmd) {
     char* response = NULL;
 
     if (strcmp(cmd, "login") == 0) {
-        if (process_login(input, &uid, &pwd, &response) == -1)
+        if (process_login(input, &user, &response) == -1)
             printf("error: login\n");
         else
             // login was successful, change uid and pwd
-            printf("uid: %s\npwd: %s\n", uid, pwd);
+            printf("uid: %s\npwd: %s\n", user->uid, user->pwd);
     } else if (strcmp(cmd, "logout") == 0) {
-        if (process_logout(uid, pwd, &response) == -1)
+        if (process_logout(&user, &response) == -1)
             printf("error: logout\n");
     } else if (strcmp(cmd, "unregister") == 0) {
-        if (process_unregister(uid, pwd, &response) == -1)
+        if (process_unregister(&user, &response) == -1)
             printf("error: unregister\n");
     } else if (strcmp(cmd, "exit") == 0) {
-        if (process_exit(uid) == -1)
+        if (process_exit(&client) == -1)
             printf("error: please log out first\n");
         else
             // change uid and pwd to null
@@ -111,16 +112,16 @@ void check_TCP_cmd(char* input, char* cmd) {
     char* response = NULL;
 
     if (strcmp(cmd, "bid") == 0 || strcmp(cmd, "b") == 0) {
-        if (process_bid(input, uid, pwd, &response) == -1)
+        if (process_bid(input, &user, &response) == -1)
             printf("error: bid\n");
     } else if (strcmp(cmd, "show_asset") == 0 || strcmp(cmd, "sa") == 0) {
-        if (process_show_asset(input, uid, pwd, &response) == -1)
+        if (process_show_asset(input, &response) == -1)
             printf("error: asset\n");
     } else if (strcmp(cmd, "open") == 0) {
         if (process_open(input, &response) == -1)
             printf("error: open\n");
     } else if (strcmp(cmd, "close") == 0) {
-        if (process_close(input, uid, pwd, &response) == -1)
+        if (process_close(input, &user, &response) == -1)
             printf("error: close\n");
     }
 
@@ -164,12 +165,13 @@ int main(int argc, char** argv) {
 
     validate_args(argc, argv);
 
-    // initialize uid and pwd
-    uid = (char *) malloc(sizeof(char) * UID_LENGTH);
-    strcpy(uid, NO_UID);
+    // initialize client, uid and pwd
+    user = (client*) malloc(sizeof(client));
+    user->uid = (char *) malloc(sizeof(char) * UID_LENGTH);
+    strcpy(user->uid, NO_UID);
 
-    pwd = (char *) malloc(sizeof(char) * PASSWORD_LEN);
-    strcpy(pwd, NO_PWD);
+    user->pwd = (char *) malloc(sizeof(char) * PASSWORD_LEN);
+    strcpy(user->pwd, NO_PWD);
 
     // int tries = 0;
 

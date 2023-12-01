@@ -4,6 +4,6 @@
 #define LOGOUT_COMMAND "LOU"
 #define LOGOUT_LEN 20
 
-int process_logout(char *uid, char* pwd, char** response);
+int process_logout(client** user, char** response);
 
 #endif // LOGOUT_H

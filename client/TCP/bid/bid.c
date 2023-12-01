@@ -4,42 +4,31 @@
 #include <stdlib.h>
 #include <string.h>
 
-int process_bid(char *input, char *uid, char* pwd, char** response){
+int process_bid(char *input, client** user, char** response){
 
     *response = (char *) malloc(sizeof(char) * BID_LEN);
 
-    char* token;
+    char* token, *aid, *amount;
+    aid = (char *) malloc(sizeof(char) * AID_LEN);
+    amount = (char *) malloc(sizeof(char) * MAX_BIDDING_LEN);
     int i = 0;
-
-    // ! ta tudo mal, so fiz isto pra compilar
-
     
     token = strtok(input, " ");
 
     while (token != NULL) {
         token = strtok(NULL, " ");
-        if (i == 0) {
-            strcpy(*response, BID_CMD);
-        } else if (i == 1 && strlen(token) <= MAX_NAME) {
-            strcat(*response, " ");
-            strcat(*response, token);
-        } else if (i == 2 && strlen(token) <= PASSWORD_LEN) {
-            strcat(*response, " ");
-            strcat(*response, token);
-        } else if (i == 3 && strlen(token) <= MAX_START_ORDER){
-            strcat(*response, " ");
-            strcat(*response, token);
-        } else if (i == 4 && strlen(token) <= MAX_DURATION_ORDER){
-            strcat(*response, " ");
-            strcat(*response, token);
+        if (i == 1 && strlen(token) <= AID_LEN) {
+            strcpy(aid, token);
+        } else if (i == 2) {
+            strcpy(amount, token);
         } else {
-            printf("Invalid UID or PWD\n");
+            printf("Invalid AID\n");
             return -1;
         }
         i++;
     }
 
-    sprintf(*response, "%s %s %s %s %s", BID_CMD, uid, pwd, "1", "1");
+    sprintf(*response, "%s %s %s %s %s\n", BID_CMD, (*user)->uid, (*user)->pwd, aid, amount);
 
     return 0;
 

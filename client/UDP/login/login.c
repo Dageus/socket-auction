@@ -10,7 +10,7 @@
 #include "../UDP.h"
 
 
-int process_login(char* input, char** uid, char** pwd, char** response) {
+int process_login(char* input, client** user, char** response) {
 
     *response = (char*) malloc(sizeof(char) * LOGIN_LEN);
     
@@ -23,9 +23,9 @@ int process_login(char* input, char** uid, char** pwd, char** response) {
         if (i == 0)
             strcpy(*response, LOGIN_CMD);
         else if (i == 1 && strlen(token) == UID_LENGTH)
-            strcpy(*uid, token);
+            strcpy((*user)->uid, token);
         else if (i == 2 && strlen(token) == PASSWORD_LEN)
-            strcpy(*pwd, token);
+            strcpy((*user)->pwd, token);
         else {
             printf("Invalid UID or PWD\n");
             return -1;
@@ -34,7 +34,7 @@ int process_login(char* input, char** uid, char** pwd, char** response) {
         i++;
     }
 
-    int return_code = sprintf(*response, "%s %s %s\n", LOGIN_CMD, *uid, *pwd);
+    int return_code = sprintf(*response, "%s %s %s\n", LOGIN_CMD, (*user)->uid, (*user)->pwd);
 
     if (return_code < 0)
         return -1;

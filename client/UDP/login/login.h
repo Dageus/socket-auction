@@ -9,6 +9,6 @@
 #define LOGIN_CMD "LIN"
 #define LOGIN_LEN 21
 
-int process_login(char* input, char** uid, char** pwd, char** response);
+int process_login(char* input, client** user, char** response);
 
 #endif // LOGIN_H

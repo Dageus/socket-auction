@@ -4,12 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-int process_show_asset(char* input, char* uid, char* pwd, char** response){
-
-    if (strcmp(uid, NO_UID) == 0) {
-        printf("error: please login first\n");
-        return -1;
-    }
+int process_show_asset(char* input, char** response){
 
     *response = (char *) malloc(sizeof(char) * SHOW_ASSET_LEN);
 
@@ -21,7 +16,7 @@ int process_show_asset(char* input, char* uid, char* pwd, char** response){
         return -1;
     }
 
-    sprintf(*response, "%s %s %s %s", n_cmd, uid, pwd, asset_id);
+    sprintf(*response, "%s %s\n", n_cmd, asset_id);
 
 
     return 0;
