@@ -1,7 +1,14 @@
 #include "TCP.h"
+#include "../constants.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
+#include <unistd.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netdb.h>
 
 const char *TCP_commands[] = {
     "open",
@@ -11,6 +18,13 @@ const char *TCP_commands[] = {
     "bid",
     "b"
 };
+
+int tcp_errcode;
+ssize_t tcp_n;
+socklen_t addrlen;
+struct addrinfo tcp_hints, *tcp_res;
+struct sockaddr_in tcp_addr;
+char tcp_buffer[128];
 
 
 int TCP_cmd(char* cmd){
@@ -27,7 +41,53 @@ int create_TCP(){
     return 0;
 }
 
-int send_TCP(){
+int send_TCP(char* msg){
+    int fd = socket(AF_INET, SOCK_STREAM, 0);
+    if (fd == -1) {
+        
+    }
+
+    memset(&tcp_hints, 0, sizeof tcp_hints);
+    tcp_hints.ai_family = AF_INET;
+    tcp_hints.ai_socktype = SOCK_STREAM; // TCP socket
+
+    tcp_errcode = getaddrinfo(SERVER_IP, TEST_PORT, &tcp_hints, &tcp_res);
+    if (tcp_errcode != 0) {
+        /*error*/
+		fprintf(stderr, "Error sending message to server\n");
+        return -1;
+    }
+
+    /* Em TCP é necessário estabelecer uma ligação com o servidor primeiro (Handshake).
+       Então primeiro cria a conexão para o endereço obtido através de `getaddrinfo()`. */
+    tcp_n = connect(fd, tcp_res->ai_addr, tcp_res->ai_addrlen);
+    if (tcp_n == -1) {
+        /*error*/
+		fprintf(stderr, "Error connecting to server\n");
+        return -1;
+    }
+
+    /* Escreve a mensagem "Hello!\n" para o servidor, especificando o seu tamanho */
+    tcp_n = write(fd, msg, strlen(msg));
+    if (tcp_n == -1) {
+        /*error*/
+		fprintf(stderr, "Error sending message to server\n");
+        return -1;
+    }
+
+    /* Lê 128 Bytes do servidor e guarda-os no buffer. */
+    tcp_n = read(fd, tcp_buffer, 128);
+    if (tcp_n == -1) {
+        /*error*/
+		fprintf(stderr, "Error receiving message to server\n");
+        return -1;
+    }
+
+    printf("Received from server: %s", tcp_buffer);
+
+    /* Desaloca a memória da estrutura `tcp_res` e fecha o socket */
+    freeaddrinfo(tcp_res);
+    close(fd);
 
 
     return 0;
