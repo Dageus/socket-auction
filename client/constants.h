@@ -27,7 +27,7 @@ typedef struct client {
 
 #define MAX_START_ORDER 6
 #define MAX_DURATION_ORDER 5
-#define MAX_BIDDING_LEN 8
+#define MAX_BIDDING_LEN 11
 
 #define AID_LEN 3
 

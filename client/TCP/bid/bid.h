@@ -4,6 +4,8 @@
 #define BID_LEN 11
 #define BID_CMD "BID"
 
-int process_bid(char* input, client** user, char** response);
+#include "../../constants.h"
+
+int process_bid(char* input, client* user, char** response, int *code);
 
 #endif // BID_H

@@ -4,6 +4,8 @@
 #define MYBIDS_COMMAND "LMB"
 #define MYBIDS_LEN 11
 
-int process_my_bids(char *uid, char** response);
+#include "../../constants.h"
+
+int process_my_bids(client* user, char** response);
 
 #endif // MYBIDS_H

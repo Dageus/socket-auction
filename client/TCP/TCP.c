@@ -39,7 +39,9 @@ int TCP_cmd(char* cmd){
 int send_TCP(char* msg){
     int fd = socket(AF_INET, SOCK_STREAM, 0);
     if (fd == -1) {
-        
+        /*error*/
+        fprintf(stderr, "Error creating socket\n");
+        return -1;
     }
 
     memset(&tcp_hints, 0, sizeof tcp_hints);
@@ -62,6 +64,8 @@ int send_TCP(char* msg){
         return -1;
     }
 
+
+    if ()
     FILE *file = fopen("path/to/your/image.jpg", "rb");
     if (!file) {
         fprintf(stderr, "Error opening file\n");

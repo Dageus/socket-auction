@@ -65,72 +65,67 @@ void validate_args(int argc, char** argv) {
 
 void check_UDP_cmd(char* input, char* cmd) {
     
-    char* response = NULL;
+    char* request = NULL;
 
     if (strcmp(cmd, "login") == 0) {
-        if (process_login(input, &user, &response) == -1)
+        if (process_login(input, &user, &request) == -1)
             printf("error: login\n");
-        else
-            // login was successful, change uid and pwd
-            printf("uid: %s\npwd: %s\n", user->uid, user->pwd);
     } else if (strcmp(cmd, "logout") == 0) {
-        if (process_logout(&user, &response) == -1)
+        if (process_logout(user, &request) == -1)
             printf("error: logout\n");
     } else if (strcmp(cmd, "unregister") == 0) {
-        if (process_unregister(&user, &response) == -1)
+        if (process_unregister(user, &request) == -1)
             printf("error: unregister\n");
     } else if (strcmp(cmd, "exit") == 0) {
-        if (process_exit(&client) == -1)
+        if (process_exit(&user) == -1)
             printf("error: please log out first\n");
-        else
-            // change uid and pwd to null
-            uid = "000000";
     } else if (strcmp(cmd, "myauctions") == 0 || strcmp(cmd, "ma") == 0) {
-        if (process_myauctions(uid, &response) == -1)
+        if (process_myauctions(user, &request) == -1)
             printf("error: auctions\n");
     } else if (strcmp(cmd, "mybids") == 0 || strcmp(cmd, "mb") == 0) {
-        if (process_my_bids(uid, &response) == -1)
+        if (process_my_bids(user, &request) == -1)
             printf("error: bids\n");
     } else if (strcmp(cmd, "list") == 0 || strcmp(cmd, "l") == 0) {
-        if (process_list(&response) == -1)
+        if (process_list(&request) == -1)
             printf("error: list\n");
     } else if (strcmp(cmd, "show_record") == 0 || strcmp(cmd, "sr") == 0){
-        if (process_show_record(input, &response) == -1)
+        if (process_show_record(input, &request) == -1)
             printf("error: show_record\n"); 
     }
 
-    printf("UDP response: %s", response);
+    printf("UDP request: %s", request);
 
-    send_UDP(response);
+    send_UDP(request);
 
-    if (response != NULL)
-        free(response);
+    if (request != NULL)
+        free(request);
 }
 
 void check_TCP_cmd(char* input, char* cmd) {
 
-    char* response = NULL;
+    TCP_response* request;
+    request = (TCP_response *) malloc(sizeof(TCP_response));
 
     if (strcmp(cmd, "bid") == 0 || strcmp(cmd, "b") == 0) {
-        if (process_bid(input, &user, &response) == -1)
+        if (process_bid(input, user, &request->msg, &request->code) == -1)
             printf("error: bid\n");
     } else if (strcmp(cmd, "show_asset") == 0 || strcmp(cmd, "sa") == 0) {
-        if (process_show_asset(input, &response) == -1)
+        if (process_show_asset(input, &request->msg, &request->code) == -1)
             printf("error: asset\n");
     } else if (strcmp(cmd, "open") == 0) {
-        if (process_open(input, &response) == -1)
+        if (process_open(input, user, &request->msg, &request->code) == -1)
             printf("error: open\n");
     } else if (strcmp(cmd, "close") == 0) {
-        if (process_close(input, &user, &response) == -1)
+        if (process_close(input, user, &request->msg, &request->code) == -1)
             printf("error: close\n");
     }
 
-    printf("TCP response: %s\n", response);
+    printf("TCP request: %s\n", request);
 
-    // send_TCP_cmd(response);
+    // send_TCP_cmd(request);
 
-    if (response != NULL)
-        free(response);
+    if (request != NULL)
+        free(request);
 }
 
 void process_cmd(char* input){

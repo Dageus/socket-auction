@@ -10,6 +10,9 @@ int process_exit(client** user) {
         return -1;
     else {
         printf("Exiting client...\n");
+        free((*user)->uid);
+        free((*user)->pwd);
+        free(*user);
         exit(EXIT_SUCCESS);
     }
 

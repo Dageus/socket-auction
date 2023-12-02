@@ -6,7 +6,7 @@
 
 
 
-int process_close(char *input, client** user, char** response){
+int process_close(char *input, client* user, char** response, int* code){
 
     *response = (char *) malloc(sizeof(char) * CLOSE_LEN);
 
@@ -14,9 +14,6 @@ int process_close(char *input, client** user, char** response){
     int i = 0;
 
     aid = (char*) malloc(sizeof(char) * AID_LEN);
-
-    // ! ta tudo mal, so fiz isto pra compilar
-
 
     token = strtok(input, " ");
     while (token != NULL) {
@@ -30,7 +27,7 @@ int process_close(char *input, client** user, char** response){
         i++;
     }
 
-    sprintf(*response, "%s %s %s %s\n", CLOSE_CMD, (*user)->uid, (*user)->pwd, aid);
+    sprintf(*response, "%s %s %s %s\n", CLOSE_CMD, user->uid, user->pwd, aid);
 
     return 0;
 

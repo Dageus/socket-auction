@@ -4,6 +4,8 @@
 #define CLOSE_LEN 25
 #define CLOSE_CMD "CLS"
 
-int process_close(char *input, client** user, char** response);
+#include "../../constants.h"
+
+int process_close(char *input, client* user, char** response, int* code);
 
 #endif // CLOSE_H

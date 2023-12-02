@@ -4,6 +4,8 @@
 #define UNREGISTER_COMMAND "UNR"
 #define UNREGISTER_LEN 20
 
-int process_unregister(char* uid, char* pwd, char** response);
+#include "../../constants.h"
+
+int process_unregister(client* user, char** response);
 
 #endif // UNREGISTER_H

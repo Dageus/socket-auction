@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-int process_bid(char *input, client** user, char** response){
+int process_bid(char *input, client* user, char** response, int *code){
 
     *response = (char *) malloc(sizeof(char) * BID_LEN);
 
@@ -28,7 +28,7 @@ int process_bid(char *input, client** user, char** response){
         i++;
     }
 
-    sprintf(*response, "%s %s %s %s %s\n", BID_CMD, (*user)->uid, (*user)->pwd, aid, amount);
+    sprintf(*response, "%s %s %s %s %s\n", BID_CMD, user->uid, user->pwd, aid, amount);
 
     return 0;
 

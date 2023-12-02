@@ -4,6 +4,8 @@
 #define MYAUCTIONS_LEN 11
 #define MYAUCTIONS_COMMAND "LMA"
 
-int process_myauctions(char* uid, char** response);
+#include "../../constants.h"
+
+int process_myauctions(client* user, char** response);
 
 #endif // MYAUCTIONS_H
