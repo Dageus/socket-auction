@@ -6,6 +6,7 @@
 #include <stdbool.h>
 #include <unistd.h>
 #include <sys/socket.h>
+#include <sys/stat.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
@@ -70,7 +71,16 @@ int send_TCP(TCP_response* response){
          * Ler e enviar o ficheiro para o servidor
         */
 
-       FILE *file = fopen("path/to/your/image.jpg", "rb");
+       struct stat st;
+
+        if (stat(response->filename, &st) == 0) {
+            char* filesize = (char*) malloc(sizeof(char) * (strlen(st.st_size) + 1));
+            strcpy(filesize, st.st_size);
+        }
+
+        // ! falta adicional filesize ao buffer da msg antes de ler do ficheiro
+
+       FILE *file = fopen(response->filename, "rb");
         if (!file) {
             fprintf(stderr, "Error opening file\n");
             freeaddrinfo(tcp_res);
