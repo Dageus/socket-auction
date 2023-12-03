@@ -65,7 +65,25 @@ int send_TCP(char* msg){
     }
 
 
-    if ()
+    if (FILE_SENT) {
+        /**
+         * Ler e enviar o ficheiro para o servidor
+        */
+    }
+
+    else if (FILE_NOT_REQUIRED) {
+        /**
+         * Enviar mensagem para o servidor
+        */
+    }
+
+    else if (FILE_RECEIVED) {
+        /**
+         * Receber ficheiro do servidor e escrever para o disco
+        */
+    }
+
+    
     FILE *file = fopen("path/to/your/image.jpg", "rb");
     if (!file) {
         fprintf(stderr, "Error opening file\n");
