@@ -1,12 +1,15 @@
 #include "bid.h"
+#include "../TCP.h"
 #include "../../constants.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-int process_bid(char *input, client* user, char** response, int *code){
+int process_bid(char *input, client* user, TCP_response** response){
 
-    *response = (char *) malloc(sizeof(char) * BID_LEN);
+    (*response)->msg = (char *) malloc(sizeof(char) * BID_LEN);
+    (*response)->code = FILE_NOT_REQUIRED;
+    (*response)->filename = NULL;
 
     char* token, *aid, *amount;
     aid = (char *) malloc(sizeof(char) * AID_LEN);
@@ -17,18 +20,18 @@ int process_bid(char *input, client* user, char** response, int *code){
 
     while (token != NULL) {
         token = strtok(NULL, " ");
-        if (i == 1 && strlen(token) <= AID_LEN) {
+        if (i == 1 && strlen(token) <= AID_LEN)
             strcpy(aid, token);
-        } else if (i == 2) {
+        else if (i == 2)
             strcpy(amount, token);
-        } else {
+        else {
             printf("Invalid AID\n");
             return -1;
         }
         i++;
     }
 
-    sprintf(*response, "%s %s %s %s %s\n", BID_CMD, user->uid, user->pwd, aid, amount);
+    sprintf((*response)->msg, "%s %s %s %s %s\n", BID_CMD, user->uid, user->pwd, aid, amount);
 
     return 0;
 

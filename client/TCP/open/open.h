@@ -5,6 +5,8 @@
 
 #define OPEN_CMD "OPA"
 
-int process_open(char* input, client* user, char** response, int* code);
+#include "../TCP.h"
+
+int process_open(char* input, client* user, TCP_response** response);
 
 #endif  // OPEN_H

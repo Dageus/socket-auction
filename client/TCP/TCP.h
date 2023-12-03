@@ -9,11 +9,12 @@
 
 typedef struct TCP_response {
     int code;
+    char* filename;
     char* msg;
 } TCP_response;
 
 
 int TCP_cmd(char* cmd);
-int send_TCP(char* msg);
+int send_TCP(TCP_response* response);
 
 #endif // TCP_H

@@ -1,17 +1,20 @@
-#include "../../constants.h"
 #include "open.h"
+#include "../TCP.h"
+#include "../../constants.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-int process_open(char* input, client* user, char** response, int* code){
+int process_open(char* input, client* user, TCP_response** response){
     
     if (user->uid == NULL || user->pwd == NULL) {
         fprintf(stderr, "error: user not logged in\n");
         return -1;
     }
 
-    *response = (char *) malloc(sizeof(char) * OPEN_LEN);
+    (*response)->msg = (char *) malloc(sizeof(char) * OPEN_LEN);
+    (*response)->code = FILE_SENT;
+    (*response)->filename = (char *) malloc(sizeof(char) * FILENAME_MAX);
     
     char* token, *cmd, *name, *fname, *start, *duration;
     
@@ -45,9 +48,9 @@ int process_open(char* input, client* user, char** response, int* code){
         i++;
     }
 
-    // ! é preciso saber como saacar o Fsize e onde começar a meter o Fdata
+    strcpy((*response)->filename, fname);
 
-    int return_code = sprintf(*response, "%s %s %s %s %s %s %s ", 
+    int return_code = sprintf((*response)->msg, "%s %s %s %s %s %s %s ", 
             cmd, user->uid, user->pwd, name, start, duration, fname);
 
     if (return_code < 0) {

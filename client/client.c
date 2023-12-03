@@ -107,22 +107,22 @@ void check_TCP_cmd(char* input, char* cmd) {
     request = (TCP_response *) malloc(sizeof(TCP_response));
 
     if (strcmp(cmd, "bid") == 0 || strcmp(cmd, "b") == 0) {
-        if (process_bid(input, user, &request->msg, &request->code) == -1)
+        if (process_bid(input, user, request) == -1)
             printf("error: bid\n");
     } else if (strcmp(cmd, "show_asset") == 0 || strcmp(cmd, "sa") == 0) {
-        if (process_show_asset(input, &request->msg, &request->code) == -1)
+        if (process_show_asset(input, request) == -1)
             printf("error: asset\n");
     } else if (strcmp(cmd, "open") == 0) {
-        if (process_open(input, user, &request->msg, &request->code) == -1)
+        if (process_open(input, user, request) == -1)
             printf("error: open\n");
     } else if (strcmp(cmd, "close") == 0) {
-        if (process_close(input, user, &request->msg, &request->code) == -1)
+        if (process_close(input, user, request) == -1)
             printf("error: close\n");
     }
 
     printf("TCP request: %s\n", request);
 
-    // send_TCP_cmd(request);
+    send_TCP(request);
 
     if (request != NULL)
         free(request);

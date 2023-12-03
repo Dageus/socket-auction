@@ -36,7 +36,7 @@ int TCP_cmd(char* cmd){
     return -1;
 }
 
-int send_TCP(char* msg){
+int send_TCP(TCP_response* response){
     int fd = socket(AF_INET, SOCK_STREAM, 0);
     if (fd == -1) {
         /*error*/
@@ -65,47 +65,46 @@ int send_TCP(char* msg){
     }
 
 
-    if (FILE_SENT) {
+    if (response->code == FILE_SENT) {
         /**
          * Ler e enviar o ficheiro para o servidor
         */
+
+       FILE *file = fopen("path/to/your/image.jpg", "rb");
+        if (!file) {
+            fprintf(stderr, "Error opening file\n");
+            freeaddrinfo(tcp_res);
+            close(fd);
+            exit(EXIT_FAILURE);
+        }
+
+        char buffer[TRANSMISSION_RATE];
+        size_t bytesRead;
+
+        while ((bytesRead = fread(buffer, 1, sizeof(buffer), file)) > 0) {
+            if (send(fd, buffer, bytesRead, 0) == -1) {
+                fprintf(stderr, "Error sending data\n");
+                fclose(file);
+                close(fd);
+                return -1;
+            }
+        }
+
+        // Close the file
+        fclose(file);
     }
 
-    else if (FILE_NOT_REQUIRED) {
+    else if (response->code == FILE_NOT_REQUIRED) {
         /**
          * Enviar mensagem para o servidor
         */
     }
 
-    else if (FILE_RECEIVED) {
+    else if (response->code == FILE_RECEIVED) {
         /**
          * Receber ficheiro do servidor e escrever para o disco
         */
     }
-
-    
-    FILE *file = fopen("path/to/your/image.jpg", "rb");
-    if (!file) {
-        fprintf(stderr, "Error opening file\n");
-        freeaddrinfo(tcp_res);
-        close(fd);
-        exit(EXIT_FAILURE);
-    }
-
-    char buffer[TRANSMISSION_RATE];
-    size_t bytesRead;
-
-    while ((bytesRead = fread(buffer, 1, sizeof(buffer), file)) > 0) {
-        if (send(fd, buffer, bytesRead, 0) == -1) {
-            fprintf(stderr, "Error sending data\n");
-            fclose(file);
-            close(fd);
-            exit(EXIT_FAILURE);
-        }
-    }
-
-    // Close the file
-    fclose(file);
 
     /* Lê 128 Bytes do servidor e guarda-os no buffer. */
     tcp_n = read(fd, tcp_buffer, 128);

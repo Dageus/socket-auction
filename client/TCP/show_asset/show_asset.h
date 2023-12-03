@@ -3,6 +3,8 @@
 
 #define SHOW_ASSET_LEN 11
 
-int process_show_asset(char* input, char** response, int* code);
+#include "../TCP.h"
+
+int process_show_asset(char* input, TCP_response** response);
 
 #endif // SHOW_ASSET_H

@@ -5,7 +5,8 @@
 #define BID_CMD "BID"
 
 #include "../../constants.h"
+#include "../TCP.h"
 
-int process_bid(char* input, client* user, char** response, int *code);
+int process_bid(char* input, client* user, TCP_response** response);
 
 #endif // BID_H

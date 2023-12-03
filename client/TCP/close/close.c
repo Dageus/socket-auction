@@ -1,4 +1,5 @@
 #include "close.h"
+#include "../TCP.h"
 #include "../../constants.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -6,9 +7,11 @@
 
 
 
-int process_close(char *input, client* user, char** response, int* code){
+int process_close(char *input, client* user, TCP_response** response){
 
-    *response = (char *) malloc(sizeof(char) * CLOSE_LEN);
+    (*response)->msg = (char *) malloc(sizeof(char) * CLOSE_LEN);
+    (*response)->code = FILE_NOT_REQUIRED;
+    (*response)->filename = NULL;
 
     char* token, *aid;
     int i = 0;

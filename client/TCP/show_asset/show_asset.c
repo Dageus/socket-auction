@@ -1,12 +1,15 @@
 #include "show_asset.h"
+#include "../TCP.h"
 #include "../../constants.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-int process_show_asset(char* input, char** response, int* code){
+int process_show_asset(char* input, TCP_response** response){
 
-    *response = (char *) malloc(sizeof(char) * SHOW_ASSET_LEN);
+    (*response)->msg = (char *) malloc(sizeof(char) * SHOW_ASSET_LEN);
+    (*response)->code = FILE_RECEIVED;
+    (*response)->filename = NULL;
 
     char* n_cmd = strtok(input, " ");
     char* asset_id = strtok(NULL, " ");
@@ -16,7 +19,7 @@ int process_show_asset(char* input, char** response, int* code){
         return -1;
     }
 
-    sprintf(*response, "%s %s\n", n_cmd, asset_id);
+    sprintf((*response)->msg, "%s %s\n", n_cmd, asset_id);
 
 
     return 0;
