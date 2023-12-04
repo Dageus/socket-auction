@@ -13,8 +13,9 @@ int process_open(char* input, client* user, TCP_response** response){
     }
 
     (*response)->msg = (char *) malloc(sizeof(char) * OPEN_LEN);
-    (*response)->code = FILE_SENT;
-    (*response)->filename = (char *) malloc(sizeof(char) * FILENAME_MAX);
+    (*response)->file = (file *) malloc(sizeof(file));
+    (*response)->file->code = FILE_TO_BE_SENT;
+    (*response)->file->filename = (char *) malloc(sizeof(char) * FILENAME_MAX);
     
     char* token, *cmd, *name, *fname, *start, *duration;
     
@@ -48,7 +49,7 @@ int process_open(char* input, client* user, TCP_response** response){
         i++;
     }
 
-    strcpy((*response)->filename, fname);
+    strcpy((*response)->file->filename, fname);
 
     int return_code = sprintf((*response)->msg, "%s %s %s %s %s %s %s ", 
             cmd, user->uid, user->pwd, name, start, duration, fname);

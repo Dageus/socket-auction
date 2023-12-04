@@ -10,8 +10,7 @@
 int process_close(char *input, client* user, TCP_response** response){
 
     (*response)->msg = (char *) malloc(sizeof(char) * CLOSE_LEN);
-    (*response)->code = FILE_NOT_REQUIRED;
-    (*response)->filename = NULL;
+    (*response)->file = NULL;
 
     char* token, *aid;
     int i = 0;

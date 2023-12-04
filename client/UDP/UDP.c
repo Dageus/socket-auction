@@ -15,7 +15,7 @@ ssize_t udp_n;
 socklen_t udp_addrlen;
 struct addrinfo udp_hints, *udp_res;
 struct sockaddr_in udp_addr;
-char udp_buffer[128];
+char udp_buffer[TRANSMISSION_RATE];
 
 const char* UDP_commands[] = {
     "login",

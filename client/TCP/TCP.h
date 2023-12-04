@@ -3,13 +3,17 @@
 
 #include <stdio.h>
 
-#define FILE_SENT 1
-#define FILE_NOT_REQUIRED 0
-#define FILE_RECEIVED 2
+#define FILE_TO_BE_SENT 1
+#define FILE_TO_BE_RECEIVED 0
 
-typedef struct TCP_response {
+
+typedef struct file {
     int code;
     char* filename;
+} file;
+
+typedef struct TCP_response {
+    file* file;
     char* msg;
 } TCP_response;
 

@@ -8,8 +8,9 @@
 int process_show_asset(char* input, TCP_response** response){
 
     (*response)->msg = (char *) malloc(sizeof(char) * SHOW_ASSET_LEN);
-    (*response)->code = FILE_RECEIVED;
-    (*response)->filename = NULL;
+    (*response)->file = (file *) malloc(sizeof(file));
+    (*response)->file->code = FILE_TO_BE_RECEIVED;
+    (*response)->file->filename = NULL; // ! not sure se devia ser NULL ou nao
 
     char* n_cmd = strtok(input, " ");
     char* asset_id = strtok(NULL, " ");

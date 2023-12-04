@@ -8,8 +8,7 @@
 int process_bid(char *input, client* user, TCP_response** response){
 
     (*response)->msg = (char *) malloc(sizeof(char) * BID_LEN);
-    (*response)->code = FILE_NOT_REQUIRED;
-    (*response)->filename = NULL;
+    (*response)->file = NULL;
 
     char* token, *aid, *amount;
     aid = (char *) malloc(sizeof(char) * AID_LEN);
