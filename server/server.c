@@ -12,6 +12,8 @@
  * 
 */
 
+
+
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -25,17 +27,18 @@
 #define TRUE 1
 #define FALSE 0
 #define AS_IP "tejo.tecnico.ulisboa.pt"
-#define DEFAULT_PORT 58090
+#define DEFAULT_PORT "58090"
 
 int fd;
 
-int port, verbose;
+int verbose = FALSE;
+char *port = DEFAULT_PORT;
 
 struct addrinfo hints, *res;
 
 // initialize variable in case of incomplete command
-port = DEFAULT_PORT;
-verbose = FALSE;
+
+;
 
 int validate_args(int argc, char** argv) {
 
@@ -54,9 +57,9 @@ int validate_args(int argc, char** argv) {
             exit(1);
         }
 
-        port = atoi(argv[2]);
+        port = argv[2];
 
-        printf("Running AS on specified port: %d\n", port);
+        printf("Running AS on specified port: %s\n", port);
     } else if (argc >= 4) {
         // run AS on specified IP
         // run AS on specified port
@@ -77,10 +80,10 @@ int validate_args(int argc, char** argv) {
             exit(1);
         }
 
-        port = atoi(argv[2]);
+        port = argv[2];
         verbose = TRUE;
 
-        printf("Running AS on specified port: %d\n", port);
+        printf("Running AS on specified port: %s\n", port);
     }
 }
 
@@ -102,7 +105,7 @@ int main(int argc, char** argv){
         exit(1);
     }
 
-    memset(&hints, 0, sizeof(hints));
+    memset(&hints, 0, sizeof(&hints));
     hints.ai_family = AF_INET;      // IPv4
     hints.ai_socktype = SOCK_DGRAM;   // UDP socket
     hints.ai_flags = AI_PASSIVE;
@@ -168,6 +171,8 @@ int main(int argc, char** argv){
         // read from TCP socket
 
         addrlen = sizeof(addr);
+
+        int newfd;
 
         if (newfd = accept(fd, (struct sockaddr*) &addr, &addrlen) == -1){
             /*error*/
