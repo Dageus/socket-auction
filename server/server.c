@@ -8,6 +8,8 @@
 #include <arpa/inet.h>
 #include <string.h>
 #include <netdb.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include "constants.h"
 
 int fd;
@@ -67,6 +69,8 @@ int main(int argc, char** argv){
         fprintf(stderr, "Error getting UDP address info\n");
         return -1;
     }
+
+    int ret = mkdir("tmp", 0777);
 
     ssize_t n = bind(fd,res->ai_addr,res->ai_addrlen);
     if (n == -1){
