@@ -14,11 +14,12 @@
 #include <dirent.h>
 
 int process_unregister(char* input){
-    char* uid = (char*) malloc(UID_LENGTH * sizeof(char));
-    char* pwd = (char*) malloc(PASSWORD_LEN * sizeof(char));
+    char* uid = strtok(input, " ");
+    char* pwd = strtok(NULL, " ");
 
-    uid = strtok(input, " ");
-    pwd = strtok(NULL, " ");
+    if (strlen(uid) != UID_LEN || strlen(pwd) != PWD_LEN)
+        /* wrong format */
+        return 0;
 
     char* login_dir = (char*) malloc((strlen(USERS_DIR) + strlen(LOGIN_SUFFIX) + 2*strlen(uid) + 3) * sizeof(char));
     char* pwd_dir = (char*) malloc((strlen(USERS_DIR) + strlen(LOGIN_SUFFIX) + 2*strlen(uid) + 3) * sizeof(char));
@@ -29,16 +30,26 @@ int process_unregister(char* input){
     // find directory
     struct stat st;
 
-    // ! checkar se tambem e preciso retirar o ficheiro do login.txt
-
     if (stat(login_dir, &st) == 0) {
         // remove file
         if (unlink(pwd_dir) == -1) {
             printf("Error removing login file\n");
+            free(login_dir);
+            free(pwd_dir);
             return -1;
         }
-    } else
-        // directory doesn't exist
-        return -1;
 
+        // remove login file as well
+        if (unlink(login_dir) == -1) {
+            printf("Error removing login file\n");
+            free(login_dir);
+            free(pwd_dir);
+            return -1;
+        }
+    } else {
+        // directory doesn't exist
+        free(login_dir);
+        free(pwd_dir);
+        return -1;
+    }
 }

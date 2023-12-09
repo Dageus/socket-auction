@@ -27,18 +27,27 @@ int check_password(char* user_dir, char* uid, char* pwd){
         return -1;
     }
 
-    char* pwd_read = (char*) malloc(sizeof(char) * (PASSWORD_LEN + 1));
+    char* pwd_read = (char*) malloc(sizeof(char) * (PWD_LEN + 1));
     fgets(pwd_read, sizeof(pwd_read), fp);
 
-    if (strcmp(pwd_read, pwd) == 0)
+    if (strcmp(pwd_read, pwd) == 0){
+        fclose(fp);
+        free(pwd_file);
         return 0;
-    else
+    }
+    else{
+        fclose(fp);
+        free(pwd_file);
         return -1;
+    }
 }
 
 int process_user_login(char* input){
     char* uid = strtok(input, " ");
     char* pwd = strtok(NULL, " ");
+
+    if (strlen(uid) != UID_LEN || strlen(pwd) != PWD_LEN)
+        return -1;
 
     // check if user already exists in USERS directory
     char* user_dir = (char*) malloc(strlen(USERS_DIR) + strlen(uid) + 2);
@@ -49,14 +58,18 @@ int process_user_login(char* input){
     if (stat(user_dir, &st) == 0) {
         if (S_ISDIR(st.st_mode))
             // check if password is correct
-            if (check_password(user_dir, uid, pwd) == 0)
+            if (check_password(user_dir, uid, pwd) == 0){
                 // which means we're logging in
                 // ! send message to client
+                free(user_dir);
                 return 0;
-            else
+            }
+            else {
                 // which means password is incorrect
                 // ! send message to client
+                free(user_dir);
                 return -1;
+            }
     } else {
         // which means we're registering a new user
         // create the user directory and all files/directories inside
@@ -64,6 +77,7 @@ int process_user_login(char* input){
         // create user directory
         if (mkdir(user_dir, 0777) == -1) {
             fprintf(stderr, "Error creating user directory\n");
+            free(user_dir);
             return -1;
         }
 
@@ -78,6 +92,9 @@ int process_user_login(char* input){
 
         if (fp == NULL) {
             fprintf(stderr, "Error creating password file\n");
+            free(pwd_file);
+            free(pwd_dir);
+            free(user_dir);
             return -1;
         }
 
@@ -92,6 +109,10 @@ int process_user_login(char* input){
 
         if (mkdir(auctions_dir, 0777) == -1) {
             fprintf(stderr, "Error creating auctions directory\n");
+            free(pwd_file);
+            free(pwd_dir);
+            free(user_dir);
+            free(auctions_dir);
             return -1;
         }
 
@@ -101,13 +122,26 @@ int process_user_login(char* input){
 
         if (mkdir(bids_dir, 0777) == -1) {
             fprintf(stderr, "Error creating bids directory\n");
+            free(pwd_file);
+            free(pwd_dir);
+            free(user_dir);
+            free(auctions_dir);
+            free(bids_dir);
             return -1;
         }
 
         // ! create response
 
-    }
+        printf("uid: %s\n", uid);
+        printf("pwd: %s\n", pwd);
 
-    printf("uid: %s\n", uid);
-    printf("pwd: %s\n", pwd);
+
+        // free all mallocs
+        free(pwd_file);
+        free(pwd_dir);
+        free(user_dir);
+        free(auctions_dir);
+        free(bids_dir);
+
+    }
 }

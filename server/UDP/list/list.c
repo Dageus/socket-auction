@@ -10,27 +10,17 @@
 
 int process_list(char* input){
 
-    char* uid = (char*) malloc(UID_LENGTH * sizeof(char));
-    char* pwd = (char*) malloc(PASSWORD_LEN * sizeof(char));
+    char* uid = strtok(input, " ");
+    char* pwd = strtok(NULL, " ");
 
-    uid = strtok(input, " ");
-    pwd = strtok(NULL, " ");
-
-    char* login_dir = (char*) malloc((strlen(USERS_DIR) + strlen(LOGIN_SUFFIX) + 2*strlen(uid) + 3) * sizeof(char));
-
-    sprintf(login_dir, "%s/%s/%s%s", USERS_DIR, uid, uid, LOGIN_SUFFIX);
-
-    int return_code = unlink(login_dir);
-
-    if (return_code == -1) {
-        printf("Error deleting user %s\n", uid);
+    if (strlen(uid) != UID_LEN || strlen(pwd) != PWD_LEN) {
+        printf("Invalid UID or PWD\n");
         return -1;
     }
-
     
     DIR *dir;
     struct dirent *entry;
-    Auction auctions[999]; 
+    auction_list auctions[999]; 
     int auction_count = 0;
 
     dir = opendir(AUCTIONS_DIR);
@@ -43,7 +33,7 @@ int process_list(char* input){
         if (entry->d_type == DT_DIR) {
             if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
                 continue;
-            Auction new_auction;
+            auction_list new_auction;
             strncpy(new_auction.auction_code, entry->d_name, 3);
             
             // check if END_(AID).txt exists
@@ -56,6 +46,8 @@ int process_list(char* input){
                 new_auction.active = 1;
             else
                 new_auction.active = 0;
+
+            free(end_file);
 
             auctions[auction_count] = new_auction;
             auction_count++;

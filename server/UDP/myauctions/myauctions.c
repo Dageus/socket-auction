@@ -9,8 +9,10 @@
 #include <sys/stat.h>
 #include <dirent.h>
 
-int load_auction(char* pathname, auction_list *auction) {
+// TODO : load_auction
 
+int load_auction(char* pathname, auction_list *auction) {
+    
     // ! nao sei oqq esta é suposto fazer
 }
 
@@ -20,10 +22,10 @@ int get_hosted_list(char* uid, auction_list *list) {
     char *dirname;
     char *pathname;
 
-    dirname = (char*) malloc((strlen(USERS_DIR) + UID_LENGTH + strlen(HOSTED) + 4) * sizeof(char));
+    dirname = (char*) malloc((strlen(USERS_DIR) + UID_LEN + strlen(HOSTED) + 4) * sizeof(char));
     sprintf(dirname, "%s/%s/%s/", USERS_DIR, uid, HOSTED);
 
-    pathname = (char*) malloc((strlen(USERS_DIR) + UID_LENGTH + strlen(HOSTED) + AID_LEN + strlen(TXT_SUFFIX) + 4) * sizeof(char));
+    pathname = (char*) malloc((strlen(USERS_DIR) + UID_LEN + strlen(HOSTED) + AID_LEN + strlen(TXT_SUFFIX) + 4) * sizeof(char));
 
     n_entries = scandir(dirname, &filelist, 0, alphasort);
 
@@ -49,7 +51,7 @@ int get_hosted_list(char* uid, auction_list *list) {
 }
 
 int process_myauctions(char* input){
-    char* uid = (char*) malloc(UID_LENGTH * sizeof(char));
+    char* uid = (char*) malloc(UID_LEN * sizeof(char));
 
     char* user_dir = (char*) malloc((strlen(USERS_DIR) + 2*strlen(uid) + strlen(LOGIN_SUFFIX) + 4) * sizeof(char));
 

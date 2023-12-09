@@ -2,9 +2,17 @@
 #include "../../constants.h"
 #include <dirent.h>
 
-int get_record_list(int aid , BIDLIST *list) {
+// TODO : load_bid
+
+int load_bid(char* pathname, bid_list *list) {
+    
+    // ! nao sei oqq esta é suposto fazer
+
+}
+
+int get_record_list(int aid , bid_list *list, auction auc) {
     struct dirent ** filelist;
-    int n_entries ,n_bids, len;
+    int n_entries, n_bids, len;
     char dirname[20];
     char pathname[32];
 
@@ -16,23 +24,22 @@ int get_record_list(int aid , BIDLIST *list) {
         return 0;
 
     n_bids = 0;
-    list->no_bids = 0;
 
     while ( n_entries --) {
         len = strlen(filelist[n_entries]->d_name);
-        if (len == 10) { // Discard ’.’ , ’..’ and invalid filenames by size 
-            sprintf(pathname, "AUCTIONS/%03d/BIDS/%s", aid, filelist[n_entries]->d_name);
-            if (LoadBid(pathname, list))
+        if (len == 10) { // Discard ’.’ , ’..’ and invalid filenames by size
+            sprintf(pathname, "%s/%03d/%s/%s", AUCTIONS_DIR, aid, BIDS, filelist[n_entries]->d_name);
+            if (load_bid(pathname, list))
             ++n_bids;
         }
 
-        free (filelist[n_entries]);
+        free(filelist[n_entries]);
 
         if (n_bids == 50)
             break;
     }
 
-    free (filelist);
+    free(filelist);
 
     return n_bids;
 }
@@ -46,6 +53,17 @@ int process_show_record(char* input){
     if (aid < 1 || aid > 999)
         return 0;
 
-    record_list list[999];
+    bid_list list[50];
+    auction auc;
+
+    int n_bids = get_record_list(aid, list, auc);
+
+    if (n_bids == 0)
+        // error
+        return 0;
+
+    // * create response
+
+    return 1;
 
 }
