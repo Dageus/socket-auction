@@ -1,12 +1,13 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <sys/types.h>
+#include <sys/socket.h>
 #include <bits/getopt_core.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <string.h>
 #include <netdb.h>
-#include <sys/socket.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include "constants.h"
@@ -50,15 +51,63 @@ typedef struct {
 
 void check_UDP_command(cmds command) {
 
+    char* response = NULL;
+
+    if(strcmp(command.cmd, "LIN") == 0){
+        if(LIN(command) == -1)
+            printf("Error in LIN command\n");
+    } else if(strcmp(command.cmd, "LOU") == 0){
+        if(LOU(command) == -1)
+            printf("Error in LOU command\n");
+    } else if(strcmp(command.cmd, "UNR") == 0){
+        if(UNR(command) == -1)
+            printf("Error in UNR command\n"); 
+    } else if(strcmp(command.cmd, "LMA") == 0){
+        if(LMA(command) == -1)
+            printf("Error in LMA command\n");
+    } else if(strcmp(command.cmd, "LMB") == 0){
+        if(LMB(command) == -1)
+            printf("Error in LMB command\n");
+    } else if(strcmp(command.cmd, "LST") == 0){
+        if(LST(command) == -1)
+            printf("Error in LST command\n");
+    } else if(strcmp(command.cmd, "SRC") == 0){
+        if(SRC(command) == -1)
+            printf("Error in SRC command\n");
+    } else {
+        printf("Invalid command\n");
+    }
     
         
+    printf("UDP response: %s\n", response);
     
 }
 
+void check_TCP_command(cmds command){
+
+    char* response = NULL;
+
+    if(strcmp(command.cmd, "OPA") == 0){
+        if(OPA(command) == -1)
+            printf("Error in OPA command\n");
+    }else if(strcmp(command.cmd, "CLS") == 0){
+        if(CLS(command) == -1)
+            printf("Error in CLS command\n");
+    }else if(strcmp(command.cmd, "SAS") == 0){
+        if(SAS(command) == -1)
+            printf("Error in SAS command\n");
+    }else if(strcmp(command.cmd, "BID") == 0){
+        if(BID(command) == -1)
+            printf("Error in BID command\n");
+    }
+
+        
+    printf("TCP response: %s\n", response);
+
+}
 
 
-
-void process_command(int fd, char *response, struct sockaddr_in addr, socklen_t addrlen) {
+void process_command(char *response) {
 
     cmds command;
     memcpy(command.cmd, response, 4); 
@@ -137,7 +186,9 @@ void create_udp_socket(char buffer){
 
             // do work here
 
-            
+            // process command
+
+            process_command(buffer);
 
             // send reply to client
 
@@ -215,6 +266,8 @@ void create_tcp_scoket(char buffer){
             write(1, buffer, n);
             
             // process commands here
+
+            process_command(buffer);
             
             // send reply to client
             n = write(newfd, buffer, n);
