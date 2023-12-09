@@ -141,9 +141,8 @@ void process_cmd(char* input){
     if (cmd[strlen(cmd) - 1] == '\n')
         cmd[strlen(cmd) - 1] = '\0';
 
-    if (UDP_cmd(cmd)){
+    if (UDP_cmd(cmd))
         check_UDP_cmd(input_copy, cmd);
-    }
     else if (TCP_cmd(cmd))
         check_TCP_cmd(input_copy, cmd);
     else
