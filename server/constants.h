@@ -1,10 +1,27 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
-typedef struct client {
-    char* uid;
-    char* pwd;
-} client;
+#include <time.h>
+
+time_t fulltime;
+struct tm* currenttime;
+char time_str[20];
+
+#define USERS_DIR       "USERS"
+#define AUCTIONS_DIR    "AUCTIONS"
+
+#define HOSTED          "HOSTED"
+#define BIDDED          "BIDDED"
+
+#define BIDS            "BIDS"
+#define ASSET           "ASSET"
+
+#define PWD_SUFFIX "_password.txt"
+#define LOGIN_SUFFIX "_login.txt"
+#define TXT_SUFFIX ".txt"
+#define END_PREFIX "END_"
+
+#define AUCTION_FILE_LEN 7
 
 #define SERVER_IP "tejo.tecnico.ulisboa.pt"
 #define TEST_PORT "58011"
@@ -33,6 +50,34 @@ typedef struct client {
 
 #define MAX_FILENAME_LEN 24
 
-#define TRANSMISSION_RATE 512
+#define TRANSMISSION_RATE 1024
+
+typedef struct {
+    char host_uid[UID_LENGTH + 1];
+    char name[MAX_NAME + 1];
+    char asset[MAX_FILENAME_LEN + 1];
+    int start;
+    struct tm* start_time;
+    int duration;
+    int active;
+} auction;
+
+typedef struct {
+    char bidder_uid[UID_LENGTH + 1];
+    int bid_value;
+    struct tm* bid_time;
+    int bid_sec_tme;
+    int active;
+} bid_list;
+
+typedef struct {
+    char auction_code[4];
+    int active;
+} auction_list;
+
+typedef struct client {
+    char* uid;
+    char* pwd;
+} client;
 
 #endif // CONSTANTS_H

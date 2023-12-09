@@ -1,0 +1,70 @@
+#include "list.h"
+#include "../../constants.h"
+#include <unistd.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <dirent.h>
+
+int process_list(char* input){
+
+    char* uid = (char*) malloc(UID_LENGTH * sizeof(char));
+    char* pwd = (char*) malloc(PASSWORD_LEN * sizeof(char));
+
+    uid = strtok(input, " ");
+    pwd = strtok(NULL, " ");
+
+    char* login_dir = (char*) malloc((strlen(USERS_DIR) + strlen(LOGIN_SUFFIX) + 2*strlen(uid) + 3) * sizeof(char));
+
+    sprintf(login_dir, "%s/%s/%s%s", USERS_DIR, uid, uid, LOGIN_SUFFIX);
+
+    int return_code = unlink(login_dir);
+
+    if (return_code == -1) {
+        printf("Error deleting user %s\n", uid);
+        return -1;
+    }
+
+    
+    DIR *dir;
+    struct dirent *entry;
+    Auction auctions[999]; 
+    int auction_count = 0;
+
+    dir = opendir(AUCTIONS_DIR);
+    if (dir == NULL) {
+        perror("Unable to open directory");
+        return -1;
+    }
+
+    while ((entry = readdir(dir)) != NULL) {
+        if (entry->d_type == DT_DIR) {
+            if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
+                continue;
+            Auction new_auction;
+            strncpy(new_auction.auction_code, entry->d_name, 3);
+            
+            // check if END_(AID).txt exists
+            
+            struct stat st;
+            char* end_file = (char*) malloc((strlen(AUCTIONS_DIR) + 2*strlen(new_auction.auction_code) + strlen(END_PREFIX) + strlen(TXT_SUFFIX) + 2) * sizeof(char));
+            sprintf(end_file, "%s/%s/%s%s%s", AUCTIONS_DIR, new_auction.auction_code, END_PREFIX, new_auction.auction_code, TXT_SUFFIX);
+
+            if (stat(end_file, &st) == 0)
+                new_auction.active = 1;
+            else
+                new_auction.active = 0;
+
+            auctions[auction_count] = new_auction;
+            auction_count++;
+        }
+    }
+
+    closedir(dir);
+
+    // ! complete command or do something with the auctions array
+
+    return 0;
+}
