@@ -9,7 +9,7 @@
 #include <dirent.h>
 #include "UDP/UDP.h"
 
-int process_list(char* input, UDP_response** response){
+int process_list(char* input, char** response){
 
     char* uid = strtok(input, " ");
     char* pwd = strtok(NULL, " ");

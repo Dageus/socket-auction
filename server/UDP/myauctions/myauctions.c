@@ -67,7 +67,7 @@ int get_hosted_list(char* uid, auction_list **list) {
     return n_bids;
 }
 
-int process_myauctions(char* input, UDP_response** response){
+int process_myauctions(char* input, char** response){
     char* uid = (char*) malloc(UID_LEN * sizeof(char));
 
     char* user_dir = (char*) malloc((strlen(USERS_DIR) + 2*strlen(uid) + strlen(LOGIN_SUFFIX) + 4) * sizeof(char));

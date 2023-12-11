@@ -45,14 +45,9 @@ void validate_args(int argc, char** argv) {
     }
 }
 
-typedef struct {
-    char cmd[4];
-    char *input;
-} cmds;
-
 void check_UDP_command(cmds command) {
 
-    UDP_response* response = NULL;
+    char* response = NULL;
 
     if(strcmp(command.cmd, "LIN") == 0){
         if(process_user_login(command.input, response) == -1)
@@ -142,7 +137,7 @@ void sigchld_handler(int signo) {
     while (waitpid(-1, NULL, WNOHANG) > 0);
 }
 
-void create_udp_socket(char buffer){
+void create_udp_socket(char buffer) {
     
         // create UDP socket
         int fd = socket(AF_INET, SOCK_DGRAM, 0);
@@ -298,12 +293,12 @@ int main(int argc, char** argv){
     // what's gonna be read from the socket
     char buffer[128];
 
-    int process = fork() ;
+    // int process = fork() ;
 
-    if (process == 0 )
+    // if (process == 0 )
         create_udp_socket(buffer);     
-    else 
-        create_tcp_scoket(buffer);
+    // else 
+    //     create_tcp_scoket(buffer);
     return 0;
 }
 

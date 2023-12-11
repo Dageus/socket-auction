@@ -70,7 +70,7 @@ int get_bidded_list(char* uid, auction_list **list) {
     return n_bids;
 }
 
-int process_mybids(char* input, UDP_response** response){
+int process_mybids(char* input, char** response){
     char* uid = (char*) malloc(UID_LEN * sizeof(char));
 
     char* user_dir = (char*) malloc((strlen(USERS_DIR) + strlen(uid) + 2) * sizeof(char));

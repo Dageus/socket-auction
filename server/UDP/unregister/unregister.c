@@ -14,7 +14,7 @@
 #include <dirent.h>
 #include "../UDP/UDP.h"
 
-int process_unregister(char* input, UDP_response** response){
+int process_unregister(char* input, char** response){
     char* uid = strtok(input, " ");
     char* pwd = strtok(NULL, " ");
 

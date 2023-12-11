@@ -3,6 +3,6 @@
 
 #define UNR_CMD "UNR"
 
-int process_unregister(char* input);
+int process_unregister(char* input, char** response);
 
 #endif //UNREGISTER_H

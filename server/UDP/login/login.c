@@ -43,7 +43,7 @@ int check_password(char* user_dir, char* uid, char* pwd){
     }
 }
 
-int process_user_login(char* input, UDP_response** response){
+int process_user_login(char* input, char** response){
     char* uid = strtok(input, " ");
     char* pwd = strtok(NULL, " ");
 

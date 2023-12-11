@@ -4,8 +4,6 @@
 #include <dirent.h>
 #include "../UDP/UDP.h"
 
-// TODO : load_bid
-
 int load_auction(int aid, auction* auc){
     char* aid_dir = (char*) malloc((strlen(AUCTIONS_DIR) + AID_LEN + 2) * sizeof(char));
 
@@ -162,7 +160,7 @@ int get_record_list(int aid , bid_list **list) {
     return n_bids;
 }
 
-int process_show_record(char* input, UDP_response** response){
+int process_show_record(char* input, char** response){
 
     char *aid_ = strtok(input, " ");
 

@@ -3,6 +3,6 @@
 
 int check_password(char* user_dir, char* uid, char* pwd);
 
-int process_user_login(char* input);
+int process_user_login(char* input, char** response);
 
 #endif // LOGIN_H

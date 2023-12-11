@@ -81,4 +81,9 @@ typedef struct client {
     char* pwd;
 } client;
 
+typedef struct {
+    char cmd[4];
+    char* input;
+} cmds;
+
 #endif // CONSTANTS_H

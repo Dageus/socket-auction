@@ -2,6 +2,14 @@
     "files.associations": {
         "netdb.h": "c",
         "commands.h": "c",
-        "constants.h": "c"
+        "constants.h": "c",
+        "udp.h": "c",
+        "signal.h": "c",
+        "myauctions.h": "c",
+        "list.h": "c",
+        "login.h": "c",
+        "logout.h": "c",
+        "show_record.h": "c",
+        "unregister.h": "c"
     }
 }
