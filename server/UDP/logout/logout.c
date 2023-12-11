@@ -11,6 +11,7 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include "UDP/UDP.h"
 
 int check_password(char* user_dir, char* uid, char* pwd){
 
@@ -36,7 +37,7 @@ int check_password(char* user_dir, char* uid, char* pwd){
         return -1;
 }
 
-int process_user_logout(char* input){
+int process_user_logout(char* input, UDP_response** response){
     char* uid = strtok(input, " ");
     char *pwd = strtok(NULL, " ");
 

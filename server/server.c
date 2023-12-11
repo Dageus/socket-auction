@@ -13,6 +13,7 @@
 #include "constants.h"
 #include <signal.h>
 #include "UDP/UDP.h"
+#include "TCP/TCP.h"
 
 
 int fd;
@@ -51,28 +52,28 @@ typedef struct {
 
 void check_UDP_command(cmds command) {
 
-    char* response = NULL;
+    UDP_response* response = NULL;
 
     if(strcmp(command.cmd, "LIN") == 0){
-        if(LIN(command) == -1)
+        if(process_user_login(command.input, response) == -1)
             printf("Error in LIN command\n");
     } else if(strcmp(command.cmd, "LOU") == 0){
-        if(LOU(command) == -1)
+        if(process_user_logout(command.input, response) == -1)
             printf("Error in LOU command\n");
     } else if(strcmp(command.cmd, "UNR") == 0){
-        if(UNR(command) == -1)
+        if(process_unregister(command.input, response) == -1)
             printf("Error in UNR command\n"); 
     } else if(strcmp(command.cmd, "LMA") == 0){
-        if(LMA(command) == -1)
+        if(process_myauctions(command.input, response) == -1)
             printf("Error in LMA command\n");
     } else if(strcmp(command.cmd, "LMB") == 0){
-        if(LMB(command) == -1)
+        if(process_mybids(command.input, response) == -1)
             printf("Error in LMB command\n");
     } else if(strcmp(command.cmd, "LST") == 0){
-        if(LST(command) == -1)
+        if(process_list(command.input, response) == -1)
             printf("Error in LST command\n");
     } else if(strcmp(command.cmd, "SRC") == 0){
-        if(SRC(command) == -1)
+        if(process_show_record(command.input, response) == -1)
             printf("Error in SRC command\n");
     } else {
         printf("Invalid command\n");
@@ -80,15 +81,17 @@ void check_UDP_command(cmds command) {
     
         
     printf("UDP response: %s\n", response);
+
+    
     
 }
 
 void check_TCP_command(cmds command){
 
-    char* response = NULL;
+    TCP_response* response = NULL;
 
     if(strcmp(command.cmd, "OPA") == 0){
-        if(OPA(command) == -1)
+        if(process_open_auction(command.input, response) == -1)
             printf("Error in OPA command\n");
     }else if(strcmp(command.cmd, "CLS") == 0){
         if(CLS(command) == -1)
@@ -97,12 +100,13 @@ void check_TCP_command(cmds command){
         if(SAS(command) == -1)
             printf("Error in SAS command\n");
     }else if(strcmp(command.cmd, "BID") == 0){
-        if(BID(command) == -1)
+        if(process_bid(command.input, response) == -1)
             printf("Error in BID command\n");
     }
 
         
     printf("TCP response: %s\n", response);
+
 
 }
 
@@ -141,8 +145,8 @@ void sigchld_handler(int signo) {
 void create_udp_socket(char buffer){
     
         // create UDP socket
-        int udp_fd = socket(AF_INET, SOCK_DGRAM, 0);
-        if (udp_fd == -1) {
+        int fd = socket(AF_INET, SOCK_DGRAM, 0);
+        if (fd == -1) {
             printf("Error creating UDP socket\n");
             exit(1);
         }
@@ -190,7 +194,7 @@ void create_udp_socket(char buffer){
 
             process_command(buffer);
 
-            // send reply to client
+            // send reply to client but put this part in a function
 
             n = sendto(fd, buffer, n, 0, (struct sockaddr*) &addr, addrlen);
             if (n == -1){
@@ -302,3 +306,14 @@ int main(int argc, char** argv){
         create_tcp_scoket(buffer);
     return 0;
 }
+
+
+// criar funcação para enviar pelos sockets (UDP e TCP), consoante os casos,
+// tendo em conta o que se há memória alocada para a estrutura de resposta TCP e UDP
+// Perguntar se vale a pena ter a estrutura de resposta UDP e TCP para todos os casos
+// ou se é melhor usar a estrutura nos casos em que aloca memória para a estrutura
+// provavelmente é melhor ter a estrutura de resposta para todos os casos
+// perguntar a Jomi
+
+//falta fazer nos outros comandos
+// TCP e UDP a alteração de char** para UDP_response** e TCP_response**

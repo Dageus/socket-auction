@@ -4,8 +4,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/stat.h>
+#include "TCP.h"
 
-int process_bid(char* input){
+int process_bid(char* input, TCP_response** response){
 
     char* uid = strtok(input, " ");
     char* pwd = strtok(NULL, " ");

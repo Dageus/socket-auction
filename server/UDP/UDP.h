@@ -13,4 +13,14 @@
 
 int UDP_cmd(char* cmd);
 
+typedef struct {
+    char* AID;
+    char *state;
+} AID_state;
+
+typedef struct {
+    char* message;
+    AID_state state;
+}UDP_response;
+
 #endif // UDP_H

@@ -8,6 +8,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <dirent.h>
+#include "UDP/UDP.h"
 
 // TODO : load_bid
 
@@ -54,7 +55,7 @@ int get_bidded_list(char* uid, bid_list *list) {
     return n_bids;
 }
 
-int process_myauctions(char* input){
+int process_mybids(char* input, UDP_response** response){
     char* uid = (char*) malloc(UID_LEN * sizeof(char));
 
     char* user_dir = (char*) malloc((strlen(USERS_DIR) + strlen(uid) + 2) * sizeof(char));

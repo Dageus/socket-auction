@@ -30,10 +30,3 @@ int TCP_cmd(char* cmd){
 
 
 
-typedef struct {
-
-
-    // information regarding the TCP server functionality
-
-
-} TCP;

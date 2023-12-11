@@ -1,6 +1,7 @@
 #include "show_record.h"
 #include "../../constants.h"
 #include <dirent.h>
+#include "UDP/UDP.h"
 
 // TODO : load_bid
 
@@ -44,7 +45,7 @@ int get_record_list(int aid , bid_list *list, auction auc) {
     return n_bids;
 }
 
-int process_show_record(char* input){
+int process_show_record(char* input, UDP_response** response){
 
     char *aid_ = strtok(input, " ");
 

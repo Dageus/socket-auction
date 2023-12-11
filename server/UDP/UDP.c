@@ -31,12 +31,4 @@ int UDP_cmd(char* cmd){
 }
 
 
-typedef struct {
-
-
-    // information regarding the UDP server functionality
-
-
-} UDP;
-
 

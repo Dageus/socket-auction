@@ -7,8 +7,9 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <dirent.h>
+#include "UDP/UDP.h"
 
-int process_list(char* input){
+int process_list(char* input, UDP_response** response){
 
     char* uid = strtok(input, " ");
     char* pwd = strtok(NULL, " ");

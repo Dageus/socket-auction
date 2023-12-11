@@ -76,4 +76,7 @@ typedef struct client {
     char* pwd;
 } client;
 
+
+
+
 #endif // CONSTANTS_H
