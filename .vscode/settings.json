@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "netdb.h": "c",
-        "commands.h": "c"
+        "commands.h": "c",
+        "constants.h": "c"
     }
 }

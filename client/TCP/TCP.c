@@ -127,8 +127,14 @@ int send_TCP(TCP_response* response){
         strcat(response->msg, " ");
 
         // ^^^ mensagem feita, falta escrever a data para o socket ^^^
-
-        // ! falta fazer o resto
+        
+        tcp_n = send(fd, response->msg, strlen(response->msg), 0);
+        if (tcp_n == -1) {
+            /*error*/
+            fprintf(stderr, "Error sending message to server\n");
+            
+            
+        }
 
 
         /**

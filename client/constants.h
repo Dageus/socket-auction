@@ -35,4 +35,6 @@ typedef struct client {
 
 #define TRANSMISSION_RATE 512
 
+#define MAX_LIST_SIZE 5003
+
 #endif // CONSTANTS_H

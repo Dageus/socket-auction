@@ -15,7 +15,6 @@ ssize_t udp_n;
 socklen_t udp_addrlen;
 struct addrinfo udp_hints, *udp_res;
 struct sockaddr_in udp_addr;
-char udp_buffer[TRANSMISSION_RATE];
 
 const char* UDP_commands[] = {
     "login",
@@ -41,7 +40,7 @@ int UDP_cmd(char* cmd){
     return -1;
 }
 
-int send_UDP(char* msg) {
+int send_UDP(char* msg, char** udp_buffer) {
 
 	int fd = socket(AF_INET,SOCK_DGRAM, 0);
     if (fd == -1) {
@@ -64,7 +63,15 @@ int send_UDP(char* msg) {
 	}
        
     udp_addrlen = sizeof(udp_addr);
-    udp_n = recvfrom(fd, udp_buffer, 128, 0, (struct sockaddr*)&udp_addr, &udp_addrlen);
+    udp_n = recvfrom(fd, udp_buffer, MAX_LIST_SIZE, 0, (struct sockaddr*)&udp_addr, &udp_addrlen);
+
+    if (udp_n == -1) {
+        /*error*/
+        fprintf(stderr, "Error receiving message from server\n");
+        return -1;
+    }
+
+    udp_buffer[udp_n] = '\0';
 
     printf("Received from server: %s", udp_buffer);
 
