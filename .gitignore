@@ -2,3 +2,6 @@
 *.o
 .vscode/
 SCRIPTS/
+AUCTIONS/
+USERS/
+```
