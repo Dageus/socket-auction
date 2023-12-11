@@ -10,15 +10,29 @@
 #include <dirent.h>
 #include "UDP/UDP.h"
 
-// TODO : load_bid
+int load_auction(char* aid, auction_list *list_item){
 
-int load_bid(char* pathname, bid_list *list){
+    char* end_file = (char*) malloc((12 + strlen(END_PREFIX) + AID_LEN + strlen(TXT_SUFFIX) + 2) * sizeof(char));
+    sprintf(end_file, "%s/%s/%s%03d%s", AUCTIONS_DIR, aid, END_PREFIX, aid, TXT_SUFFIX);
+    struct stat st;
 
-    // ! nao sei oqq esta é suposto fazer
+    strcpy(list_item->auction_code, aid);
 
+    if (stat(end_file, &st) == 0) {
+        // file exists
+
+        list_item->active = ACTIVE;
+        free(end_file);
+        return 1;
+    } else {
+        // directory doesn't exist
+        list_item->active = NOT_ACTIVE;
+        free(end_file);
+        return 0;
+    }
 }
 
-int get_bidded_list(char* uid, bid_list *list) {
+int get_bidded_list(char* uid, auction_list **list) {
     struct dirent **filelist;
     int n_entries ,n_bids, len;
     char *dirname;
@@ -39,8 +53,9 @@ int get_bidded_list(char* uid, bid_list *list) {
     while (n_entries--) {
         len = strlen(filelist[n_entries]->d_name);
         if (len == AUCTION_FILE_LEN) { // Discard '.' , '..' and invalid filenames by size 
-            sprintf(pathname, "%s/%s/%s/%s", USERS_DIR, uid, HOSTED, filelist[n_entries]->d_name);
-            if (load_bid(pathname, list))
+            char* aid;
+            strncpy(aid, filelist[n_entries]->d_name, AID_LEN);
+            if (load_bid(aid, &list[n_bids]))
                 ++n_bids;
         }
             
@@ -72,7 +87,7 @@ int process_mybids(char* input, UDP_response** response){
         return -1;
     }
 
-    bid_list list[50];
+    auction_list list[50];
 
     int n_bids = get_bidded_list(uid, list);
 
