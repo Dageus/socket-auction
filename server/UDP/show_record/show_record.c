@@ -2,9 +2,9 @@
 #include "../../constants.h"
 #include <sys/stat.h>
 #include <dirent.h>
-#include "../UDP/UDP.h"
+#include "../UDP.h"
 
-int load_auction(int aid, auction* auc){
+int load_auction_info(int aid, auction* auc){
     char* aid_dir = (char*) malloc((strlen(AUCTIONS_DIR) + AID_LEN + 2) * sizeof(char));
 
     sprintf(aid_dir, "%s/%03d", AUCTIONS_DIR, aid);
@@ -100,7 +100,7 @@ int load_auction(int aid, auction* auc){
     }
 }
 
-int load_bid(char* pathname, bid_list *list_item) {
+int load_bid(char* pathname, bid_list list_item) {
 
     FILE *fp = fopen(pathname, "r");
 
@@ -114,19 +114,22 @@ int load_bid(char* pathname, bid_list *list_item) {
     // get line from file
     read = getline(&line, &len, fp);
 
+    if (read == -1)
+        return 0;
+
     char* uid = strtok(line, " ");
-    strcpy(list_item->bidder_uid, uid);
-    list_item->bid_value = atoi(strtok(NULL, " "));
+    strcpy(list_item.bidder_uid, uid);
+    list_item.bid_value = atoi(strtok(NULL, " "));
     char* bid_time = strtok(NULL, " ");
-    strcpy(list_item->bid_time, bid_time);
-    list_item->bid_sec_time = atoi(strtok(NULL, " "));
+    strcpy(list_item.bid_time, bid_time);
+    list_item.bid_sec_time = atoi(strtok(NULL, " "));
 
     fclose(fp);
 
     return 1;
 }
 
-int get_record_list(int aid , bid_list **list) {
+int get_record_list(int aid , bid_list *list) {
     struct dirent ** filelist;
     int n_entries, n_bids, len;
     char dirname[20];
@@ -144,8 +147,10 @@ int get_record_list(int aid , bid_list **list) {
     while ( n_entries --) {
         len = strlen(filelist[n_entries]->d_name);
         if (len == 10) { // Discard ’.’ , ’..’ and invalid filenames by size
-            sprintf(pathname, "%s/%03d/%s/%s", AUCTIONS_DIR, aid, BIDS, filelist[n_entries]->d_name);
-            if (load_bid(pathname, &list[n_bids]))
+            char filename[11];
+            strncpy(filename, filelist[n_entries]->d_name, 10);
+            sprintf(pathname, "%s/%03d/%s/%s", AUCTIONS_DIR, aid, BIDS, filename);
+            if (load_bid(pathname, list[n_bids]))
                 ++n_bids;
         }
 
@@ -175,10 +180,10 @@ int process_show_record(char* input, char** response){
     bid_list list[50];
     auction auc;
 
-    if (!load_auction(aid, &auc))
+    if (!load_auction_info(aid, &auc))
         return 0;
 
-    int n_bids = get_record_list(aid, &list);
+    int n_bids = get_record_list(aid, list);
 
     if (n_bids == 0)
         // error

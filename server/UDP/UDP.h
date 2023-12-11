@@ -9,6 +9,14 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include "../constants.h"
+#include "list/list.h"
+#include "show_record/show_record.h"
+#include "login/login.h"
+#include "logout/logout.h"
+#include "unregister/unregister.h"
+#include "myauctions/myauctions.h"
+#include "mybids/mybids.h"
 
 
 int UDP_cmd(char* cmd);

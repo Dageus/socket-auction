@@ -10,6 +10,8 @@
         "login.h": "c",
         "logout.h": "c",
         "show_record.h": "c",
-        "unregister.h": "c"
+        "unregister.h": "c",
+        "tcp.h": "c",
+        "mybids.h": "c"
     }
 }

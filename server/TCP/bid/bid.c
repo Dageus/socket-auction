@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/stat.h>
-#include "TCP.h"
+#include "../TCP.h"
 
 int process_bid(char* input, TCP_response** response){
 
@@ -53,4 +53,10 @@ int process_bid(char* input, TCP_response** response){
         free(bid_dir);
         return -1;
     }
+
+    *response = (TCP_response*) malloc(sizeof(TCP_response));
+
+    strcpy((*response)->msg, "ERR");
+
+    printf("%s\n", (*response)->msg);
 }

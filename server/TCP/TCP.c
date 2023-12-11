@@ -26,7 +26,3 @@ int TCP_cmd(char* cmd){
     }
     return -1;
 }
-
-
-
-

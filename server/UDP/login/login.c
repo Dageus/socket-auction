@@ -11,7 +11,7 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include "UDP/UDP.h"
+#include "../UDP.h"
 
 int check_password(char* user_dir, char* uid, char* pwd){
 
@@ -57,7 +57,7 @@ int process_user_login(char* input, char** response){
     struct stat st;
 
     if (stat(user_dir, &st) == 0) {
-        if (S_ISDIR(st.st_mode))
+        if (S_ISDIR(st.st_mode)){
             // check if password is correct
             if (check_password(user_dir, uid, pwd) == 0){
                 // which means we're logging in
@@ -71,6 +71,7 @@ int process_user_login(char* input, char** response){
                 free(user_dir);
                 return -1;
             }
+        }
     } else {
         // which means we're registering a new user
         // create the user directory and all files/directories inside
@@ -145,4 +146,6 @@ int process_user_login(char* input, char** response){
         free(bids_dir);
 
     }
+
+    return 0;
 }

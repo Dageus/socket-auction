@@ -50,25 +50,25 @@ void check_UDP_command(cmds command) {
     char* response = NULL;
 
     if(strcmp(command.cmd, "LIN") == 0){
-        if(process_user_login(command.input, response) == -1)
+        if(process_user_login(command.input, &response) == -1)
             printf("Error in LIN command\n");
     } else if(strcmp(command.cmd, "LOU") == 0){
-        if(process_user_logout(command.input, response) == -1)
+        if(process_user_logout(command.input, &response) == -1)
             printf("Error in LOU command\n");
     } else if(strcmp(command.cmd, "UNR") == 0){
-        if(process_unregister(command.input, response) == -1)
+        if(process_unregister(command.input, &response) == -1)
             printf("Error in UNR command\n"); 
     } else if(strcmp(command.cmd, "LMA") == 0){
-        if(process_myauctions(command.input, response) == -1)
+        if(process_myauctions(command.input, &response) == -1)
             printf("Error in LMA command\n");
     } else if(strcmp(command.cmd, "LMB") == 0){
-        if(process_mybids(command.input, response) == -1)
+        if(process_mybids(command.input, &response) == -1)
             printf("Error in LMB command\n");
     } else if(strcmp(command.cmd, "LST") == 0){
-        if(process_list(command.input, response) == -1)
+        if(process_list(command.input, &response) == -1)
             printf("Error in LST command\n");
     } else if(strcmp(command.cmd, "SRC") == 0){
-        if(process_show_record(command.input, response) == -1)
+        if(process_show_record(command.input, &response) == -1)
             printf("Error in SRC command\n");
     } else {
         printf("Invalid command\n");

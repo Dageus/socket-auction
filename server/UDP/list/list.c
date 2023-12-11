@@ -7,7 +7,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <dirent.h>
-#include "UDP/UDP.h"
+#include "../UDP.h"
 
 int process_list(char* input, char** response){
 
@@ -21,7 +21,6 @@ int process_list(char* input, char** response){
     
     DIR *dir;
     struct dirent *entry;
-    auction_list auctions[999]; 
     int auction_count = 0;
 
     dir = opendir(AUCTIONS_DIR);
@@ -29,6 +28,8 @@ int process_list(char* input, char** response){
         perror("Unable to open directory");
         return -1;
     }
+    
+    auction_list auctions[999]; 
 
     while ((entry = readdir(dir)) != NULL) {
         if (entry->d_type == DT_DIR) {
@@ -53,6 +54,10 @@ int process_list(char* input, char** response){
             auctions[auction_count] = new_auction;
             auction_count++;
         }
+    }
+
+    for (int i = 0; i < auction_count; i++) {
+        printf("%s %d\n", auctions[i].auction_code, auctions[i].active);
     }
 
     closedir(dir);

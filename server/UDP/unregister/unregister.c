@@ -12,7 +12,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <dirent.h>
-#include "../UDP/UDP.h"
+#include "../UDP.h"
 
 int process_unregister(char* input, char** response){
     char* uid = strtok(input, " ");
@@ -53,4 +53,8 @@ int process_unregister(char* input, char** response){
         free(pwd_dir);
         return -1;
     }
+
+    free(login_dir);
+    free(pwd_dir);
+    return 1;
 }

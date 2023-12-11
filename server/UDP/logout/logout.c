@@ -11,7 +11,7 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include "UDP/UDP.h"
+#include "../UDP.h"
 
 int check_password(char* user_dir, char* uid, char* pwd){
 
