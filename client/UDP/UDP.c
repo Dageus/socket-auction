@@ -42,6 +42,8 @@ int UDP_cmd(char* cmd){
 
 int send_UDP(char* msg, char** udp_buffer) {
 
+    (*udp_buffer) = (char*) malloc(sizeof(char) * 5003);
+
 	int fd = socket(AF_INET,SOCK_DGRAM, 0);
     if (fd == -1) {
         /*error*/
@@ -73,7 +75,7 @@ int send_UDP(char* msg, char** udp_buffer) {
 
     udp_buffer[udp_n] = '\0';
 
-    printf("Received from server: %s", udp_buffer);
+    printf("Received from server: %s", *udp_buffer);
 
 	freeaddrinfo(udp_res);
     close(fd);

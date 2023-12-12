@@ -33,8 +33,8 @@ int tcp_fd;
 // initialize default values in case of incomplete command
 
 client* user;
-char *ip = LOCAL_SERVER_IP;
-char *port = DEFAULT_PORT;
+char *ip = "127.0.0.1";
+char *port = "80";
 
 void validate_args(int argc, char** argv) {
 
@@ -61,10 +61,63 @@ void validate_args(int argc, char** argv) {
         printf("ip: %s\n", ip);
 }
 
+void print_UDPresponse(char response[TRANSMISSION_RATE])  {   
+
+    char* token; 
+
+    token = strtok(response, " ");
+    
+    if(strcmp(token, "RLI")){
+        token = strtok(NULL, " ");
+        if(strcmp(token, "OK")){
+            printf("Login successful\n");
+        }
+        else if(strcmp(token, "NOK")){
+            printf("Login unsuccessful\n");
+        }
+        else if(strcmp(token, "REG")){
+            printf("Client registered\n");
+        }
+        
+    } else if((strcmp(token, "RLO"))){
+        token = strtok(NULL, " ");
+        if(strcmp(token, "OK")){
+            printf("Logout successful\n");
+        }
+        else if(strcmp(token, "NOK")){
+            printf("Logout unsuccessful\n");
+        }
+
+    } else if(strcmp(token, "RUR")){
+        token = strtok(NULL, " ");
+        if(strcmp(token, "OK")){
+            printf("Unregister successful\n");
+        }
+        else if(strcmp(token, "NOK")){
+            printf("Unregister unsuccessful\n");
+        }
+    } 
+    else if(strcmp(token, "RMA"))
+        write(1, response, TRANSMISSION_RATE);
+    else if(strcmp(token, "RMB"))
+        write(1, response, TRANSMISSION_RATE);
+    else if(strcmp(token, "RLS"))
+        write(1, response, TRANSMISSION_RATE);
+    else if(strcmp(token, "RRC")){
+        token = strtok(NULL, " ");
+        if(strcmp(token, "NOK")){
+            printf("Auction does not exist\n");
+        }
+        else if(strcmp(token, "OK")){
+            write(1, response, TRANSMISSION_RATE);
+        }    
+    }  
+}
+
 void check_UDP_cmd(char* input, char* cmd) {
     
     char* request = NULL;
-    char UDP_buffer[MAX_LIST_SIZE] = NULL;
+    char* UDP_buffer = NULL;
 
     if (strcmp(cmd, "login") == 0) {
         if (process_login(input, &user, &request) == -1)
@@ -88,69 +141,18 @@ void check_UDP_cmd(char* input, char* cmd) {
         if (process_list(&request) == -1)
             printf("error: list\n");
     } else if (strcmp(cmd, "show_record") == 0 || strcmp(cmd, "sr") == 0){
-        if (process_show_record(input, &request) == -1)
+        if (process_show_record(user, input, &request) == -1)
             printf("error: show_record\n"); 
     }
 
     printf("UDP request: %s", request);
 
-    send_UDP(request, UDP_buffer);
+    send_UDP(request, &UDP_buffer);
 
     if (request != NULL)
         free(request);
 
     print_UDPresponse(UDP_buffer);    
-}
-
-void print_UDPresponse(char response[TRANSMISSION_RATE])  {   
-
-    char* token; 
-    
-    if(token = strtok(response, " ") == "RLI"){
-        token = strtok(NULL, " ");
-        if(token == "OK"){
-            printf("Login successful\n");
-        }
-        else if(token == "NOK"){
-            printf("Login unsuccessful\n");
-        }
-        else if(token == "REG"){
-            printf("Client registered\n");
-        }
-        
-    } else if(token = strtok(response, " ") == "RLO"){
-        token = strtok(NULL, " ");
-        if(token == "OK"){
-            printf("Logout successful\n");
-        }
-        else if(token == "NOK"){
-            printf("Logout unsuccessful\n");
-        }
-
-    } else if(token = strtok(response, " ") == "RUR"){
-        token = strtok(NULL, " ");
-        if(token == "OK"){
-            printf("Unregister successful\n");
-        }
-        else if(token == "NOK"){
-            printf("Unregister unsuccessful\n");
-        }
-    } 
-    else if(token = strtok(response, " ") == "RMA")
-        write(1, response + 7, TRANSMISSION_RATE);
-    else if(token = strtok(response, " ") == "RMB")
-        write(1, response + 7, TRANSMISSION_RATE);
-    else if(token = strtok(response, " ") == "RLS")
-        write(1, response + 7, TRANSMISSION_RATE);
-    else if(token = strtok(response, " ") == "RRC"){
-        token = strtok(NULL, " ");
-        if(token == "NOK"){
-            printf("Auction does not exist\n");
-        }
-        else if(token == "OK"){
-            write(1, response + 7, TRANSMISSION_RATE);
-        }    
-    }  
 }
 
 void check_TCP_cmd(char* input, char* cmd) {
@@ -172,7 +174,7 @@ void check_TCP_cmd(char* input, char* cmd) {
             printf("error: close\n");
     }
 
-    printf("TCP request: %s\n", request);
+    printf("TCP request: %s\n", request->msg);
 
     send_TCP(request);
 
@@ -230,8 +232,6 @@ int main(int argc, char** argv) {
 
         // see which command was inputted
         process_cmd(input);
-
-
     }
 
 

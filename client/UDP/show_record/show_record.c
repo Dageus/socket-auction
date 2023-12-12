@@ -3,9 +3,9 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "../constants.h"
+#include "../../constants.h"
 
-int process_show_record(client* user, char** response){
+int process_show_record(client* user, char* input, char** response){
 
     *response = (char *) malloc(sizeof(char) * SHOW_RECORD_LEN);
 
@@ -13,8 +13,10 @@ int process_show_record(client* user, char** response){
         printf("error: please login first\n");
         return -1;
     }
+
+    char* aid = strtok(input, " ");
         
-    int return_code = sprintf(*response, "%s %s\n", SHOW_RECORD_COMMAND, user->uid);
+    int return_code = sprintf(*response, "%s %s\n", SHOW_RECORD_COMMAND, aid);
 
     if (return_code < 0) {
         return -1;

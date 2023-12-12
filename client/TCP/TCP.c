@@ -123,7 +123,10 @@ int send_TCP(TCP_response* response){
             return -1;
         }
 
-        strcat(response->msg, filesize);
+        char filesize_str[20];
+        sprintf(filesize_str, "%ld", filesize);
+
+        strcat(response->msg, filesize_str);
         strcat(response->msg, " ");
 
         // ^^^ mensagem feita, falta escrever a data para o socket ^^^
