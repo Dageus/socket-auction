@@ -37,4 +37,11 @@ typedef struct client {
 
 #define MAX_LIST_SIZE 5003
 
+#define MAX_BUFFER_SIZE 1024
+
+#define MAX_TCP_NULL_FILE 30
+
+#define MAX_TCP_NULL_FILERCV 8
+
+
 #endif // CONSTANTS_H
