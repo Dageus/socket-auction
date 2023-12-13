@@ -34,7 +34,17 @@ int CreateAUCTIONDir(int AID) {
 int process_open_auction(char* input, int aid){ // * aid is the global counter for aid's
 
     char* uid = strtok(input, " ");
-    printf("uid: %s\n", uid);
+    char* pwd = strtok(NULL, " ");
+    char* name  = strtok(NULL, " ");
+    char* start_value = strtok(NULL, " ");
+    char* timeactive = strtok(NULL, " ");
+    char* fname = strtok(NULL, " ");
+
+    if (uid == NULL || pwd == NULL || name == NULL || start_value == NULL || timeactive == NULL || fname == NULL)
+        return 0;
+
+    if (strlen(uid) > 6 || strlen(pwd) > 8 || strlen(name) > 10)
+        return 0;
 
     if (aid >= 999)
         // * reached the limit for auctions
