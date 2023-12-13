@@ -22,39 +22,51 @@ int process_unregister(char* input, char** response){
         /* wrong format */
         return 0;
 
-    char* login_dir = (char*) malloc((strlen(USERS_DIR) + strlen(LOGIN_SUFFIX) + 2*strlen(uid) + 3) * sizeof(char));
-    char* pwd_dir = (char*) malloc((strlen(USERS_DIR) + strlen(LOGIN_SUFFIX) + 2*strlen(uid) + 3) * sizeof(char));
-
-    sprintf(login_dir, "%s/%s/%s%s", USERS_DIR, uid, uid, LOGIN_SUFFIX);
-    sprintf(pwd_dir, "%s/%s/%s%s", USERS_DIR, uid, uid, PWD_SUFFIX);
-
     // find directory
     struct stat st;
 
-    if (stat(login_dir, &st) == 0) {
-        // remove file
-        if (unlink(pwd_dir) == -1) {
-            printf("Error removing login file\n");
-            free(login_dir);
-            free(pwd_dir);
-            return -1;
-        }
+    char user_dir[strlen(USERS_DIR) + strlen(uid) + 2];
+    sprintf(user_dir, "%s/%s", USERS_DIR, uid);
 
-        // remove login file as well
-        if (unlink(login_dir) == -1) {
-            printf("Error removing login file\n");
-            free(login_dir);
-            free(pwd_dir);
+    if (stat(user_dir, &st) == 0) {
+
+        char login_dir[strlen(USERS_DIR) + strlen(LOGIN_SUFFIX) + 2*strlen(uid) + 3];
+        char pwd_dir[strlen(USERS_DIR) + strlen(PWD_SUFFIX) + 2*strlen(uid) + 3];
+
+        sprintf(login_dir, "%s/%s/%s%s", USERS_DIR, uid, uid, LOGIN_SUFFIX);
+        sprintf(pwd_dir, "%s/%s/%s%s", USERS_DIR, uid, uid, PWD_SUFFIX);
+
+        if (stat(login_dir, &st) == 0) {
+            // user is logged in, logout
+
+            if (unlink(pwd_dir) == -1) {
+                printf("Error removing login file\n");
+                return -1;
+            }
+
+            // remove login file as well
+            if (unlink(login_dir) == -1) {
+                printf("Error removing login file\n");
+                return -1;
+            }
+
+            (*response) = (char*) malloc(sizeof(char) * (UNREGISTER_OK_LEN + 1));
+            sprintf(*response, "%s %s\n", RUR_CMD, OK_STATUS);
+        } else {
+            // user was not logged in
+
+            (*response) = (char*) malloc(sizeof(char) * (UNREGISTER_NOK_LEN + 1));
+            sprintf(*response, "%s %s\n", RUR_CMD, NOK_STATUS);
+
             return -1;
         }
     } else {
-        // directory doesn't exist
-        free(login_dir);
-        free(pwd_dir);
-        return -1;
+        // user is not registered
+        
+        (*response) = (char*) malloc(sizeof(char) * (UNREGISTER_UNR_LEN + 1));
+        sprintf(*response, "%s %s\n", RUR_CMD, UNR_CMD);
     }
 
-    free(login_dir);
-    free(pwd_dir);
+
     return 1;
 }

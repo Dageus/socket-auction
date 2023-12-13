@@ -12,6 +12,9 @@
         "show_record.h": "c",
         "unregister.h": "c",
         "tcp.h": "c",
-        "mybids.h": "c"
+        "mybids.h": "c",
+        "stat.h": "c",
+        "getopt_core.h": "c",
+        "unistd.h": "c"
     }
 }

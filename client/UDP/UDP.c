@@ -40,11 +40,11 @@ int UDP_cmd(char* cmd){
     return -1;
 }
 
-int send_UDP(char* msg, char** udp_buffer) {
+int send_UDP(char* msg, char** udp_buffer, char* ip, char* port) {
 
-    (*udp_buffer) = (char*) malloc(sizeof(char) * 5003);
+    (*udp_buffer) = (char*) malloc(5003 * sizeof(char));
 
-	int fd = socket(AF_INET,SOCK_DGRAM, 0);
+	int fd = socket(AF_INET, SOCK_DGRAM, 0);
     if (fd == -1) {
         /*error*/
 		fprintf(stderr, "Error creating socket\n");
@@ -55,7 +55,7 @@ int send_UDP(char* msg, char** udp_buffer) {
     udp_hints.ai_family = AF_INET;
     udp_hints.ai_socktype = SOCK_DGRAM;
 
-    udp_errcode = getaddrinfo(SERVER_IP, TEST_PORT, &udp_hints, &udp_res);
+    udp_errcode = getaddrinfo(ip, port, &udp_hints, &udp_res);
 
     udp_n = sendto(fd, msg, strlen(msg), 0, udp_res->ai_addr, udp_res->ai_addrlen);
 	if (udp_n == -1) {
@@ -65,7 +65,7 @@ int send_UDP(char* msg, char** udp_buffer) {
 	}
        
     udp_addrlen = sizeof(udp_addr);
-    udp_n = recvfrom(fd, udp_buffer, MAX_LIST_SIZE, 0, (struct sockaddr*)&udp_addr, &udp_addrlen);
+    udp_n = recvfrom(fd, *udp_buffer, 5003, 0, (struct sockaddr*)&udp_addr, &udp_addrlen);
 
     if (udp_n == -1) {
         /*error*/
@@ -73,9 +73,7 @@ int send_UDP(char* msg, char** udp_buffer) {
         return -1;
     }
 
-    udp_buffer[udp_n] = '\0';
-
-    printf("Received from server: %s", *udp_buffer);
+    (*udp_buffer)[udp_n] = '\0';
 
 	freeaddrinfo(udp_res);
     close(fd);

@@ -13,6 +13,11 @@
 int process_login(char* input, client** user, char** response) {
 
     *response = (char*) malloc(sizeof(char) * LOGIN_LEN);
+
+    if (strcmp((*user)->uid, NO_UID) != 0){
+        printf("Already logged in\n");
+        return -1;
+    }
     
     char* token;
     int i = 0;

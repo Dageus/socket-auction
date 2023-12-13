@@ -33,8 +33,8 @@ int tcp_fd;
 // initialize default values in case of incomplete command
 
 client* user;
-char *ip = "127.0.0.1";
-char *port = "80";
+char *ip = "localhost";
+char *port = "58000";
 
 void validate_args(int argc, char** argv) {
 
@@ -58,60 +58,69 @@ void validate_args(int argc, char** argv) {
     }
 
     if (argc == 1)
-        printf("ip: %s\n", ip);
+        printf("ip: %s\nport: %s\n", ip, port);
 }
 
 void print_UDPresponse(char response[TRANSMISSION_RATE])  {   
 
     char* token; 
 
-    token = strtok(response, " ");
-    
-    if(strcmp(token, "RLI")){
+    char response_copy[TRANSMISSION_RATE];
+    strcpy(response_copy, response);
+
+    token = strtok(response_copy, " ");
+
+    if (strcmp(token, "RLI") == 0){
         token = strtok(NULL, " ");
-        if(strcmp(token, "OK")){
+        token[strlen(token) - 1] = '\0'; // remove \n from token
+        if (strcmp(token, "OK") == 0)
             printf("Login successful\n");
-        }
-        else if(strcmp(token, "NOK")){
+        else if (strcmp(token, "NOK") == 0){
+            strcpy(user->uid, NO_UID);
+            strcpy(user->pwd, NO_PWD);
             printf("Login unsuccessful\n");
         }
-        else if(strcmp(token, "REG")){
+        else if (strcmp(token, "REG") == 0)
             printf("Client registered\n");
-        }
-        
-    } else if((strcmp(token, "RLO"))){
+    } else if (strcmp(token, "RLO") == 0){
         token = strtok(NULL, " ");
-        if(strcmp(token, "OK")){
+        token[strlen(token) - 1] = '\0'; // remove \n from token
+        if (strcmp(token, "OK") == 0){
+            strcpy(user->uid, NO_UID);
+            strcpy(user->pwd, NO_PWD);
             printf("Logout successful\n");
         }
-        else if(strcmp(token, "NOK")){
+        else if (strcmp(token, "NOK") == 0)
             printf("Logout unsuccessful\n");
-        }
-
-    } else if(strcmp(token, "RUR")){
+    } else if (strcmp(token, "RUR") == 0){
         token = strtok(NULL, " ");
-        if(strcmp(token, "OK")){
+        token[strlen(token) - 1] = '\0'; // remove \n from token
+        if(strcmp(token, "OK") == 0){
+            strcpy(user->uid, NO_UID);
+            strcpy(user->pwd, NO_PWD);
             printf("Unregister successful\n");
         }
-        else if(strcmp(token, "NOK")){
+        else if(strcmp(token, "NOK") == 0)
             printf("Unregister unsuccessful\n");
-        }
-    } 
-    else if(strcmp(token, "RMA"))
+    } else if (strcmp(token, "RMA") == 0)
         write(1, response, TRANSMISSION_RATE);
-    else if(strcmp(token, "RMB"))
+    else if (strcmp(token, "RMB") == 0)
         write(1, response, TRANSMISSION_RATE);
-    else if(strcmp(token, "RLS"))
+    else if (strcmp(token, "RLS") == 0){
+        printf("List command\n");
         write(1, response, TRANSMISSION_RATE);
-    else if(strcmp(token, "RRC")){
+    }
+    else if (strcmp(token, "RRC") == 0){
         token = strtok(NULL, " ");
-        if(strcmp(token, "NOK")){
+        if(strcmp(token, "NOK") == 0){
             printf("Auction does not exist\n");
         }
-        else if(strcmp(token, "OK")){
+        else if(strcmp(token, "OK") == 0){
             write(1, response, TRANSMISSION_RATE);
         }    
     }  
+    else 
+        printf("Unknown response\n");
 }
 
 void check_UDP_cmd(char* input, char* cmd) {
@@ -122,6 +131,7 @@ void check_UDP_cmd(char* input, char* cmd) {
     if (strcmp(cmd, "login") == 0) {
         if (process_login(input, &user, &request) == -1)
             printf("error: login\n");
+        printf("user->uid: %s\n", user->uid);
     } else if (strcmp(cmd, "logout") == 0) {
         if (process_logout(user, &request) == -1)
             printf("error: logout\n");
@@ -145,14 +155,19 @@ void check_UDP_cmd(char* input, char* cmd) {
             printf("error: show_record\n"); 
     }
 
-    printf("UDP request: %s", request);
 
-    send_UDP(request, &UDP_buffer);
+    if (request != NULL){
+        printf("UDP request: %s", request);
 
-    if (request != NULL)
+        send_UDP(request, &UDP_buffer, ip, port);
+
         free(request);
 
-    print_UDPresponse(UDP_buffer);    
+        printf("UDP response: %s\n", UDP_buffer);
+
+        print_UDPresponse(UDP_buffer);    
+
+    }
 }
 
 void check_TCP_cmd(char* input, char* cmd) {

@@ -58,7 +58,7 @@ int load_auction_info(int aid, auction* auc){
             // file exists
             fp = fopen(end_file, "r");
 
-            auc->active = ACTIVE;
+            auc->active = atoi(ACTIVE);
 
             if (fp == NULL) {
                 free(aid_dir);
@@ -87,7 +87,7 @@ int load_auction_info(int aid, auction* auc){
             fclose(fp);
         } else {
             // file doesn't exist
-            auc->active = ACTIVE;
+            auc->active = atoi(NOT_ACTIVE);
         }
 
         free(aid_dir);
@@ -119,9 +119,12 @@ int load_bid(char* pathname, bid_list list_item) {
 
     char* uid = strtok(line, " ");
     strcpy(list_item.bidder_uid, uid);
+
     list_item.bid_value = atoi(strtok(NULL, " "));
+
     char* bid_time = strtok(NULL, " ");
     strcpy(list_item.bid_time, bid_time);
+
     list_item.bid_sec_time = atoi(strtok(NULL, " "));
 
     fclose(fp);

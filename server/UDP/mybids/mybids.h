@@ -3,9 +3,7 @@
 
 #include "../../constants.h"
 
-#define MYB_CMD "LMB"
-
-int load_auction(char* aid, auction_list list_item);
+#define MYB_CMD "RMB"
 
 int get_bidded_list(char* uid, auction_list *list);
 

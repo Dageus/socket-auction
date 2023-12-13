@@ -10,6 +10,6 @@
 #include <arpa/inet.h>
 
 int UDP_cmd(char* cmd);
-int send_UDP(char *msg, char** udp_buffer);
+int send_UDP(char *msg, char** udp_buffer, char* ip, char* port);
 
 #endif // UDP_H

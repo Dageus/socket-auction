@@ -10,37 +10,16 @@
 #include <dirent.h>
 #include "../UDP.h"
 
-int load_auction(char* aid, auction_list list_item){
-
-    char* end_file = (char*) malloc((12 + strlen(END_PREFIX) + AID_LEN + strlen(TXT_SUFFIX) + 2) * sizeof(char));
-    sprintf(end_file, "%s/%s/%s%s%s", AUCTIONS_DIR, aid, END_PREFIX, aid, TXT_SUFFIX);
-    struct stat st;
-
-    strcpy(list_item.auction_code, aid);
-
-    if (stat(end_file, &st) == 0) {
-        // file exists
-
-        list_item.active = ACTIVE;
-        free(end_file);
-        return 1;
-    } else {
-        // directory doesn't exist
-        list_item.active = NOT_ACTIVE;
-        free(end_file);
-        return 0;
-    }
-}
-
 int get_bidded_list(char* uid, auction_list *list) {
     struct dirent **filelist;
     int n_entries ,n_bids, len;
-    char *dirname;
 
-    dirname = (char*) malloc((strlen(USERS_DIR) + UID_LEN + strlen(HOSTED) + 4) * sizeof(char));
-    sprintf(dirname, "%s/%s/%s/", USERS_DIR, uid, HOSTED);
+    char dirname[strlen(USERS_DIR) + UID_LEN + strlen(BIDDED) + 4];
+    sprintf(dirname, "%s/%s/%s/", USERS_DIR, uid, BIDDED);
 
     n_entries = scandir(dirname, &filelist, 0, alphasort);
+
+    printf("n_entries: %d\n", n_entries);
 
     if (n_entries <= 0) // Could test for −1 since n_entries count always with . and ..
         return 0;
@@ -52,8 +31,14 @@ int get_bidded_list(char* uid, auction_list *list) {
         if (len == AUCTION_FILE_LEN) { // Discard '.' , '..' and invalid filenames by size 
             char aid[4];
             strncpy(aid, filelist[n_entries]->d_name, AID_LEN);
-            if (load_auction(aid, list[n_bids]))
-                ++n_bids;
+
+            printf("aid: %s\n", aid);
+
+            load_auction(aid, &list[n_bids]);
+            ++n_bids;
+
+            printf("%s\n", list[n_bids].auction_code);
+            printf("n_bids: %d\n", n_bids);
         }
             
         free(filelist[n_entries]);
@@ -68,31 +53,70 @@ int get_bidded_list(char* uid, auction_list *list) {
 }
 
 int process_mybids(char* input, char** response){
+
     char* uid = strtok(input, " ");
 
-    char* user_dir = (char*) malloc((strlen(USERS_DIR) + strlen(uid) + 2) * sizeof(char));
+    if (uid == NULL) {
+        *response = (char*) malloc((strlen(MYB_CMD) + 2) * sizeof(char));
+        sprintf(*response, "%s ERR", MYB_CMD);
+        return 0;
+    }
+
+    char user_dir[strlen(USERS_DIR) + strlen(uid) + 2];
 
     sprintf(user_dir, "%s/%s", USERS_DIR, uid);
 
     struct stat st;
 
-    if (stat(user_dir, &st) == -1) {
-        printf("Error getting user directory\n");
-        return -1;
-    } else if (!S_ISDIR(st.st_mode)) {
-        printf("Error: user directory is not a directory\n");
-        return -1;
-    }
+    if (stat(user_dir, &st) == 0) {
+        // user exists
 
-    auction_list list[50];
+        // check if user is logged in
 
-    int n_bids = get_bidded_list(uid, list);
+        char login_file[strlen(user_dir) + UID_LEN + strlen(LOGIN_SUFFIX) + 2];
 
-    if (n_bids == 0) {
-        *response = (char*) malloc((strlen(MYB_CMD) + 2) * sizeof(char));
-        sprintf(*response, "%s NOK", MYB_CMD);
+        sprintf(login_file, "%s/%s%s", user_dir, uid,  LOGIN_SUFFIX);
+
+        if (stat(login_file, &st) == 0) {
+            // user is logged in
+
+            printf("User %s is logged in, checking bids...\n", uid);
+
+            auction_list list[50];
+
+            int n_bids = get_bidded_list(uid, list);
+
+            if (n_bids == 0) {
+                printf("User %s has no bids\n", uid);
+                *response = (char*) malloc((strlen(MYB_CMD) + 2) * sizeof(char));
+                sprintf(*response, "%s NOK", MYB_CMD);
+                return 0;
+            }
+
+            *response = (char*) malloc((strlen(MYB_CMD) + strlen(OK_STATUS) + n_bids * 6) * sizeof(char));
+
+            sprintf(*response, "%s %s ", MYB_CMD, OK_STATUS);
+
+            for (int i = 0; i < n_bids; i++) {
+                strcat(*response, list[i].auction_code);
+                strcat(*response, " ");
+                strcat(*response, list[i].active);
+                strcat(*response, " ");
+            }
+
+            (*response)[strlen(*response) - 1] = '\n';
+
+        } else {
+            // user is not logged in
+            *response = (char*) malloc((strlen(MYB_CMD) + 3 + 2) * sizeof(char));
+            sprintf(*response, "%s NLG\n", MYB_CMD);
+            return 0;
+        }
+
+    } else {
+        // user does not exist
+        *response = (char*) malloc((strlen(MYB_CMD) + 3 + 2) * sizeof(char));
+        sprintf(*response, "%s ERR\n", MYB_CMD);
         return 0;
     }
-
-    return 0;
 }

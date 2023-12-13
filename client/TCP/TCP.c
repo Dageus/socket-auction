@@ -67,7 +67,7 @@ int send_TCP(TCP_response* response){
     tcp_hints.ai_family = AF_INET;
     tcp_hints.ai_socktype = SOCK_STREAM; // TCP socket
 
-    tcp_errcode = getaddrinfo(SERVER_IP, TEST_PORT, &tcp_hints, &tcp_res);
+    tcp_errcode = getaddrinfo("localhost", "80", &tcp_hints, &tcp_res);
     if (tcp_errcode != 0) {
         /*error*/
 		fprintf(stderr, "Error sending message to server\n");

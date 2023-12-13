@@ -5,11 +5,11 @@ CFLAGS = -Wall -Wextra
 SRCDIR = .
 SOURCES := $(shell find $(SRCDIR) -name '*.c')
 OBJECTS := $(SOURCES:.c=.o)
-EXECUTABLE = client
+EXECUTABLE = user
 
-.PHONY: all clean
+.PHONY: all clean run
 
-all: $(EXECUTABLE)
+all: clean $(EXECUTABLE)
 
 $(EXECUTABLE): $(OBJECTS)
 	$(CC) $(CFLAGS) $^ -o $@
@@ -19,3 +19,6 @@ $(EXECUTABLE): $(OBJECTS)
 
 clean:
 	rm -f $(OBJECTS) $(EXECUTABLE)
+
+run: all
+	./$(EXECUTABLE)

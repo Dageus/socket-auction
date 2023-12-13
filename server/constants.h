@@ -22,8 +22,8 @@
 #define END_PREFIX      "END_"
 #define START_PREFIX    "START_"
 
-#define ACTIVE           1
-#define NOT_ACTIVE       0
+#define ACTIVE           "1"
+#define NOT_ACTIVE       "0"
 
 #define AUCTION_FILE_LEN 7
 
@@ -73,7 +73,7 @@ typedef struct {
 
 typedef struct {
     char auction_code[4];
-    int active;
+    char active[2];
 } auction_list;
 
 typedef struct client {

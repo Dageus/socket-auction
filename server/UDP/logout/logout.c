@@ -13,51 +13,66 @@
 #include <sys/stat.h>
 #include "../UDP.h"
 
-int check_password(char* user_dir, char* uid, char* pwd){
-
-    char* pwd_file = malloc(sizeof(char) * (strlen(uid) + strlen(PWD_SUFFIX) + 1));
-    sprintf(pwd, "%s%s", uid, PWD_SUFFIX);
-
-    char* pwd_dir = (char*) malloc(sizeof(char) * (strlen(user_dir) + strlen(pwd_file) + 2));
-    sprintf(pwd_file, "%s/%s", user_dir, pwd);
-
-    FILE* fp = fopen(pwd_dir, "r");
-
-    if (fp == NULL) {
-        fprintf(stderr, "Error opening password file\n");
-        return -1;
-    }
-
-    char* pwd_read = (char*) malloc(sizeof(char) * (PWD_LEN + 1));
-    fgets(pwd_read, sizeof(pwd_read), fp);
-
-    if (strcmp(pwd_read, pwd) == 0)
-        return 0;
-    else
-        return -1;
-}
-
 int process_user_logout(char* input, char** response){
     char* uid = strtok(input, " ");
     char *pwd = strtok(NULL, " ");
 
-    if (strlen(uid) != UID_LEN || strlen(pwd) != PWD_LEN)
-        return 0;
+    if (uid == NULL || pwd == NULL || strlen(uid) != UID_LEN || strlen(pwd) != PWD_LEN){
+        (*response) = (char*) malloc(sizeof(char) * (LOGOUT_UNR_LEN + 1));
+        sprintf(*response, "%s %s\n", LOGOUT_CMD, UNR_CMD);
+    }
 
     // find directory and erase it
 
-    char* login_dir = (char*) malloc((strlen(USERS_DIR) + strlen(LOGIN_SUFFIX) + 2*strlen(uid) + 3) * sizeof(char));
+    char login_dir[strlen(USERS_DIR) + strlen(LOGIN_SUFFIX) + 2 * strlen(uid) + 3];
 
     sprintf(login_dir, "%s/%s/%s%s", USERS_DIR, uid, uid, LOGIN_SUFFIX);
 
-    int return_code = unlink(login_dir);
+    printf("login_dir: %s\n", login_dir);
 
-    if (return_code == -1) {
-        fprintf(stderr, "Error deleting login for user: %s\n", uid);
-        free(login_dir);
-        return -1;
+    // check if file exists
+
+    struct stat st;
+
+    if (stat(login_dir, &st) == 0) {
+
+        // user is logged in, logout
+
+        int return_code = unlink(login_dir);
+
+        if (return_code == -1) {
+            fprintf(stderr, "Error deleting login for user: %s\n", uid);
+            *response = (char*) malloc(sizeof(char) * (3 + 1));
+            sprintf(*response, "%s\n", ERR_STATUS);
+            return -1;
+        }
+
+        (*response) = (char*) malloc(sizeof(char) * (LOGOUT_OK_LEN + 1));
+        sprintf(*response, "%s %s\n", LOGOUT_CMD, OK_STATUS);
+
+        return 0;
+        
+    } else {
+
+        // user is not logged in, check if user is registered
+
+        char user_dir[strlen(USERS_DIR) + strlen(uid) + 2];
+        sprintf(user_dir, "%s/%s", USERS_DIR, uid);
+
+        printf("user_dir: %s\n", user_dir);
+
+        if (stat(user_dir, &st) == 0){
+            // user is registered but not logged in
+            (*response) = (char*) malloc(sizeof(char) * (LOGOUT_NOK_LEN + 1));
+            sprintf(*response, "%s %s\n", LOGOUT_CMD, NOK_STATUS);
+
+            return 0;
+        } else {
+            // user is not registered
+            (*response) = (char*) malloc(sizeof(char) * (LOGOUT_UNR_LEN + 1));
+            sprintf(*response, "%s %s\n", LOGOUT_CMD, UNR_CMD);
+            
+            return 0;
+        }
     }
-
-    free(login_dir);
-    return 0;
 }
