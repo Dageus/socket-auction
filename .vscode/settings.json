@@ -15,6 +15,8 @@
         "mybids.h": "c",
         "stat.h": "c",
         "getopt_core.h": "c",
-        "unistd.h": "c"
+        "unistd.h": "c",
+        "close.h": "c",
+        "types.h": "c"
     }
 }
