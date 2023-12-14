@@ -27,8 +27,6 @@ typedef struct TCP_response {
     char* msg;
 } TCP_response;
 
-// 
-
 
 
 #endif // TCP_H

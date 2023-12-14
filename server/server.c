@@ -116,22 +116,22 @@ void check_TCP_command(cmds command, int fd){
     
     */
 
-    if(strcmp(command.cmd, "OPA") == 0){
-         if(process_open_auction(fd, aid, response) == -1)
+    if (strcmp(command.cmd, "OPA") == 0){
+         if (process_open_auction(fd, aid, &response) == -1)
              printf("Error in OPA command\n");
-    // }else if(strcmp(command.cmd, "CLS") == 0){
-    //      if(CLS(command) == -1)
-    //          printf("Error in CLS command\n");
-    // }else if(strcmp(command.cmd, "SAS") == 0){
-    //     if(SAS(command) == -1)
-    //         printf("Error in SAS command\n");
-    // }else if(strcmp(command.cmd, "BID") == 0){
-    //     if(process_bid(command.input, response) == -1)
-    //         printf("Error in BID command\n");
+    } else if (strcmp(command.cmd, "CLS") == 0){
+         if (process_close(command.input, &response) == -1)
+             printf("Error in CLS command\n");
+    } else if (strcmp(command.cmd, "SAS") == 0){
+        if(process_show_asset(command.cmd, &response) == -1)
+            printf("Error in SAS command\n");
+    }else if(strcmp(command.cmd, "BID") == 0){
+        if(process_bid(command.input, &response) == -1)
+            printf("Error in BID command\n");
     }
 
         
-    printf("TCP response: %s\n", response->msg);
+    printf("TCP response: %s\n", response);
 
 
 }

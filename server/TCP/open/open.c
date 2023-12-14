@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <ctype.h>
 
 int create_start_file(int aid, char* uid, char* name, char* fname, char* start_value, char* timeactive, char time_str[20], char s_time_str[11]) {
     char said[4];
@@ -116,7 +117,7 @@ int process_open_auction(int fd, int aid, char** response){
         return -1;
     }
 
-    for(int i = 0; i < strlen(name); i++){
+    for(int i = 0; i < (int) strlen(name); i++){
         if(!isalnum(name[i]) || name[i] == '_' || name[i] == '-' || name[i] == '.'){
             *response = (char*)malloc(sizeof(char) * (3 + 1 + 3 + 1));
             sprintf(*response, "%s %s", OPEN_RESPONSE, NOK_STATUS);
@@ -126,7 +127,7 @@ int process_open_auction(int fd, int aid, char** response){
         }
     }
 
-    for(int i = 0; i < strlen(start_value); i++){
+    for(int i = 0; i < (int) strlen(start_value); i++){
         if(!isdigit(start_value[i])){
             *response = (char*)malloc(sizeof(char) * (3 + 1 + 3 + 1));
             sprintf(*response, "%s %s", OPEN_RESPONSE, NOK_STATUS);
@@ -136,7 +137,7 @@ int process_open_auction(int fd, int aid, char** response){
         }
     }
 
-    for(int i = 0; i < strlen(timeactive); i++){
+    for(int i = 0; i < (int) strlen(timeactive); i++){
         if(!isdigit(timeactive[i])){
             *response = (char*)malloc(sizeof(char) * (3 + 1 + 3 + 1));
             sprintf(*response, "%s %s", OPEN_RESPONSE, NOK_STATUS);
@@ -149,7 +150,7 @@ int process_open_auction(int fd, int aid, char** response){
     //check if image name is alphanumeric and if after the dot the len is 3
 
     
-    for(int i = 0; i < strlen(fname); i++){
+    for(int i = 0; i < (int) strlen(fname); i++){
 
         if(!isalnum(fname[i]) ){
             *response = (char*)malloc(sizeof(char) * (3 + 1 + 3 + 1));
