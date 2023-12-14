@@ -20,7 +20,7 @@ int process_bid(char* input, TCP_response** response){
         /* wrong format */
         return 0;
 
-    char* bid_dir = (char*) malloc((strlen(AUCTIONS_DIR) + strlen(aid) + strlen(BIDS) + 3) * sizeof(char));
+    char bid_dir[strlen(AUCTIONS_DIR) + strlen(aid) + strlen(BIDS) + 3];
 
     sprintf(bid_dir, "%s/%s/%s", AUCTIONS_DIR, aid, BIDS);
 
@@ -30,27 +30,22 @@ int process_bid(char* input, TCP_response** response){
     if (stat(bid_dir, &st) == 0) {
         // directory exists
         // check if file exists
-        char* bid_file = (char*) malloc((strlen(bid_dir) + strlen(amount) + strlen(TXT_SUFFIX) + 3) * sizeof(char));
+        char bid_file[strlen(bid_dir) + strlen(amount) + strlen(TXT_SUFFIX) + 3];
         sprintf(bid_file, "%s/%s%s", bid_dir, amount, TXT_SUFFIX);
 
         // create file
         FILE* fp = fopen(bid_file, "w");
         if (fp == NULL) {
             printf("Error creating bid file\n");
-            free(bid_dir);
-            free(bid_file);
             return -1;
         }
 
         // close file
         fclose(fp);
 
-        free(bid_dir);
-        free(bid_file);
         return 1;
     } else {
         // directory doesn't exist
-        free(bid_dir);
         return -1;
     }
 
