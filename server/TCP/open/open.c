@@ -4,8 +4,8 @@
 #include <sys/stat.h>
 #include <string.h>
 #include <unistd.h>
-
-
+#include <stdio.h>
+#include <stdlib.h>
 
 
 void create_start_file(int aid, char* uid, char* name, char* fname, char* start_value, char* timeactive) {
@@ -29,7 +29,7 @@ void create_start_file(int aid, char* uid, char* name, char* fname, char* start_
     fclose(fp);
 }
 
-int CreateAUCTIONDir(int aid, char* name, char* fname, char* start_value, char* timeactive) {
+int CreateAUCTIONDir(int aid, char* uid, char* name, char* fname, char* start_value, char* timeactive) {
     char AID_dirname[15];
     char BIDS_dirname[20];
     int ret;
@@ -53,7 +53,7 @@ int CreateAUCTIONDir(int aid, char* name, char* fname, char* start_value, char* 
         return 0;
     }
 
-    create_start_file(aid, name, fname, start_value, timeactive);
+    create_start_file(aid, uid, name, fname, start_value, timeactive);
     
     
     return 1;
@@ -72,9 +72,10 @@ int process_open_auction(int fd, int aid){
 
     // read from soccket fd 20 bytes
 
-    if(n = read(fd, input, 45) == -1)
+    if((n = read(fd, input, 45)) == -1){
         fprintf(stderr, "Error reading from TCP socket\n");
         exit(1);
+    }
 
     char* uid = strtok(input, " ");
     char* pwd = strtok(NULL, " ");
@@ -86,7 +87,7 @@ int process_open_auction(int fd, int aid){
 
     size_t file_size = atoi(strtok(NULL, " "));
     size_t total_bytes_received = 0;
-    size_t bytes_received;
+    int bytes_received;
     // Now I have to read from the socket chunk by chunk the rest of the bytes that contain the image
     FILE *file = fopen(fname, "wb");
     
@@ -97,7 +98,7 @@ int process_open_auction(int fd, int aid){
     }
 
     while (total_bytes_received < file_size && (bytes_received = read(fd, buffer, 512)) > 0) {
-        if(bytes_received < 0){
+        if (bytes_received < 0){
             fprintf(stderr, "Error reading from TCP socket\n");
             fclose(file);
             close(fd);
@@ -109,15 +110,14 @@ int process_open_auction(int fd, int aid){
 
     fclose(file);
 
-    CreateAUCTIONDir(aid, name, fname, start_value, timeactive);
+    CreateAUCTIONDir(aid, uid, name, fname, start_value, timeactive);
 
     char img_dir[38];
     sprintf(img_dir, "AUCTIONS/%03d/%s", aid, fname);
-    if(rename(fname, img_dir) == -1)
+    if(rename(fname, img_dir) == -1){
         fprintf(stderr, "Error renaming file\n");
         close(fd);
         return -1;
-
-
+    }
     return 0;
 }
