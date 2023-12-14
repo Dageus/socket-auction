@@ -104,7 +104,7 @@ void check_UDP_command(cmds command, int fd, struct sockaddr_in addr, socklen_t 
 
 void check_TCP_command(cmds command, int fd){
 
-     TCP_response* response = NULL;
+     char* response = NULL;
 
     /*
 
@@ -117,7 +117,7 @@ void check_TCP_command(cmds command, int fd){
     */
 
     if(strcmp(command.cmd, "OPA") == 0){
-         if(process_open_auction(fd, aid) == -1)
+         if(process_open_auction(fd, aid, response) == -1)
              printf("Error in OPA command\n");
     // }else if(strcmp(command.cmd, "CLS") == 0){
     //      if(CLS(command) == -1)
