@@ -16,8 +16,6 @@
 #include "TCP/TCP.h"
 
 
-int fd;
-
 int aid = 0;
 
 int verbose = FALSE;
@@ -75,7 +73,7 @@ void check_UDP_command(cmds command, int fd, struct sockaddr_in addr, socklen_t 
         if(process_mybids(command.input, &response) == -1)
             printf("Error in LMB command\n");
     } else if(strcmp(command.cmd, "LST") == 0){
-        if(process_list(command.input, &response) == -1)
+        if(process_list( &response) == -1)
             printf("Error in LST command\n");
     } else if(strcmp(command.cmd, "SRC") == 0){
         if(process_show_record(command.input, &response) == -1)
@@ -121,15 +119,15 @@ void check_TCP_command(cmds command, int fd){
     if(strcmp(command.cmd, "OPA") == 0){
          if(process_open_auction(fd, aid) == -1)
              printf("Error in OPA command\n");
-    }else if(strcmp(command.cmd, "CLS") == 0){
-         if(CLS(command) == -1)
-             printf("Error in CLS command\n");
-    }else if(strcmp(command.cmd, "SAS") == 0){
-        if(SAS(command) == -1)
-            printf("Error in SAS command\n");
-    }else if(strcmp(command.cmd, "BID") == 0){
-        if(process_bid(command.input, response) == -1)
-            printf("Error in BID command\n");
+    // }else if(strcmp(command.cmd, "CLS") == 0){
+    //      if(CLS(command) == -1)
+    //          printf("Error in CLS command\n");
+    // }else if(strcmp(command.cmd, "SAS") == 0){
+    //     if(SAS(command) == -1)
+    //         printf("Error in SAS command\n");
+    // }else if(strcmp(command.cmd, "BID") == 0){
+    //     if(process_bid(command.input, response) == -1)
+    //         printf("Error in BID command\n");
     }
 
         
@@ -215,7 +213,7 @@ void create_udp_socket() {
     }    
 }
 
-void create_tcp_scoket(int fd){
+void create_tcp_scoket(){
 
 // create TCP socket
 
@@ -228,7 +226,7 @@ void create_tcp_scoket(int fd){
         exit(1);
     }
 
-    memset(&hints, 0, sizeof(&hints));
+    memset(&hints, 0, sizeof hints);
     hints.ai_family = AF_INET;      // IPv4
     hints.ai_socktype = SOCK_STREAM;   // TCP socket
     hints.ai_flags = AI_PASSIVE;

@@ -9,7 +9,7 @@
 #include <dirent.h>
 #include "../UDP.h"
 
-int process_list(char* input, char** response){
+int process_list(char** response){
 
     printf("LIST command\n");
     
