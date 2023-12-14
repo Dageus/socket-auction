@@ -5,6 +5,6 @@
 #define LIST_NOK_LEN    8
 #define LIST_ERR_LEN    8
 
-int process_list(char* input, char** response);
+int process_list( char** response);
 
 #endif // LIST_H
