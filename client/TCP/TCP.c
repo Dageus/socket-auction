@@ -99,7 +99,7 @@ int send_TCP(TCP_response* response){
         char buffer[MAX_TCP_NULL_FILERCV] ; // Buffer to store received data
         size_t buffer_read = 0; // Current buffer size
 
-        if ((tcp_n = recv(fd, buffer, MAX_TCP_NULL_FILERCV, 0)) == -1) {
+        if ((tcp_n = read(fd, buffer, MAX_TCP_NULL_FILERCV)) == -1) {
             /*error*/
             fprintf(stderr, "Error receiving message to server\n"); 
             return -1;
@@ -171,7 +171,7 @@ int send_TCP(TCP_response* response){
             }
         }
 
-        if ((recv(fd, tcp_buffer, TRANSMISSION_RATE, 0)) == -1) {
+        if ((read(fd, tcp_buffer, TRANSMISSION_RATE)) == -1) {
             /*error*/
             fprintf(stderr, "Error receiving message to server\n");
             return -1;
@@ -194,7 +194,13 @@ int send_TCP(TCP_response* response){
            
         // check if file exists by checking the status of the received message
 
-        char* token = strtok(response->msg, " ");
+        if ((tcp_n = read(fd, tcp_buffer, 33)) == -1) {
+            /*error*/
+            fprintf(stderr, "Error receiving message to server\n");
+            return -1;
+        }
+
+        char* token = strtok(tcp_buffer, " ");
 
         if(strcmp(token = strtok(NULL, " "), "OK") == 0) {
             // file exists
@@ -213,7 +219,7 @@ int send_TCP(TCP_response* response){
 
             size_t bytes_received = 0;
             while (bytes_received < filesize) {
-                tcp_n = recv(fd, tcp_buffer, sizeof(tcp_buffer), 0);
+                tcp_n = read(fd, tcp_buffer, sizeof(tcp_buffer));
                 if (tcp_n == -1) {
                     fprintf(stderr, "Error receiving data\n");
                     fclose(file);

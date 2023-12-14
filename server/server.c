@@ -18,6 +18,8 @@
 
 int fd;
 
+int aid = 0;
+
 int verbose = FALSE;
 char *port = "58000";
 
@@ -102,37 +104,39 @@ void check_UDP_command(cmds command, int fd, struct sockaddr_in addr, socklen_t 
         free(response);
 }
 
-// void check_TCP_command(cmds command){
+void check_TCP_command(cmds command, int fd){
 
-//     TCP_response* response = NULL;
+     TCP_response* response = NULL;
 
     /*
 
     ??????????????????????????????????????    
     ?? MY BROTHER IN CHRIST WHAT IS THIS??
+        ?? SO QUERO DIZER QUE ESTOU A??
+            ?? PERCEBER O AFAZER??
     ??????????????????????????????????????
     
     */
 
-    // if(strcmp(command.cmd, "OPA") == 0){
-    //     if(process_open_auction(command.input, response) == -1)
-    //         printf("Error in OPA command\n");
-    // }else if(strcmp(command.cmd, "CLS") == 0){
-    //     if(CLS(command) == -1)
-    //         printf("Error in CLS command\n");
-    // }else if(strcmp(command.cmd, "SAS") == 0){
-    //     if(SAS(command) == -1)
-    //         printf("Error in SAS command\n");
-    // }else if(strcmp(command.cmd, "BID") == 0){
-    //     if(process_bid(command.input, response) == -1)
-    //         printf("Error in BID command\n");
-    // }
+    if(strcmp(command.cmd, "OPA") == 0){
+         if(process_open_auction(fd, aid) == -1)
+             printf("Error in OPA command\n");
+    }else if(strcmp(command.cmd, "CLS") == 0){
+         if(CLS(command) == -1)
+             printf("Error in CLS command\n");
+    }else if(strcmp(command.cmd, "SAS") == 0){
+        if(SAS(command) == -1)
+            printf("Error in SAS command\n");
+    }else if(strcmp(command.cmd, "BID") == 0){
+        if(process_bid(command.input, response) == -1)
+            printf("Error in BID command\n");
+    }
 
         
-//     printf("TCP response: %s\n", response->msg);
+    printf("TCP response: %s\n", response->msg);
 
 
-// }
+}
 
 void create_udp_socket() {
 
@@ -211,90 +215,72 @@ void create_udp_socket() {
     }    
 }
 
-// void create_tcp_scoket(char buffer){
+void create_tcp_scoket(int fd){
 
-//     // create TCP socket
+// create TCP socket
 
-//     int tcp_fd = socket(AF_INET, SOCK_STREAM, 0);
-//     if (tcp_fd == -1) {
-//         printf("Error creating TCP socket\n");
-//         exit(1);
-//     }
+    int fd = socket(AF_INET, SOCK_STREAM, 0);
+    struct sockaddr_in addr;
+    socklen_t addrlen = sizeof(addr);
 
-//     memset(&hints, 0, sizeof(&hints));
-//     hints.ai_family = AF_INET;      // IPv4
-//     hints.ai_socktype = SOCK_STREAM;   // TCP socket
-//     hints.ai_flags = AI_PASSIVE;
+    if (fd == -1) {
+        printf("Error creating TCP socket\n");
+        exit(1);
+    }
 
-//     int errcode = getaddrinfo(NULL, port, &hints, &res);
-//     if ((errcode) != 0){
-//         /*error*/
-//         fprintf(stderr, "Error getting TCP address info\n");
-//         exit(1);
-//     }
+    memset(&hints, 0, sizeof(&hints));
+    hints.ai_family = AF_INET;      // IPv4
+    hints.ai_socktype = SOCK_STREAM;   // TCP socket
+    hints.ai_flags = AI_PASSIVE;
 
-//     ssize_t n = bind(fd,res->ai_addr,res->ai_addrlen);
+    int errcode = getaddrinfo(NULL, port, &hints, &res);
+    if ((errcode) != 0){
+        /*error*/
+        fprintf(stderr, "Error getting TCP address info\n");
+        exit(1);
+    }
 
-//     if (n == -1){
-//         /*error*/ 
-//         fprintf(stderr, "Error binding TCP socket\n");
-//         exit(1);
-//     }
+    ssize_t n = bind(fd,res->ai_addr,res->ai_addrlen);
 
-//     if (listen(tcp_fd, 5) == -1){
-//         /*error*/
-//         fprintf(stderr, "Error listening TCP socket\n");
-//         exit(1);
-//     }
+    if (n == -1){
+        /*error*/ 
+        fprintf(stderr, "Error binding TCP socket\n");
+        exit(1);
+    }
 
-//     while (TRUE) {
-//         struct sockaddr_in addr;
-//         socklen_t addrlen = sizeof(addr);
-//         int newfd;
-        
-//         // accept TCP connection
-//         if ((newfd = accept(fd, (struct sockaddr*) &addr, &addrlen)) == -1) {
-//             exit(1);
-//         }
-        
-//         // fork process
-//         pid_t subprocess = fork();
-        
-//         if (subprocess == -1) {
-//             printf("Error forking process\n");
-//             exit(1);
-//         } else if (subprocess == 0) {
-//             // child process
-            
-//             // read from TCP socket
-//             ssize_t n = read(newfd, buffer, 128);
-//             if (n == -1) {
-//                 exit(1);
-//             }
-            
-//             write(1, "received: ", 10);
-//             write(1, buffer, n);
-            
-//             // process commands here
+    if (listen(fd, 5) == -1){
+        /*error*/
+        fprintf(stderr, "Error listening TCP socket\n");
+        exit(1);
+    }
+    
 
-//             process_command(buffer);
-            
-//             // send reply to client
-//             n = write(newfd, buffer, n);
-//             if (n == -1) {
-//                 exit(1);
-//             }
-            
-//             close(newfd);
-//             exit(0);
-//         } else {
-//             // parent process
-//             close(newfd);
-//         }
-//     }
+    //  accept TCP connection
+    if ((fd = accept(fd, (struct sockaddr*) &addr, &addrlen)) == -1) {
+        exit(1);
+    }
+
+    // read from TCP socket first 3 bytes
+
+    cmds command;
+    n = read(fd, command.cmd, 4);
+    if(n == -1){
+        fprintf(stderr, "Error reading from TCP socket\n");
+        exit(1);
+    }
+    command.cmd[3] = '\0';
+
+    check_TCP_command(command, fd);
+
+    
+
+    close(fd);
+    exit(0);
+
+    
 
 
-// }
+}
 
 int main(int argc, char** argv){
 
