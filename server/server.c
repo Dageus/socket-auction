@@ -15,18 +15,10 @@
 #include "UDP/UDP.h"
 #include "TCP/TCP.h"
 
-
 int aid = 0;
 
 int verbose = FALSE;
 char *port = "58000";
-
-struct addrinfo hints, *res;
-
-void sigchld_handler(int signo) {
-    (void)signo;
-    while (waitpid(-1, NULL, WNOHANG) > 0);
-}
 
 // initialize variable in case of incomplete command
 
@@ -105,17 +97,7 @@ void check_UDP_command(cmds command, int fd, struct sockaddr_in addr, socklen_t 
 void check_TCP_command(cmds command, int fd){
 
      char* response = NULL;
-
-    /*
-
-    ??????????????????????????????????????    
-    ?? MY BROTHER IN CHRIST WHAT IS THIS??
-        ?? SO QUERO DIZER QUE ESTOU A??
-            ?? PERCEBER O AFAZER??
-    ??????????????????????????????????????
     
-    */
-
     if (strcmp(command.cmd, "OPA") == 0){
          if (process_open_auction(fd, aid, &response) == -1)
              printf("Error in OPA command\n");
@@ -132,18 +114,13 @@ void check_TCP_command(cmds command, int fd){
 
         
     printf("TCP response: %s\n", response);
-
-
 }
 
-void create_udp_socket() {
-
+void create_udp_socket(){
     int fd, errcode;
     ssize_t n;
-    socklen_t addrlen;
     struct addrinfo hints, *res;
     struct sockaddr_in addr;
-    char buffer[128];
 
     fd = socket(AF_INET, SOCK_DGRAM, 0); // UDP socket
 
@@ -156,7 +133,7 @@ void create_udp_socket() {
 
     hints.ai_family = AF_INET;      // IPv4
     hints.ai_socktype = SOCK_DGRAM; // UDP socket
-    // hints.ai_flags = AI_PASSIVE;
+    hints.ai_flags = AI_PASSIVE;
 
     errcode = getaddrinfo(NULL, port, &hints, &res);
 
@@ -171,6 +148,14 @@ void create_udp_socket() {
         perror("Bind error.");
         exit(1);
     }
+}
+
+void read_udp_socket(int fd) {
+    
+    ssize_t n;
+    char buffer[128];
+    struct sockaddr_in addr;
+    socklen_t addrlen;
 
     while (TRUE) {
 
@@ -285,11 +270,8 @@ int main(int argc, char** argv){
     // validate arguments
     validate_args(argc, argv);    
 
-    // int process = fork() ;
+    read_udp_socket();     
 
-    // if (process == 0 )
-        create_udp_socket();     
-    // else 
-    //     create_tcp_scoket(buffer);
+    create_tcp_scoket();
     return 0;
 }

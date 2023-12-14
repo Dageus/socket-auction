@@ -24,5 +24,4 @@ void load_auction(char* aid, auction_list *list_item);
 
 int UDP_cmd(char* cmd);
 
-
 #endif // UDP_H

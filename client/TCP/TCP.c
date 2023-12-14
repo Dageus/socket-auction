@@ -124,6 +124,7 @@ int send_TCP(TCP_response* response){
 
         char filesize_str[20];
         sprintf(filesize_str, "%ld", filesize);
+        
 
         strcat(response->msg, filesize_str);
         strcat(response->msg, " ");
@@ -139,7 +140,9 @@ int send_TCP(TCP_response* response){
             return -1;
         }
 
-    
+        printf("filename: %s\n", response->file->filename);   
+        
+        printf("filesize: %s\n", filesize_str); 
 
         char temp[TRANSMISSION_RATE];
         tcp_n = fread(temp, 1, sizeof(temp) - strlen(response->msg) - 1, file);
