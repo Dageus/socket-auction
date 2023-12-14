@@ -43,7 +43,7 @@ int process_close(char *input, char **response){
             // check if it was started by user
 
             char start_file[strlen(auction_dir) + strlen(START_PREFIX) + AID_LEN + strlen(TXT_SUFFIX) + 2];
-            sprintf(start_file, "%s/%s%s", auction_dir, START_PREFIX, aid, TXT_SUFFIX);
+            sprintf(start_file, "%s/%s%s%s", auction_dir, START_PREFIX, aid, TXT_SUFFIX);
 
             // open start file
 
@@ -73,7 +73,7 @@ int process_close(char *input, char **response){
             // check if auction already closed
 
             char end_file[strlen(auction_dir) + strlen(END_PREFIX) + AID_LEN + strlen(TXT_SUFFIX) + 2];
-            sprintf(end_file, "%s/%s%s", auction_dir, END_PREFIX, aid, TXT_SUFFIX);
+            sprintf(end_file, "%s/%s%s%s", auction_dir, END_PREFIX, aid, TXT_SUFFIX);
 
             if (stat(end_file, &st) == 0) {
                 // auction already closed
@@ -97,7 +97,7 @@ int process_close(char *input, char **response){
 
             char end_file_dir[strlen(auction_dir) + strlen(END_PREFIX) + AID_LEN + strlen(TXT_SUFFIX) + 2];
 
-            sprintf(end_file_dir, "%s/%s%s", auction_dir, END_PREFIX, aid, TXT_SUFFIX);
+            sprintf(end_file_dir, "%s/%s%s%s", auction_dir, END_PREFIX, aid, TXT_SUFFIX);
 
             FILE *end_fp = fopen(end_file_dir, "w");
 

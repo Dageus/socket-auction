@@ -100,8 +100,8 @@ int process_open_auction(int fd, int aid){
     size_t file_size = atoi(strtok(NULL, " "));
     char* img = strtok(NULL, " ");
 
-    size_t total_bytes_received = 0;
-    size_t bytes_received;
+    int total_bytes_received = 0;
+    int bytes_received;
     // Now I have to read from the socket chunk by chunk the rest of the bytes that contain the image
     FILE *file = fopen(fname, "wb");
     
@@ -122,9 +122,11 @@ int process_open_auction(int fd, int aid){
         total_bytes_received += strlen(img);
     }
 
-    while (total_bytes_received < file_size) {
+    while ( (size_t) total_bytes_received < file_size) {
         
         bytes_received = read(fd, input, 512);
+
+
         
         if (bytes_received < 0){
             fprintf(stderr, "Error reading from TCP socket\n");
@@ -135,7 +137,7 @@ int process_open_auction(int fd, int aid){
 
         total_bytes_received += bytes_received;
 
-        if(fwrite(input, 1 , bytes_received, file) != bytes_received){
+        if(fwrite(input, 1 , bytes_received, file) != (size_t) bytes_received){
             fprintf(stderr, "Error writing file\n");
             fclose(file);
             close(fd);
