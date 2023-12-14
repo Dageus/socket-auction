@@ -133,7 +133,7 @@ int load_bid(char* pathname, bid_list list_item) {
 }
 
 int get_record_list(int aid , bid_list *list) {
-    struct dirent ** filelist;
+    struct dirent **filelist;
     int n_entries, n_bids, len;
     char dirname[20];
     char pathname[32];
