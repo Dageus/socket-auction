@@ -17,6 +17,8 @@
         "getopt_core.h": "c",
         "unistd.h": "c",
         "close.h": "c",
-        "types.h": "c"
+        "types.h": "c",
+        "bid.h": "c",
+        "string.h": "c"
     }
 }
