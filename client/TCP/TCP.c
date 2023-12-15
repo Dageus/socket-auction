@@ -163,7 +163,8 @@ int send_TCP(TCP_response* response, char* ip, char* port){
             strcat(tcp_buffer, "\n");
 
         // Send the file data
-        if (send(fd, tcp_buffer, strlen(tcp_buffer), 0) == -1) {
+
+        if (write(fd, tcp_buffer, strlen(tcp_buffer)) == -1) {
             fprintf(stderr, "Error sending data\n");
             fclose(file);
             freeaddrinfo(tcp_res);
@@ -173,7 +174,7 @@ int send_TCP(TCP_response* response, char* ip, char* port){
 
         while ((tcp_n = fread(tcp_buffer, 1, sizeof(tcp_buffer), file)) > 0) {
             printf("reading more data\ns");
-            if (send(fd, tcp_buffer, tcp_n, 0) == -1) {
+            if (write(fd, tcp_buffer, tcp_n) == -1) {
                 fprintf(stderr, "Error sending data\n");
                 fclose(file);
                 close(fd);
@@ -182,6 +183,7 @@ int send_TCP(TCP_response* response, char* ip, char* port){
         }
 
         printf("finished writing file\n");
+        printf("client fd: %d\n", fd);
 
         ssize_t n;
         if ((n = read(fd, tcp_buffer, TRANSMISSION_RATE)) == -1) {

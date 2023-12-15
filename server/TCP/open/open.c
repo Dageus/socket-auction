@@ -121,6 +121,7 @@ int process_open_auction(int fd, int aid, char** response){
     sleep(5);
     close(fd);
     printf("killing parent\n");
+    kill(getppid(), SIGUSR1);
 
     if (uid == NULL || pwd == NULL || name == NULL || start_value == NULL || timeactive == NULL || fname == NULL || file_size == 0) {
         *response = (char*)malloc(sizeof(char) * (3 + 1 + 3 + 1));
@@ -208,7 +209,7 @@ int process_open_auction(int fd, int aid, char** response){
 
     struct stat st;
 
-    if(stat(user_dir, &st) == -1){
+    if (stat(user_dir, &st) == -1){
         *response = (char*) malloc(sizeof(char) * (3 + 1 + 3 + 1));
         sprintf(*response, "%s %s", OPEN_RESPONSE, NOK_STATUS);
         fprintf(stderr, "User does not exist\n");
@@ -217,7 +218,7 @@ int process_open_auction(int fd, int aid, char** response){
     }
 
     // Check if password is correct
-    if(check_password(user_dir, uid, pwd) == -1){
+    if (check_password(user_dir, uid, pwd) == -1){
         *response = (char*)malloc(sizeof(char) * (3 + 1 + 3 + 1));
         sprintf(*response, "%s %s", OPEN_RESPONSE, NOK_STATUS);
         fprintf(stderr, "Password is incorrect\n");
@@ -227,7 +228,7 @@ int process_open_auction(int fd, int aid, char** response){
 
     // Check if auction name is valid
 
-    if(strlen(name) > 24){
+    if (strlen(name) > 24){
         *response = (char*)malloc(sizeof(char) * (3 + 1 + 3 + 1));
         sprintf(*response, "%s %s", OPEN_RESPONSE, NOK_STATUS);
         fprintf(stderr, "Auction name is too long\n");
@@ -292,7 +293,7 @@ int process_open_auction(int fd, int aid, char** response){
 
     fclose(file);
 
-    if(CreateAUCTIONDir(aid, uid, name, fname, start_value, timeactive) == -1){
+    if (CreateAUCTIONDir(aid, uid, name, fname, start_value, timeactive) == -1){
         *response = (char*)malloc(sizeof(char) * (3 + 1 + 3 + 1));
         sprintf(*response, "%s %s", OPEN_RESPONSE, NOK_STATUS);
         fprintf(stderr, "Error creating auction directory\n");
@@ -302,7 +303,7 @@ int process_open_auction(int fd, int aid, char** response){
 
     char img_dir[38];
     sprintf(img_dir, "AUCTIONS/%03d/%s", aid, fname);
-    if(rename(fname, img_dir) == -1){
+    if (rename(fname, img_dir) == -1){
         *response = (char*)malloc(sizeof(char) * (3 + 1 + 3 + 1));
         sprintf(*response, "%s %s", OPEN_RESPONSE, NOK_STATUS);
         fprintf(stderr, "Error renaming file\n");
