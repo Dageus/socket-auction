@@ -21,32 +21,16 @@ int process_open(char* input, client* user, TCP_response** response){
     
     int i = 0;
 
-    cmd = (char *) malloc(sizeof(char) * strlen(OPEN_CMD) + 1);
-    name = (char *) malloc(sizeof(char) * MAX_NAME);
-    fname = (char *) malloc(sizeof(char) * PASSWORD_LEN);
-    start = (char *) malloc(sizeof(char) * MAX_START_ORDER);
-    duration = (char *) malloc(sizeof(char) * MAX_DURATION_ORDER);
-    
-
     token = strtok(input, " ");
-
-    while (token != NULL) {
-        token = strtok(NULL, " ");
-        if (i == 0) 
-            strcpy(cmd, OPEN_CMD);
-        else if (i == 1 && strlen(token) <= MAX_NAME) 
-            strcpy(name, token);
-        else if (i == 2 && strlen(token) <= FILENAME_MAX) 
-            strcpy(fname, token);
-        else if (i == 3 && strlen(token) <= MAX_START_ORDER)
-            strcpy(start, token);
-        else if (i == 4 && strlen(token) <= MAX_DURATION_ORDER)
-            strcpy(duration, token);
-        else {
-            printf("Invalid UID or fname\n");
-            return -1;
-        }
-        i++;
+    cmd = strtok(NULL, " ");
+    name = strtok(NULL, " ");
+    fname = strtok(NULL, " ");
+    start = strtok(NULL, " ");
+    duration = strtok(NULL, " ");
+    
+    if (token == NULL || cmd == NULL || name == NULL || fname == NULL || start == NULL || duration == NULL) {
+        fprintf(stderr, "error: open\n");
+        return -1;
     }
 
     strcpy((*response)->file->filename, fname);
