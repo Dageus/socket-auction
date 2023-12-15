@@ -1,5 +1,6 @@
 #include "open.h"
 #include "../../constants.h"
+#include "../../common/common.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <string.h>

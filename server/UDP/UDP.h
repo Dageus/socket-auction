@@ -18,8 +18,6 @@
 #include "myauctions/myauctions.h"
 #include "mybids/mybids.h"
 
-int check_password(char* user_dir, char* uid, char* pwd);
-
 void load_auction(char* aid, auction_list *list_item);
 
 int UDP_cmd(char* cmd);

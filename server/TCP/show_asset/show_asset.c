@@ -37,62 +37,58 @@ int process_show_asset(char* input,int fd){
         return -1;
     }
 
-    char filepath[13];
-    sprintf(filepath, "AUCTIONS/%s", aid);
-    size_t file_len;
+    char auction_dir[13];
+    sprintf(auction_dir, "AUCTIONS/%s", aid);
 
     struct stat filestat;
     
-    if (stat(filepath, &filestat) == -1){
+    if (stat(auction_dir, &filestat) == -1) {
         response = (char*) malloc(SHOW_ASSET_ERR_LEN + 1) ;
         sprintf(response, "%s ERR\n", SHOW_ASSET_CMD);
         printf("File does not exist\n");
         return -1;
     }
 
-    char filepath_START[27];
-    sprintf(filepath_START, "AUCTIONS/%s/START_%s.txt", aid, aid);
+    char start_file[27];
+    sprintf(start_file, "AUCTIONS/%s/START_%s.txt", aid, aid);
 
-    struct stat filestat_START;
-
-    if (stat(filepath, &filestat) == -1){
+    if (stat(start_file, &filestat) == -1){
         response = (char*) malloc(SHOW_ASSET_ERR_LEN + 1) ;
         sprintf(response, "%s ERR\n", SHOW_ASSET_CMD);
         printf("File does not exist\n");
         return -1;
     }
 
-    char *filename = malloc(filestat_START.st_size + 1);
-    FILE *fp = fopen(filepath, "r");
+    FILE *fp = fopen(start_file, "r");
     if (fp == NULL){
         response = (char*) malloc(SHOW_ASSET_ERR_LEN + 1);
         sprintf(response, "%s ERR\n", SHOW_ASSET_CMD);
         return -1;
     }
 
-    char *file_content = (char *)malloc(filestat.st_size + 1); // +1 for the null terminator
+    char start_file_content[filestat.st_size + 1];    // +1 for the null terminator
 
     // Check if memory allocation was successful
-    if (file_content == NULL) {
+    if (start_file_content == NULL) {
         response = (char*) malloc(SHOW_ASSET_ERR_LEN + 1);
         sprintf(response, "%s ERR\n", SHOW_ASSET_CMD);
         perror("Memory allocation failed");
-        free(file_content);
         return 1; // Exit with an error code
     }
 
     // Read file contents 
 
-    if(fread(file_content, filestat.st_size, 1, fp) == -1){
+    if (fgets(start_file_content, filestat.st_size + 1, fp) == NULL) {
         response = (char*) malloc(SHOW_ASSET_ERR_LEN + 1);
-        sprintf(response, "%s NOK\n", SHOW_ASSET_CMD);
-        return -1;
+        sprintf(response, "%s ERR\n", SHOW_ASSET_CMD);
+        perror("Error reading file");
+        return 1; // Exit with an error code
     }
 
-    file_content[filestat.st_size] = '\0';
+    start_file_content[filestat.st_size] = '\0';
 
-    char *uid = strtok(file_content, " ");
-    char *name = strtok(NULL, " ");
+    strtok(start_file_content, " ");
+    strtok(NULL, " ");
     char *fname = strtok(NULL, " ");    
 
     char filepath_file[13 + strlen(fname) + 1];
@@ -107,8 +103,6 @@ int process_show_asset(char* input,int fd){
         return -1;
     }
 
-
-
     // Now I have to send the file to the client through the TCP socket
 
     response = (char*) malloc(sizeof(char) * (3 + 1 + 2 + strlen(fname) + 1 + 19 + 1));
@@ -117,7 +111,7 @@ int process_show_asset(char* input,int fd){
 
     // send the file to the client through the TCP socket
 
-    char *file_content_file = (char *)malloc(READ_WRITE_RATE); 
+    char file_content_file[READ_WRITE_RATE]; 
 
     FILE *fp_send = fopen(filepath_file, "r");
     if (fp_send == NULL){
@@ -134,18 +128,15 @@ int process_show_asset(char* input,int fd){
             return -1;
         }
 
-    while(fread(file_content_file, filestat_file.st_size, 1, fp_send) == -1){
+    while (fread(file_content_file, filestat_file.st_size, 1, fp_send) < sizeof(file_content_file)){
         if ((send(fd, file_content_file , READ_WRITE_RATE, 0)) == -1) {
             /*error*/
             fprintf(stderr, "Error sending message to server\n");
-            free(file_content_file);
             close(fd);
             return -1;
         }
     }
 
     free(response);
-    free(file_content);
-    free(file_content_file);
 
 }

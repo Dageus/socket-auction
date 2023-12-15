@@ -10,6 +10,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
+#include <sys/select.h>
 #include <signal.h>
 #include "constants.h"
 #include "UDP/UDP.h"
@@ -121,9 +122,9 @@ void check_TCP_command(cmds command, int fd){
         int response_len = strlen(response);
         int bytes_sent = 0;
 
-        while(bytes_sent < response_len){
+        while (bytes_sent < response_len) {
             int current_chunk_size = response_len - bytes_sent < READ_WRITE_RATE ? response_len - bytes_sent : READ_WRITE_RATE;
-            int n = send(fd, response_ptr, response_len, 0);
+            int n = send(fd, response_ptr, current_chunk_size, 0);
             if (n == -1){
                 perror("Error sending response");
             }
@@ -139,11 +140,10 @@ void check_TCP_command(cmds command, int fd){
     
 }
 
-void create_udp_socket(){
+int create_udp_socket(){
     int fd, errcode;
     ssize_t n;
     struct addrinfo hints, *res;
-    struct sockaddr_in addr;
 
     fd = socket(AF_INET, SOCK_DGRAM, 0); // UDP socket
 
@@ -171,6 +171,8 @@ void create_udp_socket(){
         perror("Bind error.");
         exit(1);
     }
+
+    return fd;
 }
 
 void read_udp_socket(int fd) {
@@ -221,25 +223,33 @@ void read_udp_socket(int fd) {
     }    
 }
 
-void create_tcp_scoket(){
+int create_tcp_scoket(){
 
-// create TCP socket
+    int errcode;
+    struct addrinfo hints, *res;
+    struct timeval timeout;
+    timeout.tv_sec = 5;
+    timeout.tv_usec = 0;
 
     int fd = socket(AF_INET, SOCK_STREAM, 0);
-    struct sockaddr_in addr;
-    socklen_t addrlen = sizeof(addr);
 
     if (fd == -1) {
         printf("Error creating TCP socket\n");
         exit(1);
     }
 
+    // if (setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof timeout) < 0 ||
+    //     setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof timeout) < 0) {
+    //     printf("Error setting socket options.\n");
+    //     return -1;
+    // }
+
     memset(&hints, 0, sizeof hints);
     hints.ai_family = AF_INET;      // IPv4
     hints.ai_socktype = SOCK_STREAM;   // TCP socket
     hints.ai_flags = AI_PASSIVE;
 
-    int errcode = getaddrinfo(NULL, port, &hints, &res);
+    errcode = getaddrinfo(NULL, port, &hints, &res);
     if ((errcode) != 0){
         /*error*/
         fprintf(stderr, "Error getting TCP address info\n");
@@ -254,7 +264,16 @@ void create_tcp_scoket(){
         exit(1);
     }
 
-    if (listen(fd, 5) == -1){
+    return fd;
+}
+
+void read_tcp_scoket(int fd){
+
+    struct sockaddr_in addr;
+    socklen_t addrlen = sizeof(addr);
+    ssize_t n;
+
+    if (listen(fd, 20) == -1){
         /*error*/
         fprintf(stderr, "Error listening TCP socket\n");
         exit(1);
@@ -278,14 +297,8 @@ void create_tcp_scoket(){
 
     check_TCP_command(command, fd);
 
-    
-
     close(fd);
     exit(0);
-
-    
-
-
 }
 
 int main(int argc, char** argv){
@@ -293,8 +306,36 @@ int main(int argc, char** argv){
     // validate arguments
     validate_args(argc, argv);    
 
-    read_udp_socket();     
+    int udp_sock = create_udp_socket();
+    int tcp_sock = create_tcp_scoket();
 
-    create_tcp_scoket();
+    printf("sockets created successfully\n");
+
+    fd_set readfds;
+    int maxfd;
+
+    while (TRUE) {
+
+        FD_ZERO(&readfds);
+        FD_SET(udp_sock, &readfds);
+        FD_SET(tcp_sock, &readfds);
+
+        maxfd = udp_sock > tcp_sock ? udp_sock : tcp_sock;
+
+        printf("using select with...\n");
+
+        select(maxfd + 1, &readfds, NULL, NULL, NULL);
+
+        if (FD_ISSET(udp_sock, &readfds)) {
+            printf("udp_sock is set\n");
+            read_udp_socket(udp_sock);
+        }
+
+        if (FD_ISSET(tcp_sock, &readfds)) {
+            printf("tcp_sock is set\n");
+            read_tcp_scoket(tcp_sock);
+        }
+    }
+
     return 0;
 }

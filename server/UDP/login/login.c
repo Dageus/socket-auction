@@ -1,5 +1,6 @@
 #include "login.h"
 #include "../../constants.h"
+#include "../../common/common.h"
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -11,7 +12,6 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include "../UDP.h"
 
 int create_user_bid_dir(char* user_dir){
     char bids_dir[strlen(user_dir) + strlen(BIDDED) + 2];
