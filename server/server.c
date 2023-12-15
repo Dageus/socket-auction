@@ -12,6 +12,7 @@
 #include <sys/wait.h>
 #include <sys/select.h>
 #include <signal.h>
+#include <errno.h>
 #include "constants.h"
 #include "UDP/UDP.h"
 #include "TCP/TCP.h"
@@ -98,6 +99,8 @@ void check_UDP_command(cmds command, int fd, struct sockaddr_in addr, socklen_t 
 void check_TCP_command(cmds command, int fd){
 
     char* response = NULL;
+
+    printf("Command: %s, with len: %ld\n", command.cmd, strlen(command.cmd));
     
     if (strcmp(command.cmd, "OPA") == 0){
          if (process_open_auction(fd, aid, &response) == -1)
@@ -112,12 +115,11 @@ void check_TCP_command(cmds command, int fd){
         if(process_bid(command.input, &response) == -1)
             printf("Error in BID command\n");
     }
-
         
     printf("TCP response: %s\n", response);
     
     // send response to client through TCP socket
-    if(strcmp(command.cmd, "SAS") != 0){
+    if (strcmp(command.cmd, "SAS") != 0){
         char* response_ptr = response;
         int response_len = strlen(response);
         int bytes_sent = 0;
@@ -135,9 +137,7 @@ void check_TCP_command(cmds command, int fd){
         if (response != NULL)
             free(response);
 
-    }
-    
-    
+    }   
 }
 
 int create_udp_socket(){
@@ -181,49 +181,44 @@ void read_udp_socket(int fd) {
     char buffer[128];
     struct sockaddr_in addr;
     socklen_t addrlen;
+    addrlen = sizeof(addr);
+    cmds command;
 
-    while (TRUE) {
-
-        // read from UDP socket
-
-        addrlen = sizeof(addr);
-
-        printf("Waiting for data...\n");
-
-        n = recvfrom(fd, buffer, 128, 0, (struct sockaddr *)&addr, &addrlen);
-        buffer[n] = '\0';
-        buffer[n - 1] = '\0';
+    n = recvfrom(fd, buffer, 128, 0, (struct sockaddr *)&addr, &addrlen);
+    buffer[n] = '\0';
+    buffer[n - 1] = '\0';
 
 
-        if (n == -1) {
+    if (n == -1) {
+        perror("Error receiving UDP data");
+        exit(1);
+    }
+
+    printf("Received UDP data from %s:%d\n",
+                    inet_ntoa(addr.sin_addr), ntohs(addr.sin_port));
+
+    memcpy(command.cmd, buffer, 4); 
+    command.cmd[3] = '\0'; 
+
+    if (strcmp(command.cmd, "LST") != 0){
+        size_t input_length = strlen(buffer) - 4;
+        command.input = (char* ) malloc((input_length + 1) * sizeof(char)); // Allocate memory for input
+        if (command.input == NULL) {
+            printf("Error allocating memory for input\n");
             exit(1);
         }
+        memcpy(command.input, buffer + 4, input_length); 
+        command.input[input_length] = '\0'; 
+    }
 
-        printf("Received: %s\n", buffer);
+    // process commands here
 
-        cmds command;
-        memcpy(command.cmd, buffer, 4); 
-        command.cmd[3] = '\0'; 
+    check_UDP_command(command, fd, addr, addrlen);    
 
-        if (strcmp(command.cmd, "LST") != 0){
-            size_t input_length = strlen(buffer) - 4;
-            command.input = (char* ) malloc((input_length + 1) * sizeof(char)); // Allocate memory for input
-            if (command.input == NULL) {
-                printf("Error allocating memory for input\n");
-                exit(1);
-            }
-            memcpy(command.input, buffer + 4, input_length); 
-            command.input[input_length] = '\0'; 
-        }
-
-
-        // process commands here
-
-        check_UDP_command(command, fd, addr, addrlen);
-    }    
+    printf("Finished processing UDP command\n");
 }
 
-int create_tcp_scoket(){
+int create_tcp_socket(){
 
     int errcode;
     struct addrinfo hints, *res;
@@ -264,26 +259,18 @@ int create_tcp_scoket(){
         exit(1);
     }
 
-    return fd;
-}
-
-void read_tcp_scoket(int fd){
-
-    struct sockaddr_in addr;
-    socklen_t addrlen = sizeof(addr);
-    ssize_t n;
-
     if (listen(fd, 20) == -1){
         /*error*/
         fprintf(stderr, "Error listening TCP socket\n");
         exit(1);
     }
-    
 
-    //  accept TCP connection
-    if ((fd = accept(fd, (struct sockaddr*) &addr, &addrlen)) == -1) {
-        exit(1);
-    }
+    return fd;
+}
+
+void read_tcp_socket(int fd){
+
+    ssize_t n;
 
     // read from TCP socket first 3 bytes
 
@@ -296,9 +283,6 @@ void read_tcp_scoket(int fd){
     command.cmd[3] = '\0';
 
     check_TCP_command(command, fd);
-
-    close(fd);
-    exit(0);
 }
 
 int main(int argc, char** argv){
@@ -307,35 +291,57 @@ int main(int argc, char** argv){
     validate_args(argc, argv);    
 
     int udp_sock = create_udp_socket();
-    int tcp_sock = create_tcp_scoket();
+    printf("udp_sock: %d\n", udp_sock);
 
-    printf("sockets created successfully\n");
+    int tcp_sock = create_tcp_socket();
+    printf("tcp_sock: %d\n", tcp_sock);
 
-    fd_set readfds;
+
     int maxfd;
+    fd_set activefds;
 
     while (TRUE) {
 
-        FD_ZERO(&readfds);
-        FD_SET(udp_sock, &readfds);
-        FD_SET(tcp_sock, &readfds);
+        FD_ZERO(&activefds);
+        FD_SET(udp_sock, &activefds);
+        FD_SET(tcp_sock, &activefds);
+
+        fd_set readfds = activefds;
 
         maxfd = udp_sock > tcp_sock ? udp_sock : tcp_sock;
 
-        printf("using select with...\n");
-
-        select(maxfd + 1, &readfds, NULL, NULL, NULL);
+        if (select(maxfd + 1, &readfds, NULL, NULL, NULL) == -1) {
+            perror("select");
+            exit(EXIT_FAILURE);
+        }
 
         if (FD_ISSET(udp_sock, &readfds)) {
-            printf("udp_sock is set\n");
             read_udp_socket(udp_sock);
         }
 
         if (FD_ISSET(tcp_sock, &readfds)) {
-            printf("tcp_sock is set\n");
-            read_tcp_scoket(tcp_sock);
+
+            struct sockaddr_in client_addr;
+            socklen_t addr_len = sizeof(client_addr);
+
+            int tcp_client_socket = accept(tcp_sock, (struct sockaddr*)&client_addr, &addr_len);
+            printf("Accepted connection from TCP client\n");
+
+            if (tcp_client_socket == -1) {
+                perror("accept");
+                exit(EXIT_FAILURE);
+            }
+
+            read_tcp_socket(tcp_client_socket);
+
+            // Close the TCP client socket when done
+            close(tcp_client_socket);
         }
     }
+
+    // Close sockets
+    close(tcp_sock);
+    close(udp_sock);
 
     return 0;
 }
