@@ -17,7 +17,7 @@
 #include "UDP/UDP.h"
 #include "TCP/TCP.h"
 
-int aid = 0;
+int aid = 1;
 
 int verbose = FALSE;
 char *port = "58000";
@@ -134,7 +134,7 @@ void check_TCP_command(cmds command, int fd){
         if(process_bid(command.input, &response) == -1)
             printf("Error in BID command\n");
     }
-            
+
     printf("TCP response: %s\n", response);
     
     // send response to client through TCP socket
@@ -241,9 +241,9 @@ int create_tcp_socket(){
 
     int errcode;
     struct addrinfo hints, *res;
-    struct timeval timeout;
-    timeout.tv_sec = 5;
-    timeout.tv_usec = 0;
+    // struct timeval timeout;
+    // timeout.tv_sec = 5;
+    // timeout.tv_usec = 0;
 
     int fd = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -366,7 +366,6 @@ int main(int argc, char** argv){
             read_tcp_socket(tcp_client_socket);
 
             // Close the TCP client socket when done
-            close(tcp_client_socket);
         }
     }
 

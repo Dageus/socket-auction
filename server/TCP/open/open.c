@@ -117,58 +117,52 @@ int process_open_auction(int fd, int aid, char** response){
     printf("file_size: %ld\n", file_size);
     printf("img: %s\n", img);
 
-    printf("sleeping to rethink my life\n");
-    sleep(5);
-    close(fd);
-    printf("killing parent\n");
-    kill(getppid(), SIGUSR1);
+    // if (uid == NULL || pwd == NULL || name == NULL || start_value == NULL || timeactive == NULL || fname == NULL || file_size == 0) {
+    //     *response = (char*)malloc(sizeof(char) * (3 + 1 + 3 + 1));
+    //     sprintf(*response, "%s %s", OPEN_RESPONSE, NOK_STATUS);
+    //     fprintf(stderr, "Error reading from TCP socket\n");
+    //     close(fd);
+    //     return -1;
+    // }
 
-    if (uid == NULL || pwd == NULL || name == NULL || start_value == NULL || timeactive == NULL || fname == NULL || file_size == 0) {
-        *response = (char*)malloc(sizeof(char) * (3 + 1 + 3 + 1));
-        sprintf(*response, "%s %s", OPEN_RESPONSE, NOK_STATUS);
-        fprintf(stderr, "Error reading from TCP socket\n");
-        close(fd);
-        return -1;
-    }
+    // if (strlen(uid) != UID_LEN || strlen(pwd) != PWD_LEN || strlen(name) > 10 ||
+    //     strlen(start_value) > 6 || strlen(timeactive) > 5 || strlen(fname) > 24 || file_size > 10000000) {
+    //     *response = (char*)malloc(sizeof(char) * (3 + 1 + 3 + 1));
+    //     sprintf(*response, "%s %s", OPEN_RESPONSE, NOK_STATUS);
+    //     fprintf(stderr, "Error reading from TCP socket\n");
+    //     close(fd);
+    //     return -1;
+    // }
 
-    if (strlen(uid) != UID_LEN || strlen(pwd) != PWD_LEN || strlen(name) > 10 ||
-        strlen(start_value) > 6 || strlen(timeactive) > 5 || strlen(fname) > 24 || file_size > 10000000) {
-        *response = (char*)malloc(sizeof(char) * (3 + 1 + 3 + 1));
-        sprintf(*response, "%s %s", OPEN_RESPONSE, NOK_STATUS);
-        fprintf(stderr, "Error reading from TCP socket\n");
-        close(fd);
-        return -1;
-    }
+    // for (int i = 0; i < (int) strlen(name); i++){
+    //     if (!isalnum(name[i]) || name[i] == '_' || name[i] == '-' || name[i] == '.'){
+    //         *response = (char*) malloc (sizeof(char) * (3 + 1 + 3 + 1));
+    //         sprintf(*response, "%s %s", OPEN_RESPONSE, NOK_STATUS);
+    //         fprintf(stderr, "Auction name is not alphanumeric\n");
+    //         close(fd);
+    //         return -1;
+    //     }
+    // }
 
-    for (int i = 0; i < (int) strlen(name); i++){
-        if (!isalnum(name[i]) || name[i] == '_' || name[i] == '-' || name[i] == '.'){
-            *response = (char*) malloc (sizeof(char) * (3 + 1 + 3 + 1));
-            sprintf(*response, "%s %s", OPEN_RESPONSE, NOK_STATUS);
-            fprintf(stderr, "Auction name is not alphanumeric\n");
-            close(fd);
-            return -1;
-        }
-    }
+    // for (int i = 0; i < (int) strlen(start_value); i++){
+    //     if (!isdigit(start_value[i])){
+    //         *response = (char*)malloc(sizeof(char) * (3 + 1 + 3 + 1));
+    //         sprintf(*response, "%s %s", OPEN_RESPONSE, NOK_STATUS);
+    //         fprintf(stderr, "Start value is not numeric\n");
+    //         close(fd);
+    //         return -1;
+    //     }
+    // }
 
-    for (int i = 0; i < (int) strlen(start_value); i++){
-        if (!isdigit(start_value[i])){
-            *response = (char*)malloc(sizeof(char) * (3 + 1 + 3 + 1));
-            sprintf(*response, "%s %s", OPEN_RESPONSE, NOK_STATUS);
-            fprintf(stderr, "Start value is not numeric\n");
-            close(fd);
-            return -1;
-        }
-    }
-
-    for (int i = 0; i < (int) strlen(timeactive); i++){
-        if (!isdigit(timeactive[i])){
-            *response = (char*)malloc(sizeof(char) * (3 + 1 + 3 + 1));
-            sprintf(*response, "%s %s", OPEN_RESPONSE, NOK_STATUS);
-            fprintf(stderr, "Time active is not numeric\n");
-            close(fd);
-            return -1;
-        }
-    }
+    // for (int i = 0; i < (int) strlen(timeactive); i++){
+    //     if (!isdigit(timeactive[i])){
+    //         *response = (char*)malloc(sizeof(char) * (3 + 1 + 3 + 1));
+    //         sprintf(*response, "%s %s", OPEN_RESPONSE, NOK_STATUS);
+    //         fprintf(stderr, "Time active is not numeric\n");
+    //         close(fd);
+    //         return -1;
+    //     }
+    // }
 
     //check if image name is alphanumeric and if after the dot the len is 3
 
@@ -217,6 +211,8 @@ int process_open_auction(int fd, int aid, char** response){
         return -1;
     }
 
+    printf("User exists\n");
+
     // Check if password is correct
     if (check_password(user_dir, uid, pwd) == -1){
         *response = (char*)malloc(sizeof(char) * (3 + 1 + 3 + 1));
@@ -226,15 +222,19 @@ int process_open_auction(int fd, int aid, char** response){
         return -1;
     }
 
+    printf("Password is correct\n");
+
     // Check if auction name is valid
 
-    if (strlen(name) > 24){
+    if (strlen(name) > 10){
         *response = (char*)malloc(sizeof(char) * (3 + 1 + 3 + 1));
         sprintf(*response, "%s %s", OPEN_RESPONSE, NOK_STATUS);
         fprintf(stderr, "Auction name is too long\n");
         close(fd);
         return -1;
     }
+
+    printf("Auction name is valid\n");
 
     // Check if start value is valid
 
@@ -252,7 +252,9 @@ int process_open_auction(int fd, int aid, char** response){
         return -1;
     }
 
-    if(img != NULL){
+    printf("File opened\n");
+
+    if (img != NULL) {
         if (fwrite(img, 1, strlen(img), file) != strlen(img)) {
             *response = (char*)malloc(sizeof(char) * (3 + 1 + 3 + 1));
             sprintf(*response, "%s %s", OPEN_RESPONSE, NOK_STATUS);
@@ -261,6 +263,9 @@ int process_open_auction(int fd, int aid, char** response){
             close(fd);
             return -1;
         }
+
+
+
         total_bytes_received += strlen(img);
     }
 
@@ -292,14 +297,6 @@ int process_open_auction(int fd, int aid, char** response){
     }
 
     fclose(file);
-
-    if (CreateAUCTIONDir(aid, uid, name, fname, start_value, timeactive) == -1){
-        *response = (char*)malloc(sizeof(char) * (3 + 1 + 3 + 1));
-        sprintf(*response, "%s %s", OPEN_RESPONSE, NOK_STATUS);
-        fprintf(stderr, "Error creating auction directory\n");
-        close(fd);
-        return -1;
-    }
 
     char img_dir[38];
     sprintf(img_dir, "AUCTIONS/%03d/%s", aid, fname);
