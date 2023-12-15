@@ -96,7 +96,7 @@ void check_UDP_command(cmds command, int fd, struct sockaddr_in addr, socklen_t 
 
 void check_TCP_command(cmds command, int fd){
 
-     char* response = NULL;
+    char* response = NULL;
     
     if (strcmp(command.cmd, "OPA") == 0){
          if (process_open_auction(fd, aid, &response) == -1)
@@ -105,7 +105,7 @@ void check_TCP_command(cmds command, int fd){
          if (process_close(command.input, &response) == -1)
              printf("Error in CLS command\n");
     } else if (strcmp(command.cmd, "SAS") == 0){
-        if(process_show_asset(command.cmd, &response) == -1)
+        if(process_show_asset(command.cmd, fd) == -1)
             printf("Error in SAS command\n");
     }else if(strcmp(command.cmd, "BID") == 0){
         if(process_bid(command.input, &response) == -1)
@@ -114,6 +114,29 @@ void check_TCP_command(cmds command, int fd){
 
         
     printf("TCP response: %s\n", response);
+    
+    // send response to client through TCP socket
+    if(strcmp(command.cmd, "SAS") != 0){
+        char* response_ptr = response;
+        int response_len = strlen(response);
+        int bytes_sent = 0;
+
+        while(bytes_sent < response_len){
+            int current_chunk_size = response_len - bytes_sent < READ_WRITE_RATE ? response_len - bytes_sent : READ_WRITE_RATE;
+            int n = send(fd, response_ptr, response_len, 0);
+            if (n == -1){
+                perror("Error sending response");
+            }
+            bytes_sent += n;
+            response_ptr += n;
+        }
+
+        if (response != NULL)
+            free(response);
+
+    }
+    
+    
 }
 
 void create_udp_socket(){

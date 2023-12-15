@@ -21,6 +21,7 @@
         "bid.h": "c",
         "string.h": "c",
         "show_asset.h": "c",
-        "wait.h": "c"
+        "wait.h": "c",
+        "socket.h": "c"
     }
 }
