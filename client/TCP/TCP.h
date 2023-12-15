@@ -19,6 +19,6 @@ typedef struct TCP_response {
 
 
 int TCP_cmd(char* cmd);
-int send_TCP(TCP_response* response);
+int send_TCP(TCP_response* response, char* ip, char* port);
 
 #endif // TCP_H

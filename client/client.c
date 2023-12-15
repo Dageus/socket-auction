@@ -15,23 +15,6 @@
 #include "UDP/UDP.h"
 #include "TCP/TCP.h"
 
-
-// struct addrinfo
-// {
-//   int ai_flags;			/* Input flags.  */
-//   int ai_family;		/* Protocol family for socket.  */
-//   int ai_socktype;		/* Socket type.  */
-//   int ai_protocol;		/* Protocol for socket.  */
-//   socklen_t ai_addrlen;		/* Length of socket address.  */
-//   struct sockaddr *ai_addr;	/* Socket address for socket.  */
-//   char *ai_canonname;		/* Canonical name for service location.  */
-//   struct addrinfo *ai_next;	/* Pointer to next in list.  */
-// };
-
-int tcp_fd;
-
-// initialize default values in case of incomplete command
-
 client* user;
 char *ip = "localhost";
 char *port = "58000";
@@ -189,12 +172,13 @@ void check_TCP_cmd(char* input, char* cmd) {
             printf("error: close\n");
     }
 
-    printf("TCP request: %s\n", request->msg);
+    if (request->msg != NULL){
+        send_TCP(request, ip, port);
+        free(request->msg);
+    } 
 
-    send_TCP(request);
+    free(request);
 
-    if (request != NULL)
-        free(request);
 }
 
 void process_cmd(char* input){
@@ -209,6 +193,7 @@ void process_cmd(char* input){
 
     if (cmd[strlen(cmd) - 1] == '\n')
         cmd[strlen(cmd) - 1] = '\0';
+
 
     if (UDP_cmd(cmd))
         check_UDP_cmd(input_copy, cmd);

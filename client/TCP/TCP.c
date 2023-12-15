@@ -20,13 +20,6 @@ const char *TCP_commands[] = {
     "b"
 };
 
-int tcp_errcode;
-ssize_t tcp_n;
-socklen_t addrlen;
-struct addrinfo tcp_hints, *tcp_res;
-struct sockaddr_in tcp_addr;
-char tcp_buffer[TRANSMISSION_RATE];
-
 /**
  * Checks if the command is valid for TCP
  * 
@@ -40,8 +33,15 @@ int TCP_cmd(char* cmd){
         if (strcmp(cmd, TCP_commands[i]) == 0)
             return 1;
     }
-    return -1;
+    return 0;
 }
+
+int tcp_errcode;
+ssize_t tcp_n;
+socklen_t addrlen;
+struct addrinfo tcp_hints, *tcp_res;
+struct sockaddr_in tcp_addr;
+char tcp_buffer[TRANSMISSION_RATE];
 
 /**
  * Receives a TCP_response struct and sends it to the server
@@ -51,7 +51,7 @@ int TCP_cmd(char* cmd){
  * 
  * @return 1 if successful, -1 otherwise
 */
-int send_TCP(TCP_response* response){
+int send_TCP(TCP_response* response, char* ip, char* port){
 
     /**
      * Abrir o socket TCP
@@ -67,7 +67,7 @@ int send_TCP(TCP_response* response){
     tcp_hints.ai_family = AF_INET;
     tcp_hints.ai_socktype = SOCK_STREAM; // TCP socket
 
-    tcp_errcode = getaddrinfo("localhost", "80", &tcp_hints, &tcp_res);
+    tcp_errcode = getaddrinfo(ip, port, &tcp_hints, &tcp_res);
     if (tcp_errcode != 0) {
         /*error*/
 		fprintf(stderr, "Error sending message to server\n");
@@ -97,7 +97,6 @@ int send_TCP(TCP_response* response){
             
 
         char buffer[MAX_TCP_NULL_FILERCV] ; // Buffer to store received data
-        size_t buffer_read = 0; // Current buffer size
 
         if ((tcp_n = read(fd, buffer, MAX_TCP_NULL_FILERCV)) == -1) {
             /*error*/
@@ -106,9 +105,12 @@ int send_TCP(TCP_response* response){
         } 
 
     } else if (response->file->code == FILE_TO_BE_SENT) {
+
         /**
          * Ler e enviar o ficheiro para o servidor
         */
+        printf("OPEN COMMAND\n");
+        printf("filename: %s\n", response->file->filename);
 
         struct stat st;
         size_t filesize;
@@ -122,15 +124,15 @@ int send_TCP(TCP_response* response){
             return -1;
         }
 
-        char filesize_str[20];
+        char filesize_str[10];
         sprintf(filesize_str, "%ld", filesize);
+
+        printf("filesize: %s\n", filesize_str);
 
         strcat(response->msg, filesize_str);
         strcat(response->msg, " ");
 
-        /**
-         * Abrir o ficheiro e enviar para o servidor
-        */
+        // Abrir o ficheiro e enviar para o servidor
         FILE *file = fopen(response->file->filename, "rb");
         if (!file) {
             fprintf(stderr, "Error opening file\n");
@@ -139,10 +141,8 @@ int send_TCP(TCP_response* response){
             return -1;
         }
 
-    
-
         char temp[TRANSMISSION_RATE];
-        tcp_n = fread(temp, 1, sizeof(temp) - strlen(response->msg) - 1, file);
+        int tcp_n = fread(temp, 1, sizeof(temp) - strlen(response->msg) - 2, file);
         if (tcp_n == -1) {
             fprintf(stderr, "Error reading file\n");
             fclose(file);
@@ -151,7 +151,16 @@ int send_TCP(TCP_response* response){
             return -1;
         }
 
-        sprintf(tcp_buffer, "%s%s", response->msg, temp); // ??????????
+        temp[tcp_n] = '\0';
+
+        printf("temp: %s\n", temp);
+
+        sprintf(tcp_buffer, "%s%s", response->msg, temp);
+
+        printf("msg: %s\n", tcp_buffer);
+
+        if ((size_t) tcp_n == filesize)
+            strcat(tcp_buffer, "\n");
 
         // Send the file data
         if (send(fd, tcp_buffer, strlen(tcp_buffer), 0) == -1) {
@@ -163,6 +172,7 @@ int send_TCP(TCP_response* response){
         }
 
         while ((tcp_n = fread(tcp_buffer, 1, sizeof(tcp_buffer), file)) > 0) {
+            printf("reading more data\ns");
             if (send(fd, tcp_buffer, tcp_n, 0) == -1) {
                 fprintf(stderr, "Error sending data\n");
                 fclose(file);
@@ -171,12 +181,20 @@ int send_TCP(TCP_response* response){
             }
         }
 
-        if ((read(fd, tcp_buffer, TRANSMISSION_RATE)) == -1) {
+        printf("finished writing file\n");
+
+        ssize_t n;
+        if ((n = read(fd, tcp_buffer, TRANSMISSION_RATE)) == -1) {
             /*error*/
-            fprintf(stderr, "Error receiving message to server\n");
+            fprintf(stderr, "Error receiving message from server\n");
             return -1;
         } 
 
+        printf("received %ld bytes\n", n);
+        tcp_buffer[n] = '\0';
+        printf("received message from server: %s\n", tcp_buffer);
+
+        printf("closing file\n");
         // Close the file
         fclose(file);
     } else if (response->file->code == FILE_TO_BE_RECEIVED) {
@@ -193,7 +211,7 @@ int send_TCP(TCP_response* response){
 
         if ((tcp_n = read(fd, tcp_buffer, TRANSMISSION_RATE)) == -1) {
             /*error*/
-            fprintf(stderr, "Error receiving message to server\n");
+            fprintf(stderr, "Error receiving message from server\n");
             return -1;
         }
 
@@ -248,7 +266,7 @@ int send_TCP(TCP_response* response){
 
                 bytes_received += tcp_n;
 
-                if (fwrite(tcp_buffer, 1, tcp_n, file) != tcp_n) {
+                if (fwrite(tcp_buffer, 1, tcp_n, file) != (size_t) tcp_n) {
                     fprintf(stderr, "Error writing file\n");
                     fclose(file);
                     freeaddrinfo(tcp_res);

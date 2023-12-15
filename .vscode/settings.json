@@ -22,6 +22,7 @@
         "string.h": "c",
         "show_asset.h": "c",
         "wait.h": "c",
-        "socket.h": "c"
+        "socket.h": "c",
+        "stdio.h": "c"
     }
 }

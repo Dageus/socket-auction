@@ -33,11 +33,10 @@ const char* UDP_commands[] = {
 int UDP_cmd(char* cmd){
     int i;
     for (i = 0; i < 11; i++) {
-        if (strcmp(cmd, UDP_commands[i]) == 0) {
+        if (strcmp(cmd, UDP_commands[i]) == 0)
             return 1;
-        }
     }
-    return -1;
+    return 0;
 }
 
 int send_UDP(char* msg, char** udp_buffer, char* ip, char* port) {

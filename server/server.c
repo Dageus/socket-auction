@@ -24,6 +24,25 @@ char *port = "58000";
 
 // initialize variable in case of incomplete command
 
+// create signal handler for SIGINT that closes sockets fds
+
+int udp_sock = -1;
+int tcp_sock = -1;
+
+void sigint_handler(int sig) {
+    printf("Closing sockets\n");
+    
+    if (udp_sock != -1) {
+        close(udp_sock);
+    }
+    
+    if (tcp_sock != -1) {
+        close(tcp_sock);
+    }
+    
+    exit(0);
+}
+
 void validate_args(int argc, char** argv) {
 
     int opt;
@@ -103,8 +122,10 @@ void check_TCP_command(cmds command, int fd){
     printf("Command: %s, with len: %ld\n", command.cmd, strlen(command.cmd));
     
     if (strcmp(command.cmd, "OPA") == 0){
-         if (process_open_auction(fd, aid, &response) == -1)
-             printf("Error in OPA command\n");
+        if (process_open_auction(fd, aid, &response) == -1)
+            printf("Error in OPA command\n");
+        else
+            aid++;
     } else if (strcmp(command.cmd, "CLS") == 0){
          if (process_close(command.input, &response) == -1)
              printf("Error in CLS command\n");
@@ -276,7 +297,10 @@ void read_tcp_socket(int fd){
 
     cmds command;
     n = read(fd, command.cmd, 4);
-    if(n == -1){
+
+    printf("Received TCP data\n");
+
+    if (n == -1){
         fprintf(stderr, "Error reading from TCP socket\n");
         exit(1);
     }
@@ -290,10 +314,19 @@ int main(int argc, char** argv){
     // validate arguments
     validate_args(argc, argv);    
 
-    int udp_sock = create_udp_socket();
+    struct sigaction sa;
+    sa.sa_handler = sigint_handler;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = 0;
+    if (sigaction(SIGINT, &sa, NULL) == -1) {
+        perror("Error setting up signal handler");
+        return 1;
+    }
+
+    udp_sock = create_udp_socket();
     printf("udp_sock: %d\n", udp_sock);
 
-    int tcp_sock = create_tcp_socket();
+    tcp_sock = create_tcp_socket();
     printf("tcp_sock: %d\n", tcp_sock);
 
 
@@ -325,7 +358,7 @@ int main(int argc, char** argv){
             socklen_t addr_len = sizeof(client_addr);
 
             int tcp_client_socket = accept(tcp_sock, (struct sockaddr*)&client_addr, &addr_len);
-            printf("Accepted connection from TCP client\n");
+            printf("Accepted connection from TCP client with fd: %d\n", tcp_client_socket);
 
             if (tcp_client_socket == -1) {
                 perror("accept");

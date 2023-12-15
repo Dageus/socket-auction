@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <signal.h>
 #include <time.h>
 #include <ctype.h>
 
@@ -77,6 +78,7 @@ int CreateAUCTIONDir(int aid, char* uid, char* name, char* fname, char* start_va
 
 int process_open_auction(int fd, int aid, char** response){
 
+    printf("Processing open auction\n");
     
     if (aid >= 999)
         // * reached the limit for auctions
@@ -86,11 +88,16 @@ int process_open_auction(int fd, int aid, char** response){
 
     char input[READ_WRITE_RATE];
 
+    printf("Reading from TCP socket\n");
 
-    if((n = read(fd, input, READ_WRITE_RATE)) == -1){
+    if ((n = read(fd, input, READ_WRITE_RATE)) == -1){
         fprintf(stderr, "Error reading from TCP socket\n");
         exit(1);
     }
+
+    printf("Read from TCP socket\n");
+    input[n] = '\0';
+    printf("input: %s\n", input);
 
     char* uid = strtok(input, " ");
     char* pwd = strtok(NULL, " ");
@@ -100,6 +107,20 @@ int process_open_auction(int fd, int aid, char** response){
     char* fname = strtok(NULL, " ");
     size_t file_size = atoi(strtok(NULL, " "));
     char* img = strtok(NULL, " ");
+
+    printf("uid: %s\n", uid);
+    printf("pwd: %s\n", pwd);
+    printf("name: %s\n", name);
+    printf("start_value: %s\n", start_value);
+    printf("timeactive: %s\n", timeactive);
+    printf("fname: %s\n", fname);
+    printf("file_size: %ld\n", file_size);
+    printf("img: %s\n", img);
+
+    printf("sleeping to rethink my life\n");
+    sleep(5);
+    close(fd);
+    printf("killing parent\n");
 
     if (uid == NULL || pwd == NULL || name == NULL || start_value == NULL || timeactive == NULL || fname == NULL || file_size == 0) {
         *response = (char*)malloc(sizeof(char) * (3 + 1 + 3 + 1));
@@ -118,9 +139,9 @@ int process_open_auction(int fd, int aid, char** response){
         return -1;
     }
 
-    for(int i = 0; i < (int) strlen(name); i++){
-        if(!isalnum(name[i]) || name[i] == '_' || name[i] == '-' || name[i] == '.'){
-            *response = (char*)malloc(sizeof(char) * (3 + 1 + 3 + 1));
+    for (int i = 0; i < (int) strlen(name); i++){
+        if (!isalnum(name[i]) || name[i] == '_' || name[i] == '-' || name[i] == '.'){
+            *response = (char*) malloc (sizeof(char) * (3 + 1 + 3 + 1));
             sprintf(*response, "%s %s", OPEN_RESPONSE, NOK_STATUS);
             fprintf(stderr, "Auction name is not alphanumeric\n");
             close(fd);
@@ -128,8 +149,8 @@ int process_open_auction(int fd, int aid, char** response){
         }
     }
 
-    for(int i = 0; i < (int) strlen(start_value); i++){
-        if(!isdigit(start_value[i])){
+    for (int i = 0; i < (int) strlen(start_value); i++){
+        if (!isdigit(start_value[i])){
             *response = (char*)malloc(sizeof(char) * (3 + 1 + 3 + 1));
             sprintf(*response, "%s %s", OPEN_RESPONSE, NOK_STATUS);
             fprintf(stderr, "Start value is not numeric\n");
@@ -138,8 +159,8 @@ int process_open_auction(int fd, int aid, char** response){
         }
     }
 
-    for(int i = 0; i < (int) strlen(timeactive); i++){
-        if(!isdigit(timeactive[i])){
+    for (int i = 0; i < (int) strlen(timeactive); i++){
+        if (!isdigit(timeactive[i])){
             *response = (char*)malloc(sizeof(char) * (3 + 1 + 3 + 1));
             sprintf(*response, "%s %s", OPEN_RESPONSE, NOK_STATUS);
             fprintf(stderr, "Time active is not numeric\n");
@@ -150,33 +171,35 @@ int process_open_auction(int fd, int aid, char** response){
 
     //check if image name is alphanumeric and if after the dot the len is 3
 
-    
-    for(int i = 0; i < (int) strlen(fname); i++){
+    // for (int i = 0; i < (int) strlen(fname); i++){
 
-        if(!isalnum(fname[i]) ){
-            *response = (char*)malloc(sizeof(char) * (3 + 1 + 3 + 1));
-            sprintf(*response, "%s %s", OPEN_RESPONSE, NOK_STATUS);
-            fprintf(stderr, "Image name is not alphanumeric\n");
-            close(fd);
-            return -1;
-        }
-        else if(fname[strlen(fname) - 4] != '.'){
-            *response = (char*)malloc(sizeof(char) * (3 + 1 + 3 + 1));
-            sprintf(*response, "%s %s", OPEN_RESPONSE, NOK_STATUS);
-            fprintf(stderr, "Not a file\n");
-            close(fd);
-            return -1;
-        }
-        else if(!isalnum(fname[strlen(fname) - 3]) || !isalnum(fname[strlen(fname) - 2]) || !isalnum(fname[strlen(fname) - 1])){
-            *response = (char*)malloc(sizeof(char) * (3 + 1 + 3 + 1));
-            sprintf(*response, "%s %s", OPEN_RESPONSE, NOK_STATUS);
-            fprintf(stderr, "fily type not alphanumeric\n");
-            close(fd);
-            return -1;
-        }
+    //     printf("fname[%d]: %c\n", i, fname[i]);
 
-        
-    }
+    //     if(!isalnum(fname[i]) ){
+    //         *response = (char*)malloc(sizeof(char) * (3 + 1 + 3 + 1));
+    //         sprintf(*response, "%s %s", OPEN_RESPONSE, NOK_STATUS);
+    //         fprintf(stderr, "Image name is not alphanumeric\n");
+    //         close(fd);
+    //         return -1;
+    //     }
+
+    //     else if(fname[strlen(fname) - 4] != '.'){
+    //         *response = (char*)malloc(sizeof(char) * (3 + 1 + 3 + 1));
+    //         sprintf(*response, "%s %s", OPEN_RESPONSE, NOK_STATUS);
+    //         fprintf(stderr, "Not a file\n");
+    //         close(fd);
+    //         return -1;
+    //     }
+
+    //     else if(!isalnum(fname[strlen(fname) - 3]) || !isalnum(fname[strlen(fname) - 2]) || !isalnum(fname[strlen(fname) - 1])){
+    //         *response = (char*)malloc(sizeof(char) * (3 + 1 + 3 + 1));
+    //         sprintf(*response, "%s %s", OPEN_RESPONSE, NOK_STATUS);
+    //         fprintf(stderr, "fily type not alphanumeric\n");
+    //         close(fd);
+    //         return -1;
+    //     }
+    // }
+
 
     // Check if user exists
 
@@ -186,7 +209,7 @@ int process_open_auction(int fd, int aid, char** response){
     struct stat st;
 
     if(stat(user_dir, &st) == -1){
-        *response = (char*)malloc(sizeof(char) * (3 + 1 + 3 + 1));
+        *response = (char*) malloc(sizeof(char) * (3 + 1 + 3 + 1));
         sprintf(*response, "%s %s", OPEN_RESPONSE, NOK_STATUS);
         fprintf(stderr, "User does not exist\n");
         close(fd);
@@ -289,7 +312,6 @@ int process_open_auction(int fd, int aid, char** response){
 
     *response = (char*)malloc(sizeof(char) * (3 + 1 + 3 + 1 + 3 + 1 ));
     sprintf(*response, "%s %s %03d", OPEN_RESPONSE, OK_STATUS, aid);
-
     
     return 0;
 }
