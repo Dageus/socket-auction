@@ -116,55 +116,6 @@ void check_UDP_command(cmds command, int fd, struct sockaddr_in addr, socklen_t 
         free(response);
 }
 
-void check_TCP_command(cmds command, int fd){
-
-    char* response = NULL;
-
-    printf("Command: %s with len: %ld\n", command.cmd, strlen(command.cmd));
-    printf("Input: %s with len: %ld\n", command.input, strlen(command.input));
-    
-    if (strcmp(command.cmd, "OPA") == 0){
-        if (process_open_auction(fd, aid, &response) == -1)
-            printf("Error in OPA command\n");
-        else{
-            aid++;
-            printf("Auction opened with aid: %d\n", aid);
-        }
-    } else if (strcmp(command.cmd, "CLS") == 0){
-         if (process_close(command.input, &response) == -1)
-            printf("Error in CLS command\n");
-    } else if (strcmp(command.cmd, "SAS") == 0){
-        if (process_show_asset(command.cmd, fd) == -1)
-            printf("Error in SAS command\n");
-    }else if(strcmp(command.cmd, "BID") == 0){
-        if(process_bid(command.input, &response) == -1)
-            printf("Error in BID command\n");
-    }
-
-    printf("TCP response: %s\n", response);
-    
-    // send response to client through TCP socket
-    if (strcmp(command.cmd, "SAS") != 0){
-        char* response_ptr = response;
-        int response_len = strlen(response);
-        int bytes_sent = 0;
-
-        while (bytes_sent < response_len) {
-            int current_chunk_size = response_len - bytes_sent < READ_WRITE_RATE ? response_len - bytes_sent : READ_WRITE_RATE;
-            int n = write(fd, response_ptr, current_chunk_size);
-            if (n == -1){
-                perror("Error sending response");
-            }
-            bytes_sent += n;
-            response_ptr += n;
-        }
-
-        if (response != NULL)
-            free(response);
-
-    }   
-}
-
 int create_udp_socket(){
     int fd, errcode;
     ssize_t n;
@@ -243,6 +194,55 @@ void read_udp_socket(int fd) {
     printf("Finished processing UDP command\n");
 }
 
+void check_TCP_command(cmds command, int fd){
+
+    char* response = NULL;
+
+    printf("Command: %s with len: %ld\n", command.cmd, strlen(command.cmd));
+    printf("Input: %s with len: %ld\n", command.input, strlen(command.input));
+    
+    if (strcmp(command.cmd, "OPA") == 0){
+        if (process_open_auction(fd, command.input,  aid, &response) == -1)
+            printf("Error in OPA command\n");
+        else {
+            aid++;
+            printf("Auction opened with aid: %d\n", aid);
+        }
+    } else if (strcmp(command.cmd, "CLS") == 0){
+         if (process_close(command.input, &response) == -1)
+            printf("Error in CLS command\n");
+    } else if (strcmp(command.cmd, "SAS") == 0){
+        if (process_show_asset(command.input, fd) == -1)
+            printf("Error in SAS command\n");
+    }else if(strcmp(command.cmd, "BID") == 0){
+        if(process_bid(command.input, &response) == -1)
+            printf("Error in BID command\n");
+    }
+
+    printf("TCP response: %s\n", response);
+    
+    // send response to client through TCP socket
+    if (strcmp(command.cmd, "SAS") != 0){
+        char* response_ptr = response;
+        int response_len = strlen(response);
+        int bytes_sent = 0;
+
+        while (bytes_sent < response_len) {
+            int current_chunk_size = response_len - bytes_sent < READ_WRITE_RATE ? response_len - bytes_sent : READ_WRITE_RATE;
+            int n = write(fd, response_ptr, current_chunk_size);
+            if (n == -1){
+                perror("Error sending response");
+            }
+            bytes_sent += n;
+            response_ptr += n;
+        }
+
+        if (response != NULL)
+            free(response);
+
+    }   
+}
+
 int create_tcp_socket(){
 
     int errcode;
@@ -295,23 +295,34 @@ int create_tcp_socket(){
 
 void read_tcp_socket(int fd){
 
-    ssize_t n;
+    ssize_t input_length;
 
     // read from TCP socket first 3 bytes
 
     cmds command;
-    n = read(fd, command.cmd, 4);
+    char buffer[READ_WRITE_RATE];
+    input_length = read(fd, buffer, READ_WRITE_RATE);
 
-    printf("Received TCP data\n");
+    printf("input: %s\n", buffer);
 
-    if (n == -1){
+    if (input_length == -1){
         fprintf(stderr, "Error reading from TCP socket\n");
         exit(1);
     }
+
+    memcpy(command.cmd, buffer, 4);
+
     command.cmd[3] = '\0';
+
+    memcpy(command.input, buffer + 4, input_length); 
+    command.input[input_length - 1] = '\0'; 
 
     check_TCP_command(command, fd);
 }
+
+/**
+ * Main function
+*/
 
 int main(int argc, char** argv){
 

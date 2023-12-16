@@ -22,7 +22,7 @@
 //     return filestat.st_size;
 // }
 
-int process_show_asset(char* input,int fd){
+int process_show_asset(char* input, int fd){
 
     printf("Processing show asset\n");
     

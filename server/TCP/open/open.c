@@ -36,7 +36,7 @@ int create_start_file(int aid, char* uid, char* name, char* fname, char* start_v
     char start_dir[30];
     sprintf(start_dir, "AUCTIONS/%s/%s", said, start_file);
 
-    FILE* fp = fopen(start_file, "w");
+    FILE* fp = fopen(start_dir, "w");
     if (fp == NULL) {
         fprintf(stderr, "Error creating start file\n");
         return -1;
@@ -76,25 +76,12 @@ int create_auction_dir(int aid, char* uid, char* name, char* fname, char* start_
     return 1;
 }
 
-int process_open_auction(int fd, int aid, char** response){
+int process_open_auction(int fd, char* input, int aid, char** response){
     
     if (aid >= 999)
         // * reached the limit for auctions
         return 0; // * aid is the global counter for aid's
 
-    ssize_t n;
-
-    char input[READ_WRITE_RATE];
-
-    printf("Reading from TCP socket\n");
-
-    if ((n = read(fd, input, READ_WRITE_RATE)) == -1){
-        fprintf(stderr, "Error reading from TCP socket\n");
-        exit(1);
-    }
-
-    printf("Read from TCP socket\n");
-    input[n] = '\0';
     printf("input: %s\n", input);
 
     char* uid = strtok(input, " ");
@@ -217,7 +204,7 @@ int process_open_auction(int fd, int aid, char** response){
         bytes_received = read(fd, input, 512);
         
         if (bytes_received < 0){
-            *response = (char*)malloc(sizeof(char) * (3 + 1 + 3 + 1));
+            *response = (char*) malloc(sizeof(char) * (3 + 1 + 3 + 1));
             sprintf(*response, "%s %s", OPEN_RESPONSE, NOK_STATUS);
             fprintf(stderr, "Error reading from TCP socket\n");
             fclose(file);
