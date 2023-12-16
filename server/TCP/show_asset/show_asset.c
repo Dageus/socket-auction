@@ -26,7 +26,6 @@ int process_show_asset(char* input, int fd){
 
     printf("Processing show asset\n");
     
-    char* response = NULL;
 
     char *aid = strtok(input, " ");
 
@@ -34,7 +33,7 @@ int process_show_asset(char* input, int fd){
         return -1;
 
     if (strlen(aid) != AID_LEN){
-        response  = (char*) malloc(SHOW_ASSET_ERR_LEN + 1);
+        char response[SHOW_ASSET_ERR_LEN + 1];
         sprintf(response, "%s ERR\n", SHOW_ASSET_CMD);
         return -1;
     }
@@ -47,7 +46,7 @@ int process_show_asset(char* input, int fd){
     struct stat filestat;
     
     if (stat(auction_dir, &filestat) == -1) {
-        response = (char*) malloc(SHOW_ASSET_ERR_LEN + 1) ;
+        char response[SHOW_ASSET_ERR_LEN + 1];
         sprintf(response, "%s ERR\n", SHOW_ASSET_CMD);
         printf("File does not exist\n");
         return -1;
@@ -58,16 +57,18 @@ int process_show_asset(char* input, int fd){
     char start_file[27];
     sprintf(start_file, "AUCTIONS/%s/START_%s.txt", aid, aid);
 
+    printf("Start file: %s\n", start_file);
+
     if (stat(start_file, &filestat) == -1){
-        response = (char*) malloc(SHOW_ASSET_ERR_LEN + 1) ;
+        char response[SHOW_ASSET_ERR_LEN + 1];
         sprintf(response, "%s ERR\n", SHOW_ASSET_CMD);
-        printf("File does not exist\n");
+        printf("File does not exis0t egegeeggege\n");
         return -1;
     }
 
     FILE *fp = fopen(start_file, "r");
     if (fp == NULL){
-        response = (char*) malloc(SHOW_ASSET_ERR_LEN + 1);
+        char response[SHOW_ASSET_ERR_LEN + 1];
         sprintf(response, "%s ERR\n", SHOW_ASSET_CMD);
         return -1;
     }
@@ -76,7 +77,7 @@ int process_show_asset(char* input, int fd){
 
     // Check if memory allocation was successful
     if (start_file_content == NULL) {
-        response = (char*) malloc(SHOW_ASSET_ERR_LEN + 1);
+        char response[SHOW_ASSET_ERR_LEN + 1];
         sprintf(response, "%s ERR\n", SHOW_ASSET_CMD);
         perror("Memory allocation failed");
         return 1; // Exit with an error code
@@ -85,7 +86,7 @@ int process_show_asset(char* input, int fd){
     // Read file contents 
 
     if (fgets(start_file_content, filestat.st_size + 1, fp) == NULL) {
-        response = (char*) malloc(SHOW_ASSET_ERR_LEN + 1);
+        char response[SHOW_ASSET_ERR_LEN + 1];
         sprintf(response, "%s ERR\n", SHOW_ASSET_CMD);
         perror("Error reading file");
         return 1; // Exit with an error code
@@ -97,13 +98,13 @@ int process_show_asset(char* input, int fd){
     strtok(NULL, " ");
     char *fname = strtok(NULL, " ");    
 
-    char filepath_file[13 + strlen(fname) + 1];
-    sprintf(filepath_file, "AUCTIONS/%s/%s", aid, fname);
+    char filepath_file[19 + strlen(fname) + 1];
+    sprintf(filepath_file, "AUCTIONS/%s/ASSET/%s", aid, fname);
 
     struct stat filestat_file;
 
     if (stat(filepath_file, &filestat_file) == -1){
-        response = (char*) malloc(SHOW_ASSET_ERR_LEN + 1) ;
+        char response[SHOW_ASSET_ERR_LEN + 1];
         sprintf(response, "%s ERR\n", SHOW_ASSET_CMD);
         printf("File does not exist\n");
         return -1;
@@ -111,7 +112,7 @@ int process_show_asset(char* input, int fd){
 
     // Now I have to send the file to the client through the TCP socket
 
-    response = (char*) malloc(sizeof(char) * (3 + 1 + 2 + strlen(fname) + 1 + 19 + 1));
+    char response[3 + 1 + 2 + strlen(fname) + 1 + 19 + 1];
 
     sprintf((response), "%s OK %s %ld", SHOW_ASSET_CMD, fname, filestat_file.st_size);
 
@@ -119,23 +120,25 @@ int process_show_asset(char* input, int fd){
 
     char file_content_file[READ_WRITE_RATE]; 
 
-    FILE *fp_send = fopen(filepath_file, "r");
+    FILE *fp_send = fopen(filepath_file, "rb");
     if (fp_send == NULL){
-        response = (char*) malloc(SHOW_ASSET_ERR_LEN + 1);
+        char response[SHOW_ASSET_ERR_LEN + 1];
         sprintf(response, "%s ERR\n", SHOW_ASSET_CMD);
         return -1;
     }
 
-    if ((send(fd, response , READ_WRITE_RATE, 0)) == -1) {
+    
+
+    if ((write(fd, response , READ_WRITE_RATE)) == -1) {
             /*error*/
-            fprintf(stderr, "Error sending message to server\n");
+            fprintf(stderr, "Error sending message to serve88888 8AAAAAAAAAAAAr\n");
             free(response);
             close(fd);
             return -1;
         }
 
     while (fread(file_content_file, filestat_file.st_size, 1, fp_send) < sizeof(file_content_file)){
-        if ((send(fd, file_content_file , READ_WRITE_RATE, 0)) == -1) {
+        if (write(fd, file_content_file , READ_WRITE_RATE) == -1) {
             /*error*/
             fprintf(stderr, "Error sending message to server\n");
             close(fd);
