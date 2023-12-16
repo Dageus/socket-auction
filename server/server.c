@@ -295,17 +295,17 @@ int create_tcp_socket(){
 
 void read_tcp_socket(int fd){
 
-    ssize_t input_length;
+    ssize_t n;
 
     // read from TCP socket first 3 bytes
 
     cmds command;
     char buffer[READ_WRITE_RATE];
-    input_length = read(fd, buffer, READ_WRITE_RATE);
+    n = read(fd, buffer, READ_WRITE_RATE);
+    buffer[n] = '\0';
+    buffer[n - 1] = '\0';
 
-    printf("input: %s\n", buffer);
-
-    if (input_length == -1){
+    if (n == -1){
         fprintf(stderr, "Error reading from TCP socket\n");
         exit(1);
     }
@@ -314,8 +314,10 @@ void read_tcp_socket(int fd){
 
     command.cmd[3] = '\0';
 
+    size_t input_length = strlen(buffer) - 4;
+
     memcpy(command.input, buffer + 4, input_length); 
-    command.input[input_length - 1] = '\0'; 
+    command.input[input_length] = '\0'; 
 
     check_TCP_command(command, fd);
 }
