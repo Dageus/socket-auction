@@ -23,6 +23,8 @@
 // }
 
 int process_show_asset(char* input,int fd){
+
+    printf("Processing show asset\n");
     
     char* response = NULL;
 
@@ -40,6 +42,8 @@ int process_show_asset(char* input,int fd){
     char auction_dir[13];
     sprintf(auction_dir, "AUCTIONS/%s", aid);
 
+    printf("Auction dir: %s\n", auction_dir);
+
     struct stat filestat;
     
     if (stat(auction_dir, &filestat) == -1) {
@@ -48,6 +52,8 @@ int process_show_asset(char* input,int fd){
         printf("File does not exist\n");
         return -1;
     }
+
+    printf("File exists\n");
 
     char start_file[27];
     sprintf(start_file, "AUCTIONS/%s/START_%s.txt", aid, aid);

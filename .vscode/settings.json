@@ -23,6 +23,8 @@
         "show_asset.h": "c",
         "wait.h": "c",
         "socket.h": "c",
-        "stdio.h": "c"
+        "stdio.h": "c",
+        "common.h": "c",
+        "open.h": "c"
     }
 }

@@ -4,7 +4,6 @@
 SCRIPTS/
 AUCTIONS/
 USERS/
-```
 client/user
 server/server
 *.out

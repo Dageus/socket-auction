@@ -20,7 +20,9 @@ int process_show_asset(char* input, TCP_response** response){
         return -1;
     }
 
-    sprintf((*response)->msg, "%s %s\n", n_cmd, asset_id);
+    sprintf((*response)->msg, "SAS %s\n", asset_id);
+
+    printf("%s\n", (*response)->msg);
 
 
     return 0;

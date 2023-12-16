@@ -178,7 +178,6 @@ void check_TCP_cmd(char* input, char* cmd) {
     } 
 
     free(request);
-
 }
 
 void process_cmd(char* input){
@@ -203,7 +202,6 @@ void process_cmd(char* input){
         fprintf(stderr, "error: unkown_command\n");
 
     free(input_copy);
-    free(cmd);
 }
 
 

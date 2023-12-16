@@ -1,6 +1,6 @@
 #include "open.h"
 #include "../../constants.h"
-// #include "../../common/common.h"
+#include "../../common/common.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <string.h>
@@ -11,7 +11,22 @@
 #include <time.h>
 #include <ctype.h>
 
-int create_start_file(int aid, char* uid, char* name, char* fname, char* start_value, char* timeactive, char time_str[20], char s_time_str[11]) {
+int create_start_file(int aid, char* uid, char* name, char* fname, char* start_value, char* timeactive) {
+    
+    time_t fulltime;
+    struct tm *current_time ;
+    char time_str [20];
+    char s_time_str [11];
+
+    time(&fulltime);
+    current_time = gmtime(&fulltime);
+
+    sprintf(s_time_str, "%ld", (long)fulltime);
+    sprintf(time_str, "%4d-%02d-%02d %02d:%02d:%02d", 
+                                    current_time->tm_year + 1900, current_time->tm_mon + 1,
+                                    current_time->tm_mday, current_time->tm_hour, current_time->tm_min, current_time->tm_sec);    
+    
+    
     char said[4];
     sprintf(said, "%03d", aid);
 
@@ -32,34 +47,19 @@ int create_start_file(int aid, char* uid, char* name, char* fname, char* start_v
     fclose(fp);
 }
 
-int CreateAUCTIONDir(int aid, char* uid, char* name, char* fname, char* start_value, char* timeactive) {
+int create_auction_dir(int aid, char* uid, char* name, char* fname, char* start_value, char* timeactive) {
     char AID_dirname[15];
     char BIDS_dirname[20];
     int ret;
 
-    time_t fulltime;
-    struct tm *current_time ;
-    char time_str [20];
-    char s_time_str [11];
-
     if (aid < 1 || aid > 999)
         return 0;
 
-    aid += 1;
-
-    time(&fulltime);
-    current_time = gmtime(&fulltime);
-
-    sprintf(s_time_str, "%ld", (long)fulltime);
-    sprintf(time_str, "%4d-%02d-%02d %02d:%02d:%02d", 
-                                    current_time->tm_year + 1900, current_time->tm_mon + 1,
-                                    current_time->tm_mday, current_time->tm_hour, current_time->tm_min, current_time->tm_sec);    
-    
     sprintf(AID_dirname, "AUCTIONS/%03d", aid);
     
     ret = mkdir(AID_dirname, 0700);
     if (ret == -1)
-        
+        /* error */
         return -1;
     
     sprintf(BIDS_dirname, "AUCTIONS/%03d/BIDS", aid);
@@ -70,15 +70,13 @@ int CreateAUCTIONDir(int aid, char* uid, char* name, char* fname, char* start_va
         return -1;
     }
 
-    if(create_start_file(aid, uid, name, fname, start_value, timeactive, time_str, s_time_str) == -1)
+    if (create_start_file(aid, uid, name, fname, start_value, timeactive) == -1)
         return -1;    
     
     return 1;
 }
 
 int process_open_auction(int fd, int aid, char** response){
-
-    printf("Processing open auction\n");
     
     if (aid >= 999)
         // * reached the limit for auctions
@@ -117,7 +115,149 @@ int process_open_auction(int fd, int aid, char** response){
     printf("file_size: %ld\n", file_size);
     printf("img: %s\n", img);
 
-    // if (uid == NULL || pwd == NULL || name == NULL || start_value == NULL || timeactive == NULL || fname == NULL || file_size == 0) {
+
+    // Check if user exists
+
+    char user_dir[13];
+    sprintf(user_dir, "USERS/%s", uid);
+
+    struct stat st;
+
+    if (stat(user_dir, &st) == -1){
+        *response = (char*) malloc(sizeof(char) * (3 + 1 + 3 + 1));
+        sprintf(*response, "%s %s", OPEN_RESPONSE, NOK_STATUS);
+        fprintf(stderr, "User does not exist\n");
+        close(fd);
+        return -1;
+    }
+
+    printf("User exists\n");
+
+    // Check if password is correct
+    if (check_password(user_dir, uid, pwd) == -1){
+        *response = (char*)malloc(sizeof(char) * (3 + 1 + 3 + 1));
+        sprintf(*response, "%s %s", OPEN_RESPONSE, NOK_STATUS);
+        fprintf(stderr, "Password is incorrect\n");
+        close(fd);
+        return -1;
+    }
+
+    // Check if auction name is valid
+
+    if (strlen(name) > 10){
+        *response = (char*)malloc(sizeof(char) * (3 + 1 + 3 + 1));
+        sprintf(*response, "%s %s", OPEN_RESPONSE, NOK_STATUS);
+        fprintf(stderr, "Auction name is too long\n");
+        close(fd);
+        return -1;
+    }
+
+    printf("Auction name is valid\n");
+
+    // Create directory for auction
+
+    if (create_auction_dir(aid, uid, name, fname, start_value, timeactive) == -1){
+        *response = (char*) malloc(sizeof(char) * (3 + 1 + 3 + 1));
+        sprintf(*response, "%s %s", OPEN_RESPONSE, NOK_STATUS);
+        fprintf(stderr, "Error creating auction directory\n");
+        close(fd);
+        return -1;
+    }
+
+    // Now I have to read from the socket chunk by chunk the rest of the bytes that contain the image
+
+    int total_bytes_received = 0;
+    int bytes_received;
+    char dir_fname[strlen(AUCTIONS_DIR) + 1 + AID_LEN + 1 + strlen(ASSET) + 1 + strlen(fname) + 1];
+
+    // create ASSET directory
+
+    char asset_dir[20];
+    sprintf(asset_dir, "AUCTIONS/%03d/ASSET", aid);
+
+    if (mkdir(asset_dir, 0700) == -1){
+        *response = (char*) malloc(sizeof(char) * (3 + 1 + 3 + 1));
+        sprintf(*response, "%s %s", OPEN_RESPONSE, NOK_STATUS);
+        fprintf(stderr, "Error creating asset directory\n");
+        close(fd);
+        return -1;
+    }
+
+    sprintf(dir_fname, "AUCTIONS/%03d/ASSET/%s", aid, fname);
+    FILE *file = fopen(dir_fname, "wb");
+
+    printf("dir_fname: %s\n", dir_fname);
+    
+    if (!file) {
+        *response = (char*)malloc(sizeof(char) * (3 + 1 + 3 + 1));
+        sprintf(*response, "%s %s", OPEN_RESPONSE, NOK_STATUS);
+        fprintf(stderr, "Error opening file\n");
+        fclose(file);
+        close(fd);
+        return -1;
+    }
+
+    printf("File opened\n");
+
+    if (img != NULL) {
+        if (fwrite(img, 1, strlen(img), file) != strlen(img)) {
+            *response = (char*)malloc(sizeof(char) * (3 + 1 + 3 + 1));
+            sprintf(*response, "%s %s", OPEN_RESPONSE, NOK_STATUS);
+            fprintf(stderr, "Error writing file\n");
+            fclose(file);
+            close(fd);
+            return -1;
+        }
+        total_bytes_received += strlen(img);
+    }
+
+
+    while ( (size_t) total_bytes_received < file_size) {
+        
+        bytes_received = read(fd, input, 512);
+        
+        if (bytes_received < 0){
+            *response = (char*)malloc(sizeof(char) * (3 + 1 + 3 + 1));
+            sprintf(*response, "%s %s", OPEN_RESPONSE, NOK_STATUS);
+            fprintf(stderr, "Error reading from TCP socket\n");
+            fclose(file);
+            close(fd);
+            return -1;
+        }
+
+        total_bytes_received += bytes_received;
+
+        if(fwrite(input, 1 , bytes_received, file) != (size_t) bytes_received){
+            *response = (char*)malloc(sizeof(char) * (3 + 1 + 3 + 1));
+            sprintf(*response, "%s %s", OPEN_RESPONSE, NOK_STATUS);     
+            fprintf(stderr, "Error writing file\n");
+            fclose(file);
+            close(fd);
+            return -1;
+        
+        } // Write the received bytes to the file
+        
+    }
+
+    fclose(file);
+
+
+    *response = (char*)malloc(sizeof(char) * (3 + 1 + 3 + 1 + 3 + 1 ));
+    sprintf(*response, "%s %s %03d", OPEN_RESPONSE, OK_STATUS, aid);
+    
+    return 0;
+}
+
+/*
+
+
+FUNCOES QUE PARTIRAM O CODIGO TODO
+
+FAZEM COM QUE O FILE DESCRIPTOR SE FECHE A TOA E PARTE ISTO TUDO
+
+*/
+
+// if (uid == NULL || pwd == NULL || name == NULL || start_value == NULL || timeactive == NULL || fname == NULL || file_size == 0) {
     //     *response = (char*)malloc(sizeof(char) * (3 + 1 + 3 + 1));
     //     sprintf(*response, "%s %s", OPEN_RESPONSE, NOK_STATUS);
     //     fprintf(stderr, "Error reading from TCP socket\n");
@@ -194,124 +334,3 @@ int process_open_auction(int fd, int aid, char** response){
     //         return -1;
     //     }
     // }
-
-
-    // Check if user exists
-
-    char user_dir[13];
-    sprintf(user_dir, "USERS/%s", uid);
-
-    struct stat st;
-
-    if (stat(user_dir, &st) == -1){
-        *response = (char*) malloc(sizeof(char) * (3 + 1 + 3 + 1));
-        sprintf(*response, "%s %s", OPEN_RESPONSE, NOK_STATUS);
-        fprintf(stderr, "User does not exist\n");
-        close(fd);
-        return -1;
-    }
-
-    printf("User exists\n");
-
-    // Check if password is correct
-    if (check_password(user_dir, uid, pwd) == -1){
-        *response = (char*)malloc(sizeof(char) * (3 + 1 + 3 + 1));
-        sprintf(*response, "%s %s", OPEN_RESPONSE, NOK_STATUS);
-        fprintf(stderr, "Password is incorrect\n");
-        close(fd);
-        return -1;
-    }
-
-    printf("Password is correct\n");
-
-    // Check if auction name is valid
-
-    if (strlen(name) > 10){
-        *response = (char*)malloc(sizeof(char) * (3 + 1 + 3 + 1));
-        sprintf(*response, "%s %s", OPEN_RESPONSE, NOK_STATUS);
-        fprintf(stderr, "Auction name is too long\n");
-        close(fd);
-        return -1;
-    }
-
-    printf("Auction name is valid\n");
-
-    // Create directory for auction
-
-    if (CreateAUCTIONDir(aid, uid, name, fname, start_value, timeactive) == -1){
-        *response = (char*) malloc(sizeof(char) * (3 + 1 + 3 + 1));
-        sprintf(*response, "%s %s", OPEN_RESPONSE, NOK_STATUS);
-        fprintf(stderr, "Error creating auction directory\n");
-        close(fd);
-        return -1;
-    }
-
-    // Now I have to read from the socket chunk by chunk the rest of the bytes that contain the image
-
-    int total_bytes_received = 0;
-    int bytes_received;
-    char dir_fname[14 + strlen(fname) + 1];
-    dir_fname[0] = '\0';
-    
-    sprintf(dir_fname, "AUCTIONS/%03d/%s", aid, fname);
-    FILE *file = fopen("dir_fname", "w");
-    
-    if (!file) {
-        *response = (char*)malloc(sizeof(char) * (3 + 1 + 3 + 1));
-        sprintf(*response, "%s %s", OPEN_RESPONSE, NOK_STATUS);
-        fprintf(stderr, "Error opening file\n");
-        fclose(file);
-        close(fd);
-        return -1;
-    }
-
-    printf("File opened\n");
-
-    if (img != NULL) {
-        if (fwrite(img, 1, strlen(img), file) != strlen(img)) {
-            *response = (char*)malloc(sizeof(char) * (3 + 1 + 3 + 1));
-            sprintf(*response, "%s %s", OPEN_RESPONSE, NOK_STATUS);
-            fprintf(stderr, "Error writing file\n");
-            fclose(file);
-            close(fd);
-            return -1;
-        }
-        total_bytes_received += strlen(img);
-    }
-
-
-    while ( (size_t) total_bytes_received < file_size) {
-        
-        bytes_received = read(fd, input, 512);
-        
-        if (bytes_received < 0){
-            *response = (char*)malloc(sizeof(char) * (3 + 1 + 3 + 1));
-            sprintf(*response, "%s %s", OPEN_RESPONSE, NOK_STATUS);
-            fprintf(stderr, "Error reading from TCP socket\n");
-            fclose(file);
-            close(fd);
-            return -1;
-        }
-
-        total_bytes_received += bytes_received;
-
-        if(fwrite(input, 1 , bytes_received, file) != (size_t) bytes_received){
-            *response = (char*)malloc(sizeof(char) * (3 + 1 + 3 + 1));
-            sprintf(*response, "%s %s", OPEN_RESPONSE, NOK_STATUS);     
-            fprintf(stderr, "Error writing file\n");
-            fclose(file);
-            close(fd);
-            return -1;
-        
-        } // Write the received bytes to the file
-        
-    }
-
-    fclose(file);
-
-
-    *response = (char*)malloc(sizeof(char) * (3 + 1 + 3 + 1 + 3 + 1 ));
-    sprintf(*response, "%s %s %03d", OPEN_RESPONSE, OK_STATUS, aid);
-    
-    return 0;
-}

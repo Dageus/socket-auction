@@ -1,7 +1,7 @@
 #ifndef SHOW_ASSET_H
 #define SHOW_ASSET_H
 
-#define SHOW_ASSET_LEN 11
+#define SHOW_ASSET_LEN 8
 
 #include "../TCP.h"
 

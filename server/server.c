@@ -30,6 +30,7 @@ int udp_sock = -1;
 int tcp_sock = -1;
 
 void sigint_handler(int sig) {
+    (void) sig;
     printf("Closing sockets\n");
     
     if (udp_sock != -1) {
@@ -118,17 +119,22 @@ void check_UDP_command(cmds command, int fd, struct sockaddr_in addr, socklen_t 
 void check_TCP_command(cmds command, int fd){
 
     char* response = NULL;
+
+    printf("Command: %s with len: %ld\n", command.cmd, strlen(command.cmd));
+    printf("Input: %s with len: %ld\n", command.input, strlen(command.input));
     
     if (strcmp(command.cmd, "OPA") == 0){
         if (process_open_auction(fd, aid, &response) == -1)
             printf("Error in OPA command\n");
-        else
+        else{
             aid++;
+            printf("Auction opened with aid: %d\n", aid);
+        }
     } else if (strcmp(command.cmd, "CLS") == 0){
          if (process_close(command.input, &response) == -1)
             printf("Error in CLS command\n");
     } else if (strcmp(command.cmd, "SAS") == 0){
-        if(process_show_asset(command.cmd, fd) == -1)
+        if (process_show_asset(command.cmd, fd) == -1)
             printf("Error in SAS command\n");
     }else if(strcmp(command.cmd, "BID") == 0){
         if(process_bid(command.input, &response) == -1)
@@ -316,6 +322,7 @@ int main(int argc, char** argv){
     sa.sa_handler = sigint_handler;
     sigemptyset(&sa.sa_mask);
     sa.sa_flags = 0;
+
     if (sigaction(SIGINT, &sa, NULL) == -1) {
         perror("Error setting up signal handler");
         return 1;
@@ -366,6 +373,7 @@ int main(int argc, char** argv){
             read_tcp_socket(tcp_client_socket);
 
             // Close the TCP client socket when done
+            close(tcp_client_socket);
         }
     }
 
