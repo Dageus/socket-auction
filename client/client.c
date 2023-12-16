@@ -187,7 +187,9 @@ void process_cmd(char* input){
 
     char input_copy[MAX_COMMAND_LEN];
 
-    strncpy(input_copy, input, strlen(input));
+    strcpy(input_copy, input);
+
+    printf("input_copy: %s\n", input_copy);
 
     cmd = strtok(input, " ");
 
@@ -229,13 +231,31 @@ int main(int argc, char** argv) {
 
         memset(input, '\0', MAX_COMMAND_LEN - 1);
 
-        // read from terminal
-        fgets(input, MAX_COMMAND_LEN, stdin);
-
-        size_t len = strcspn(input, "\n");
-        if (len > 0 && input[len-1] == '\n') {
-            input[len-1] = '\0';
+        if (fgets(input, MAX_COMMAND_LEN, stdin) == NULL) { 
+            // No valid command configuration can be longer than 128 characters so this shouldn't be an issue.
+            ferror(stdin);
+            exit(-1);
         }
+        if (input[0] == '\n') { // If the user only pressed enter.
+            continue;
+        }
+
+        int n_char = strcspn(input, "\n");
+        if (input[n_char] == '\n')
+        {
+            input[n_char] = '\0';
+        }
+
+        printf("input: %s\n", input);
+
+
+        // // read from terminal
+        // fgets(input, MAX_COMMAND_LEN, stdin);
+
+        // size_t len = strcspn(input, "\n");
+        // if (len > 0 && input[len-1] == '\n') {
+        //     input[len-1] = '\0';
+        // }
 
         // see which command was inputted
         process_cmd(input);
