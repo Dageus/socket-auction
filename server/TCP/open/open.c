@@ -1,6 +1,6 @@
 #include "open.h"
 #include "../../constants.h"
-#include "../../common/common.h"
+// #include "../../common/common.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <string.h>
@@ -236,12 +236,25 @@ int process_open_auction(int fd, int aid, char** response){
 
     printf("Auction name is valid\n");
 
-    // Check if start value is valid
+    // Create directory for auction
+
+    if (CreateAUCTIONDir(aid, uid, name, fname, start_value, timeactive) == -1){
+        *response = (char*) malloc(sizeof(char) * (3 + 1 + 3 + 1));
+        sprintf(*response, "%s %s", OPEN_RESPONSE, NOK_STATUS);
+        fprintf(stderr, "Error creating auction directory\n");
+        close(fd);
+        return -1;
+    }
+
+    // Now I have to read from the socket chunk by chunk the rest of the bytes that contain the image
 
     int total_bytes_received = 0;
     int bytes_received;
-    // Now I have to read from the socket chunk by chunk the rest of the bytes that contain the image
-    FILE *file = fopen(fname, "wb");
+    char dir_fname[14 + strlen(fname) + 1];
+    dir_fname[0] = '\0';
+    
+    sprintf(dir_fname, "AUCTIONS/%03d/%s", aid, fname);
+    FILE *file = fopen("dir_fname", "w");
     
     if (!file) {
         *response = (char*)malloc(sizeof(char) * (3 + 1 + 3 + 1));
@@ -263,11 +276,9 @@ int process_open_auction(int fd, int aid, char** response){
             close(fd);
             return -1;
         }
-
-
-
         total_bytes_received += strlen(img);
     }
+
 
     while ( (size_t) total_bytes_received < file_size) {
         
@@ -298,15 +309,6 @@ int process_open_auction(int fd, int aid, char** response){
 
     fclose(file);
 
-    char img_dir[38];
-    sprintf(img_dir, "AUCTIONS/%03d/%s", aid, fname);
-    if (rename(fname, img_dir) == -1){
-        *response = (char*)malloc(sizeof(char) * (3 + 1 + 3 + 1));
-        sprintf(*response, "%s %s", OPEN_RESPONSE, NOK_STATUS);
-        fprintf(stderr, "Error renaming file\n");
-        close(fd);
-        return -1;
-    }
 
     *response = (char*)malloc(sizeof(char) * (3 + 1 + 3 + 1 + 3 + 1 ));
     sprintf(*response, "%s %s %03d", OPEN_RESPONSE, OK_STATUS, aid);
