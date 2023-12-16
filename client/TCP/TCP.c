@@ -312,8 +312,98 @@ int send_TCP(TCP_response* response, char* ip, char* port){
         
         // Receber ficheiro do servidor e escrever para o disco
 
+<<<<<<< HEAD
         if (receive_asset_message(fd, response->msg) == -1){
             fprintf(stderr, "[ERROR]: receive asset message\n");
+=======
+        if ((send(fd, response->msg , 8, 0)) == -1) {
+            /* error */
+            fprintf(stderr, "Error sending message to server\n");
+            return -1;
+        }
+           
+        // check if file exists by checking the status of the received message
+
+        if ((tcp_n = read(fd, tcp_buffer, TRANSMISSION_RATE)) == -1) {
+            /*error*/
+            fprintf(stderr, "Error receiving message from server\n");
+            return -1;
+        }
+
+        char* token = strtok(tcp_buffer, " ");
+        printf("token: %s\n", token);
+
+        if (strcmp(token = strtok(NULL, " "), "OK") == 0) {
+
+            // file exists
+            
+            char* filename = strtok(NULL, " ");
+            printf("filename: %s\n", filename);
+            
+            char* filesize_str = strtok(NULL, " ");
+            printf("filesize_str: %s\n", filesize_str);
+            
+            size_t filesize = atoi(filesize_str);
+            printf("filesize: %ld\n", filesize);	
+
+            char* content = strtok(NULL, " ");
+
+            FILE *file = fopen(filename, "wb");
+            if (!file) {
+                fprintf(stderr, "Error opening file\n");
+                freeaddrinfo(tcp_res);
+                close(fd);
+                return -1;
+            }
+
+            size_t bytes_received = 0;
+
+            if (content != NULL){
+                if (fwrite(content, 1, strlen(content), file) != strlen(content)) {
+                    fprintf(stderr, "Error writing file\n");
+                    fclose(file);
+                    freeaddrinfo(tcp_res);
+                    close(fd);
+                    return -1;
+                }
+
+                bytes_received += strlen(content);
+
+            }
+
+            while (bytes_received < filesize) {
+                
+                tcp_n = read(fd, tcp_buffer, sizeof(tcp_buffer));
+
+                if (tcp_n == -1) {
+                    fprintf(stderr, "Error receiving data\n");
+                    fclose(file);
+                    freeaddrinfo(tcp_res);
+                    close(fd);
+                    return -1;
+                }
+
+                bytes_received += tcp_n;
+
+                if (fwrite(tcp_buffer, 1, tcp_n, file) != (size_t) tcp_n) {
+                    fprintf(stderr, "Error writing file\n");
+                    fclose(file);
+                    freeaddrinfo(tcp_res);
+                    close(fd);
+                    return -1;
+                }
+            }
+
+            fclose(file);
+
+            fprintf(stdout, "File %s received\n", filename);
+
+        } else {
+            // file does not exist
+            fprintf(stderr, "Error: file does not exist\n");
+            freeaddrinfo(tcp_res);
+            close(fd);
+>>>>>>> 264659cadad6150b4a2a949a5271aaf8b0c720ad
             return -1;
         }
     }
