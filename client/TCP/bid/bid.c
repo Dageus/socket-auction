@@ -7,30 +7,19 @@
 
 int process_bid(char *input, client* user, TCP_response** response){
 
+    printf("Processing bid...\n");
+
     (*response)->msg = (char *) malloc(sizeof(char) * BID_LEN);
     (*response)->file = NULL;
 
-    char* token, *aid, *amount;
-    aid = (char *) malloc(sizeof(char) * AID_LEN);
-    amount = (char *) malloc(sizeof(char) * MAX_BIDDING_LEN);
-    int i = 0;
+    printf("input: %s\n", input);
     
-    token = strtok(input, " ");
-
-    while (token != NULL) {
-        token = strtok(NULL, " ");
-        if (i == 1 && strlen(token) <= AID_LEN)
-            strcpy(aid, token);
-        else if (i == 2)
-            strcpy(amount, token);
-        else {
-            printf("Invalid AID\n");
-            return -1;
-        }
-        i++;
-    }
+    char *aid = strtok(NULL, " ");
+    char *amount = strtok(NULL, " ");
 
     sprintf((*response)->msg, "%s %s %s %s %s\n", BID_CMD, user->uid, user->pwd, aid, amount);
+
+    printf("bid: %s\n", (*response)->msg);
 
     return 0;
 

@@ -58,7 +58,7 @@ int process_close(char *input, char **response){
 
             // read start file
 
-            char line[UID_LEN + 1 + 10 + 1 + MAX_FNAME_LEN + 1 + 6 + 1 + 5 + 1 + 19 + 1 + 10 + 1];
+            char line[87];
             fgets(line, sizeof(line), fp);
 
             char *host_uid = strtok(line, " ");
@@ -82,11 +82,10 @@ int process_close(char *input, char **response){
                 return 0;
             }
 
-            int i = 3;
-            while (i--) {
-                strtok(NULL, " ");
-            }
-
+            strtok(NULL, " ");
+            strtok(NULL, " ");
+            strtok(NULL, " ");
+            
             time_t timeactive = atoi(strtok(NULL, " "));
 
             strtok(NULL, " ");

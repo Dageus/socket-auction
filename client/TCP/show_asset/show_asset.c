@@ -12,14 +12,13 @@ int process_show_asset(char* input, TCP_response** response){
     (*response)->file->code = FILE_TO_BE_RECEIVED;
     (*response)->file->filename = NULL; // ! not sure se devia ser NULL ou nao
 
-    char* n_cmd = strtok(input, " ");
     char* asset_id = strtok(NULL, " ");
 
     if (asset_id == NULL){
         fprintf(stderr, "error: asset_id\n");
         return -1;
     }
-
+    
     sprintf((*response)->msg, "SAS %s\n", asset_id);
 
     printf("%s\n", (*response)->msg);

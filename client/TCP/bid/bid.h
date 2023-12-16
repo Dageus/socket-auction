@@ -1,7 +1,7 @@
 #ifndef BID_H
 #define BID_H
 
-#define BID_LEN 11
+#define BID_LEN 31
 #define BID_CMD "BID"
 
 #include "../../constants.h"

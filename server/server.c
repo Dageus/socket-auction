@@ -13,11 +13,13 @@
 #include <sys/select.h>
 #include <signal.h>
 #include <errno.h>
+#include <fcntl.h>
+#include "common/common.h"
 #include "constants.h"
 #include "UDP/UDP.h"
 #include "TCP/TCP.h"
 
-int aid = 1;
+int aid;
 
 int verbose = FALSE;
 char *port = "58000";
@@ -194,35 +196,32 @@ void read_udp_socket(int fd) {
     printf("Finished processing UDP command\n");
 }
 
-void check_TCP_command(cmds command, int fd){
+void check_TCP_command(char *command, int fd){
 
     char* response = NULL;
-
-    printf("Command: %s with len: %ld\n", command.cmd, strlen(command.cmd));
-    printf("Input: %s with len: %ld\n", command.input, strlen(command.input));
     
-    if (strcmp(command.cmd, "OPA") == 0){
-        if (process_open_auction(fd, command.input,  aid, &response) == -1)
+    if (strcmp(command, "OPA") == 0){
+        if (process_open_auction(fd,  aid, &response) == -1)
             printf("Error in OPA command\n");
         else {
-            aid++;
             printf("Auction opened with aid: %d\n", aid);
+            aid++;
         }
-    } else if (strcmp(command.cmd, "CLS") == 0){
-         if (process_close(command.input, &response) == -1)
+    } else if (strcmp(command, "CLS") == 0){
+         if (process_close(command, &response) == -1)
             printf("Error in CLS command\n");
-    } else if (strcmp(command.cmd, "SAS") == 0){
-        if (process_show_asset(command.input, fd) == -1)
+    } else if (strcmp(command, "SAS") == 0){
+        if (process_show_asset(fd) == -1)
             printf("Error in SAS command\n");
-    }else if(strcmp(command.cmd, "BID") == 0){
-        if(process_bid(command.input, &response) == -1)
+    }else if(strcmp(command, "BID") == 0){
+        if(process_bid(fd, &response) == -1)
             printf("Error in BID command\n");
     }
 
-    printf("TCP response: %s\n", response);
     
     // send response to client through TCP socket
-    if (strcmp(command.cmd, "SAS") != 0){
+    if (strcmp(command, "SAS") != 0){
+        printf("TCP response: %s\n", response);
         char* response_ptr = response;
         int response_len = strlen(response);
         int bytes_sent = 0;
@@ -269,6 +268,10 @@ int create_tcp_socket(){
     hints.ai_socktype = SOCK_STREAM;   // TCP socket
     hints.ai_flags = AI_PASSIVE;
 
+    int enable = 1;
+    if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &(int){ 1 }, sizeof(int)) < 0)
+        error("setsockopt(SO_REUSEADDR) failed");
+
     errcode = getaddrinfo(NULL, port, &hints, &res);
     if ((errcode) != 0){
         /*error*/
@@ -295,29 +298,17 @@ int create_tcp_socket(){
 
 void read_tcp_socket(int fd){
 
-    ssize_t n;
+    // read from TCP socket first 3 bytes to get command
 
-    // read from TCP socket first 3 bytes
-
-    cmds command;
-    char buffer[READ_WRITE_RATE];
-    n = read(fd, buffer, READ_WRITE_RATE);
-    buffer[n] = '\0';
-    buffer[n - 1] = '\0';
-
-    if (n == -1){
+    char command[4];
+    ssize_t n = read_word(fd, command, 4);
+    if (n == -1) {
+        /*error*/
         fprintf(stderr, "Error reading from TCP socket\n");
         exit(1);
     }
 
-    memcpy(command.cmd, buffer, 4);
-
-    command.cmd[3] = '\0';
-
-    size_t input_length = strlen(buffer) - 4;
-
-    memcpy(command.input, buffer + 4, input_length); 
-    command.input[input_length] = '\0'; 
+    printf("command: %s\n", command);
 
     check_TCP_command(command, fd);
 }
@@ -348,6 +339,8 @@ int main(int argc, char** argv){
     tcp_sock = create_tcp_socket();
     printf("tcp_sock: %d\n", tcp_sock);
 
+    aid = get_global_aid_number();
+    printf("aid: %d\n", aid);
 
     int maxfd;
     fd_set activefds;
@@ -386,7 +379,14 @@ int main(int argc, char** argv){
 
             read_tcp_socket(tcp_client_socket);
 
+            printf("Shutting down TCP client socket\n");
+            if (shutdown(tcp_client_socket, SHUT_WR) == -1) {
+                perror("shutdown");
+                exit(EXIT_FAILURE);
+            }
+
             // Close the TCP client socket when done
+            printf("Closing TCP client socket\n");
             close(tcp_client_socket);
         }
     }

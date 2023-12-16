@@ -11,6 +11,8 @@
 #include <time.h>
 #include <ctype.h>
 
+char input[READ_WRITE_RATE];
+
 int create_start_file(int aid, char* uid, char* name, char* fname, char* start_value, char* timeactive) {
     
     time_t fulltime;
@@ -76,33 +78,39 @@ int create_auction_dir(int aid, char* uid, char* name, char* fname, char* start_
     return 1;
 }
 
-int process_open_auction(int fd, char* input, int aid, char** response){
+int process_open_auction(int fd, int aid, char** response){
     
     if (aid >= 999)
-        // * reached the limit for auctions
-        return 0; // * aid is the global counter for aid's
+        // reached the limit for auctions
+        return 0;  
 
-    printf("input: %s\n", input);
+    printf("processing open auction...\n");
 
-    char* uid = strtok(input, " ");
-    char* pwd = strtok(NULL, " ");
-    char* name  = strtok(NULL, " ");
-    char* start_value = strtok(NULL, " ");
-    char* timeactive = strtok(NULL, " ");
-    char* fname = strtok(NULL, " ");
-    size_t file_size = atoi(strtok(NULL, " "));
-    char* img = strtok(NULL, " ");
+    char uid[UID_LEN + 1];
+    char pwd[PWD_LEN + 1];
+    char name[MAX_NAME + 1];
+    char start_value[8];
+    char timeactive[6];
+    char fname[MAX_FNAME_LEN + 1];
+    char file_size_str[11];
 
+    read_word(fd, uid, UID_LEN + 1);
+    read_word(fd, pwd, PWD_LEN + 1);
+    read_word(fd, name, MAX_NAME + 1);
+    read_word(fd, start_value, 7 + 1);
+    read_word(fd, timeactive, 5 + 1);
+    read_word(fd, fname, MAX_FNAME_LEN + 1);
+    read_word(fd, file_size_str, 10 + 1);
+
+    printf("--------------------\n");
     printf("uid: %s\n", uid);
     printf("pwd: %s\n", pwd);
     printf("name: %s\n", name);
     printf("start_value: %s\n", start_value);
     printf("timeactive: %s\n", timeactive);
     printf("fname: %s\n", fname);
-    printf("file_size: %ld\n", file_size);
-    printf("img: %s\n", img);
-
-
+    printf("file_size: %s\n", file_size_str);
+    printf("--------------------\n");
     // Check if user exists
 
     char user_dir[13];
@@ -171,9 +179,10 @@ int process_open_auction(int fd, char* input, int aid, char** response){
     }
 
     sprintf(dir_fname, "AUCTIONS/%03d/ASSET/%s", aid, fname);
+
     FILE *file = fopen(dir_fname, "wb");
 
-    printf("dir_fname: %s\n", dir_fname);
+    printf("file to write to: %s\n", dir_fname);
     
     if (!file) {
         *response = (char*)malloc(sizeof(char) * (3 + 1 + 3 + 1));
@@ -186,22 +195,12 @@ int process_open_auction(int fd, char* input, int aid, char** response){
 
     printf("File opened\n");
 
-    if (img != NULL) {
-        if (fwrite(img, 1, strlen(img), file) != strlen(img)) {
-            *response = (char*)malloc(sizeof(char) * (3 + 1 + 3 + 1));
-            sprintf(*response, "%s %s", OPEN_RESPONSE, NOK_STATUS);
-            fprintf(stderr, "Error writing file\n");
-            fclose(file);
-            close(fd);
-            return -1;
-        }
-        total_bytes_received += strlen(img);
-    }
+    printf("total_bytes_received: %d\n", total_bytes_received);
 
 
-    while ( (size_t) total_bytes_received < file_size) {
+    while ( (size_t) total_bytes_received < atoi(file_size_str)) {
         
-        bytes_received = read(fd, input, 512);
+        bytes_received = read(fd, input, READ_WRITE_RATE);
         
         if (bytes_received < 0){
             *response = (char*) malloc(sizeof(char) * (3 + 1 + 3 + 1));
@@ -212,9 +211,15 @@ int process_open_auction(int fd, char* input, int aid, char** response){
             return -1;
         }
 
+        printf("\n");
+        printf("received %d bytes\n", bytes_received);
+        printf("\n");
+
         total_bytes_received += bytes_received;
 
-        if(fwrite(input, 1 , bytes_received, file) != (size_t) bytes_received){
+        printf("total_bytes_received: %d\n", total_bytes_received);
+
+        if (fwrite(input, 1 , bytes_received, file) != (size_t) bytes_received){
             *response = (char*)malloc(sizeof(char) * (3 + 1 + 3 + 1));
             sprintf(*response, "%s %s", OPEN_RESPONSE, NOK_STATUS);     
             fprintf(stderr, "Error writing file\n");
@@ -225,6 +230,10 @@ int process_open_auction(int fd, char* input, int aid, char** response){
         } // Write the received bytes to the file
         
     }
+
+    printf("\n");
+    printf("received %d bytes\n", total_bytes_received);
+    printf("\n");
 
     fclose(file);
 

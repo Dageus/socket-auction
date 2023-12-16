@@ -1,5 +1,6 @@
 #include "bid.h"
 #include "../../constants.h"
+#include "../../common/common.h"
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -7,15 +8,22 @@
 #include <dirent.h>
 #include "../TCP.h"
 
-int process_bid(char* input, char** response){
+int process_bid(int fd, char** response){
 
-    char* uid = strtok(input, " ");
-    char* pwd = strtok(NULL, " ");
-    char* aid = strtok(NULL, " ");
-    char* amount = strtok(NULL, " ");
+    char uid[UID_LEN + 1];
+    char pwd[PWD_LEN + 1];
+    char aid[AID_LEN + 1];
+    char amount[MAX_BIDDING_LEN + 1];
 
-    if (uid == NULL || pwd == NULL || aid == NULL || amount == NULL)
-        return 0;
+    read_word(fd, uid, UID_LEN);
+    read_word(fd, pwd, PWD_LEN);
+    read_word(fd, aid, AID_LEN);
+    read_word(fd, amount, MAX_BIDDING_LEN);
+
+    printf("uid: %s\n", uid);
+    printf("pwd: %s\n", pwd);
+    printf("aid: %s\n", aid);
+    printf("amount: %s\n", amount);
 
     if (strlen(uid) != UID_LEN || strlen(pwd) != PWD_LEN || strlen(aid) != AID_LEN || strlen(amount) > 8)
         /* wrong format */
@@ -111,6 +119,8 @@ int process_bid(char* input, char** response){
         strncpy(highest_bid_file, bid_file_list[n_entries - 1]->d_name, 6);
 
         int highest_bid = atoi(highest_bid_file);
+
+        printf("highest bid: %d\n", highest_bid);
 
         if (atoi(amount) <= highest_bid) {
             // bid is lower than highest bid

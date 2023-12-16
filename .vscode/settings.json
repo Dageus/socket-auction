@@ -25,6 +25,12 @@
         "socket.h": "c",
         "stdio.h": "c",
         "common.h": "c",
-        "open.h": "c"
+        "open.h": "c",
+        "dirent.h": "c",
+        "stdbool.h": "c",
+        "in.h": "c",
+        "inet.h": "c",
+        "stdlib.h": "c",
+        "commands_udp.h": "c"
     }
 }

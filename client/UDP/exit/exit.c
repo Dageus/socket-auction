@@ -6,7 +6,7 @@
 
 int process_exit(client** user) {
 
-    if (strcmp((*user)->uid, NO_UID) == 0) 
+    if (strcmp((*user)->uid, NO_UID)) 
         return -1;
     else {
         printf("Exiting client...\n");

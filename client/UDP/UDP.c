@@ -17,6 +17,7 @@ struct addrinfo udp_hints, *udp_res;
 struct sockaddr_in udp_addr;
 
 const char* UDP_commands[] = {
+    "exit",
     "login",
     "logout",
     "unregister",
@@ -32,7 +33,7 @@ const char* UDP_commands[] = {
 
 int UDP_cmd(char* cmd){
     int i;
-    for (i = 0; i < 11; i++) {
+    for (i = 0; i < 12; i++) {
         if (strcmp(cmd, UDP_commands[i]) == 0)
             return 1;
     }
@@ -54,6 +55,8 @@ int send_UDP(char* msg, char** udp_buffer, char* ip, char* port) {
     udp_hints.ai_family = AF_INET;
     udp_hints.ai_socktype = SOCK_DGRAM;
 
+    printf("trying to connect to %s:%s\n", ip, port);
+
     udp_errcode = getaddrinfo(ip, port, &udp_hints, &udp_res);
 
     udp_n = sendto(fd, msg, strlen(msg), 0, udp_res->ai_addr, udp_res->ai_addrlen);
@@ -62,9 +65,13 @@ int send_UDP(char* msg, char** udp_buffer, char* ip, char* port) {
 		fprintf(stderr, "Error sending message to server\n");
         return -1;
 	}
+
+    printf("sent %ld bytes\n", udp_n);
        
     udp_addrlen = sizeof(udp_addr);
     udp_n = recvfrom(fd, *udp_buffer, 5003, 0, (struct sockaddr*)&udp_addr, &udp_addrlen);
+
+    printf("received %ld bytes\n", udp_n);
 
     if (udp_n == -1) {
         /*error*/

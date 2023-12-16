@@ -1,5 +1,6 @@
 *.pdf
 *.o
+*.jpg
 .vscode/
 SCRIPTS/
 AUCTIONS/

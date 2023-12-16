@@ -19,25 +19,10 @@ int process_login(char* input, client** user, char** response) {
         return -1;
     }
     
-    char* token;
-    int i = 0;
+    strtok(input, " ");
 
-    token = strtok(input, " ");
-
-    while (token != NULL) {
-        if (i == 0)
-            strcpy(*response, LOGIN_CMD);
-        else if (i == 1 && strlen(token) == UID_LENGTH)
-            strcpy((*user)->uid, token);
-        else if (i == 2 && strlen(token) == PASSWORD_LEN)
-            strcpy((*user)->pwd, token);
-        else {
-            printf("Invalid UID or PWD\n");
-            return -1;
-        }
-        token = strtok(NULL, " ");
-        i++;
-    }
+    strcpy((*user)->uid, strtok(NULL, " "));
+    strcpy((*user)->pwd, strtok(NULL, " "));
 
     int return_code = sprintf(*response, "%s %s %s\n", LOGIN_CMD, (*user)->uid, (*user)->pwd);
 

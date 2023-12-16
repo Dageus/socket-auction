@@ -10,8 +10,7 @@
 #include <netdb.h>
 #include <bits/getopt_core.h>
 #include "constants.h"
-#include "UDP/commands_udp.h"
-#include "TCP/commands_tcp.h"
+#include "TCP/tcp_commands.h"
 #include "UDP/UDP.h"
 #include "TCP/TCP.h"
 
@@ -122,6 +121,7 @@ void check_UDP_cmd(char* input, char* cmd) {
         if (process_unregister(user, &request) == -1)
             printf("error: unregister\n");
     } else if (strcmp(cmd, "exit") == 0) {
+        printf("exiting...\n");
         if (process_exit(&user) == -1)
             printf("error: please log out first\n");
     } else if (strcmp(cmd, "myauctions") == 0 || strcmp(cmd, "ma") == 0) {
@@ -137,7 +137,6 @@ void check_UDP_cmd(char* input, char* cmd) {
         if (process_show_record(user, input, &request) == -1)
             printf("error: show_record\n"); 
     }
-
 
     if (request != NULL){
         printf("UDP request: %s", request);
@@ -157,6 +156,8 @@ void check_TCP_cmd(char* input, char* cmd) {
 
     TCP_response* request;
     request = (TCP_response *) malloc(sizeof(TCP_response));
+
+    printf("input: %s\n", input);
 
     if (strcmp(cmd, "bid") == 0 || strcmp(cmd, "b") == 0) {
         if (process_bid(input, user, &request) == -1)
@@ -182,17 +183,19 @@ void check_TCP_cmd(char* input, char* cmd) {
 
 void process_cmd(char* input){
 
-    char *input_copy, *cmd;
+    char *cmd;
 
-    input_copy = (char *) malloc(sizeof(char) * MAX_COMMAND_LEN);
+    char input_copy[MAX_COMMAND_LEN];
 
-    strncpy(input_copy, input, strlen(input) - 1);
+    strncpy(input_copy, input, strlen(input));
 
     cmd = strtok(input, " ");
+
 
     if (cmd[strlen(cmd) - 1] == '\n')
         cmd[strlen(cmd) - 1] = '\0';
 
+    printf("cmd: %s\n", cmd);
 
     if (UDP_cmd(cmd))
         check_UDP_cmd(input_copy, cmd);
@@ -200,8 +203,6 @@ void process_cmd(char* input){
         check_TCP_cmd(input_copy, cmd);
     else
         fprintf(stderr, "error: unkown_command\n");
-
-    free(input_copy);
 }
 
 
@@ -223,15 +224,22 @@ int main(int argc, char** argv) {
 
     // main code
     while (TRUE) {
-        char *input = (char *) malloc(sizeof(char) * MAX_COMMAND_LEN);
+
+        char input[MAX_COMMAND_LEN];
+
+        memset(input, '\0', MAX_COMMAND_LEN - 1);
 
         // read from terminal
         fgets(input, MAX_COMMAND_LEN, stdin);
 
+        size_t len = strcspn(input, "\n");
+        if (len > 0 && input[len-1] == '\n') {
+            input[len-1] = '\0';
+        }
+
         // see which command was inputted
         process_cmd(input);
     }
-
 
     return 0;
 }

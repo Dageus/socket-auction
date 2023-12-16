@@ -1,5 +1,6 @@
 #include "show_asset.h"
 #include "../../constants.h"
+#include "../../common/common.h"
 #include <sys/stat.h>
 #include <dirent.h>
 #include <stdio.h>
@@ -22,11 +23,12 @@
 //     return filestat.st_size;
 // }
 
-int process_show_asset(char* input, int fd){
+int process_show_asset(int fd){
 
     printf("Processing show asset\n");
     
-    char *aid = strtok(input, " ");
+    char aid[4];
+    read_word(fd, aid, AID_LEN);
 
     if (aid == NULL)
         return -1;
@@ -40,8 +42,6 @@ int process_show_asset(char* input, int fd){
     char auction_dir[13];
     sprintf(auction_dir, "AUCTIONS/%s", aid);
 
-    printf("Auction dir: %s\n", auction_dir);
-
     struct stat filestat;
     
     if (stat(auction_dir, &filestat) == -1) {
@@ -51,7 +51,7 @@ int process_show_asset(char* input, int fd){
         return -1;
     }
 
-    printf("File exists\n");
+    printf("Dir exists\n");
 
     char start_file[27];
     sprintf(start_file, "AUCTIONS/%s/START_%s.txt", aid, aid);
@@ -97,49 +97,55 @@ int process_show_asset(char* input, int fd){
     strtok(NULL, " ");
     char *fname = strtok(NULL, " ");    
 
-    char filepath_file[19 + strlen(fname) + 1];
-    sprintf(filepath_file, "AUCTIONS/%s/ASSET/%s", aid, fname);
+    char filepath[19 + strlen(fname) + 1];
+    sprintf(filepath, "AUCTIONS/%s/ASSET/%s", aid, fname);
 
-    if (stat(filepath_file, &filestat) == -1){
+    if (stat(filepath, &filestat) == -1){
         char response[SHOW_ASSET_ERR_LEN + 1];
         sprintf(response, "%s ERR\n", SHOW_ASSET_CMD);
         printf("File does not exist\n");
         return -1;
     }
 
-    // Now I have to send the file to the client through the TCP socket
+    char response[READ_WRITE_RATE];
+    sprintf(response, "%s OK %s %ld ", SHOW_ASSET_CMD, fname, filestat.st_size);
 
-    char response[3 + 1 + 2 + strlen(fname) + 1 + 19 + 1];
+    printf("Response: %s\n", response);
 
-    sprintf((response), "%s OK %s %ld", SHOW_ASSET_CMD, fname, filestat.st_size);
-
-    // send the file to the client through the TCP socket
-
-    char file_content[READ_WRITE_RATE]; 
-
-    FILE *fp_send = fopen(filepath_file, "rb");
-    if (fp_send == NULL){
-        char response[SHOW_ASSET_ERR_LEN + 1];
-        sprintf(response, "%s ERR\n", SHOW_ASSET_CMD);
+    if (write(fd, response , strlen(response)) == -1) {
+        /*error*/
+        fprintf(stderr, "Error sending message to serve88888 8AAAAAAAAAAAAr\n");
+        free(response);
+        close(fd);
         return -1;
     }
 
-    if ((write(fd, response , READ_WRITE_RATE)) == -1) {
-            /*error*/
-            fprintf(stderr, "Error sending message to serve88888 8AAAAAAAAAAAAr\n");
-            free(response);
-            close(fd);
-            return -1;
-        }
+    // send the file to the client through the TCP socket
+    char file_content[READ_WRITE_RATE]; 
 
-    while (fread(file_content, READ_WRITE_RATE, 1, fp_send) < sizeof(file_content)){
-        printf("file_content: %s\n", file_content);
-        if (write(fd, file_content , READ_WRITE_RATE) == -1) {
-            /*error*/
-            fprintf(stderr, "Error sending message to server\n");
+    FILE *file = fopen(filepath, "rb");
+    if (!file) {
+        fprintf(stderr, "Error opening file\n");
+        close(fd);
+        return -1;
+    }
+
+    ssize_t bytes_sent;
+    size_t total_bytes_sent = 0;
+
+    while ((bytes_sent = fread(file_content, 1, sizeof(file_content), file)) > 0) {
+        printf("reading more data...\n");
+        if ((bytes_sent = write(fd, file_content, bytes_sent)) == -1) {
+            fprintf(stderr, "Error sending data\n");
+            fclose(file);
             close(fd);
             return -1;
         }
+        printf("wrote %ld bytes\n", bytes_sent);
+        total_bytes_sent += bytes_sent;
     }
+
+    printf("total_bytes_sent: %ld\n", total_bytes_sent);
+
 
 }
