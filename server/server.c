@@ -323,9 +323,10 @@ void read_tcp_socket(int fd){
 }
 
 /**
- * Main function
-*/
-
+  * 
+  * Main function
+  * 
+  */
 int main(int argc, char** argv){
 
     // validate arguments

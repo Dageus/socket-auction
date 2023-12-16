@@ -26,7 +26,6 @@ int process_show_asset(char* input, int fd){
 
     printf("Processing show asset\n");
     
-
     char *aid = strtok(input, " ");
 
     if (aid == NULL)
@@ -101,9 +100,7 @@ int process_show_asset(char* input, int fd){
     char filepath_file[19 + strlen(fname) + 1];
     sprintf(filepath_file, "AUCTIONS/%s/ASSET/%s", aid, fname);
 
-    struct stat filestat_file;
-
-    if (stat(filepath_file, &filestat_file) == -1){
+    if (stat(filepath_file, &filestat) == -1){
         char response[SHOW_ASSET_ERR_LEN + 1];
         sprintf(response, "%s ERR\n", SHOW_ASSET_CMD);
         printf("File does not exist\n");
@@ -114,11 +111,11 @@ int process_show_asset(char* input, int fd){
 
     char response[3 + 1 + 2 + strlen(fname) + 1 + 19 + 1];
 
-    sprintf((response), "%s OK %s %ld", SHOW_ASSET_CMD, fname, filestat_file.st_size);
+    sprintf((response), "%s OK %s %ld", SHOW_ASSET_CMD, fname, filestat.st_size);
 
     // send the file to the client through the TCP socket
 
-    char file_content_file[READ_WRITE_RATE]; 
+    char file_content[READ_WRITE_RATE]; 
 
     FILE *fp_send = fopen(filepath_file, "rb");
     if (fp_send == NULL){
@@ -126,8 +123,6 @@ int process_show_asset(char* input, int fd){
         sprintf(response, "%s ERR\n", SHOW_ASSET_CMD);
         return -1;
     }
-
-    
 
     if ((write(fd, response , READ_WRITE_RATE)) == -1) {
             /*error*/
@@ -137,15 +132,14 @@ int process_show_asset(char* input, int fd){
             return -1;
         }
 
-    while (fread(file_content_file, filestat_file.st_size, 1, fp_send) < sizeof(file_content_file)){
-        if (write(fd, file_content_file , READ_WRITE_RATE) == -1) {
+    while (fread(file_content, READ_WRITE_RATE, 1, fp_send) < sizeof(file_content)){
+        printf("file_content: %s\n", file_content);
+        if (write(fd, file_content , READ_WRITE_RATE) == -1) {
             /*error*/
             fprintf(stderr, "Error sending message to server\n");
             close(fd);
             return -1;
         }
     }
-
-    free(response);
 
 }
