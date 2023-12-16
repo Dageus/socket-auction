@@ -218,16 +218,20 @@ int send_TCP(TCP_response* response, char* ip, char* port){
         }
 
         char* token = strtok(tcp_buffer, " ");
+        printf("token: %s\n", token);
 
         if (strcmp(token = strtok(NULL, " "), "OK") == 0) {
 
             // file exists
             
             char* filename = strtok(NULL, " ");
+            printf("filename: %s\n", filename);
             
             char* filesize_str = strtok(NULL, " ");
+            printf("filesize_str: %s\n", filesize_str);
             
             size_t filesize = atoi(filesize_str);
+            printf("filesize: %ld\n", filesize);	
 
             char* content = strtok(NULL, " ");
 
