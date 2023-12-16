@@ -1,8 +1,11 @@
 *.pdf
 *.o
-*
 .vscode/
 SCRIPTS/
 AUCTIONS/
 USERS/
 ```
+client/user
+server/server
+*.out
+*.txt
