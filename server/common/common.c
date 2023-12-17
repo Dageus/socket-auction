@@ -85,6 +85,16 @@ int check_auction_end(int aid) {
     char start_file[strlen(pathname) + strlen(START_PREFIX) + AID_LEN + strlen(TXT_SUFFIX) + 2];
     sprintf(start_file, "%s/%s%03d%s", pathname, START_PREFIX, aid, TXT_SUFFIX);
 
+    char end_file[strlen(pathname) + strlen(END_PREFIX) + AID_LEN + strlen(TXT_SUFFIX) + 2];
+    sprintf(end_file, "%s/%s%03d%s", pathname, END_PREFIX, aid, TXT_SUFFIX);
+
+    struct stat file_stat;
+
+    if (stat(end_file, &file_stat) == 0) {
+        // end file exists
+        return 0;
+    }
+
     FILE* fp = fopen(start_file, "r");
 
     if (fp == NULL) {
@@ -136,11 +146,6 @@ int check_auction_end(int aid) {
         sprintf(time_str, "%4d-%02d-%02d %02d:%02d:%02d", 
             timeinfo->tm_year + 1900, timeinfo->tm_mon + 1, timeinfo->tm_mday,
             timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
-
-        // create the end file
-
-        char end_file[strlen(pathname) + strlen(END_PREFIX) + AID_LEN + strlen(TXT_SUFFIX) + 2];
-        sprintf(end_file, "%s/%s%03d%s", pathname, END_PREFIX, aid, TXT_SUFFIX);
 
         FILE *end_fp = fopen(end_file, "w");
 
