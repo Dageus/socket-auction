@@ -9,7 +9,7 @@
 #include <unistd.h>
 #include <sys/socket.h>
 
-int process_bid(int fd, char** response){
+void process_bid(int fd, char** response){
 
     char uid[UID_LEN + 1];
     char pwd[PWD_LEN + 1];
@@ -17,21 +17,19 @@ int process_bid(int fd, char** response){
     char amount[MAX_BIDDING_LEN + 1];
 
     read_word(fd, uid, UID_LEN + 1);
-    printf("uid: %s\n", uid);
 
     read_word(fd, pwd, PWD_LEN + 1);
-    printf("pwd: %s\n", pwd);
     
     read_word(fd, aid, AID_LEN + 1);
-    printf("aid: %s\n", aid);
     
     read_word(fd, amount, MAX_BIDDING_LEN + 1);
-    printf("amount: %s\n", amount);
 
-
-    if (strlen(uid) != UID_LEN)
+    if (strlen(uid) != UID_LEN) {
         /* wrong format */
-        return 0;
+        (*response) = (char*) malloc(BID_NOK_LEN + 1);
+        sprintf((*response), "%s NOK\n", BID_CMD);
+        return;
+    }
 
     // struct to store directory
     struct stat st;
@@ -44,7 +42,7 @@ int process_bid(int fd, char** response){
         // auction is closed
         (*response) = (char*) malloc(BID_NOK_LEN + 1);
         sprintf((*response), "%s NOK\n", BID_CMD);
-        return -1;
+        return;
     }
 
     // check if user is logged in
@@ -55,7 +53,7 @@ int process_bid(int fd, char** response){
         // user is not logged in
         (*response) = (char*) malloc(BID_NOK_LEN + 1);
         sprintf((*response), "%s NLG\n", BID_CMD);
-        return -1;
+        return;
     }
 
     // check if user started the auction
@@ -70,7 +68,7 @@ int process_bid(int fd, char** response){
         // user didn't start the auction
         (*response) = (char*) malloc(BID_ERR_LEN + 1);
         sprintf((*response), "%s ERR\n", BID_CMD);
-        return -1;
+        return;
     }
 
     // read start file
@@ -80,7 +78,7 @@ int process_bid(int fd, char** response){
         // error reading start file
         (*response) = (char*) malloc(BID_ERR_LEN + 1);
         sprintf((*response), "%s ERR\n", BID_CMD);
-        return -1;
+        return;
     }
 
     // check if user started the auction
@@ -88,7 +86,7 @@ int process_bid(int fd, char** response){
         // user didn't start the auction
         (*response) = (char*) malloc(BID_ERR_LEN + 1);
         sprintf((*response), "%s ILG\n", BID_CMD);
-        return -1;
+        return;
     }
 
     // close start file
@@ -117,7 +115,7 @@ int process_bid(int fd, char** response){
             // error reading directory
             (*response) = (char*) malloc(BID_ERR_LEN + 1);
             sprintf((*response), "%s ERR\n", BID_CMD);
-            return -1;
+            return;
         }
 
         // check highest bid
@@ -132,16 +130,17 @@ int process_bid(int fd, char** response){
             // bid is lower than highest bid
             (*response) = (char*) malloc(BID_NOK_LEN + 1);
             sprintf((*response), "%s REF\n", BID_CMD);
-            return -1;
+            return;
         }
 
-        return 1;
+        return;
 
     } else {
         // directory doesn't exist
+        printf("[INFO]: Bidding directory doesn't exist\n");
         (*response) = (char*) malloc(BID_NOK_LEN + 1);
         sprintf((*response), "%s NOK\n", BID_CMD);
-        return -1;
+        return;
     }
 
     (*response) = (char*) malloc(BID_ACC_LEN + 1);

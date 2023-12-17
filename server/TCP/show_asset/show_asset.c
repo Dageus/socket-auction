@@ -9,21 +9,7 @@
 #include <unistd.h>
 #include <sys/socket.h>
 
-
-// int CheckAssetFile(char *aid) {
-
-//     char filepath[13];
-//     sprintf(filepath, "AUCTIONS/%s", aid);
-
-//     struct stat filestat;
-//     int ret_stat;
-//     ret_stat = stat(fname, &filestat);
-//     if (ret_stat == -1 || filestat.st_size == 0)
-//         return 0;
-//     return filestat.st_size;
-// }
-
-int process_show_asset(int fd){
+void process_show_asset(int fd){
 
     printf("Processing show asset\n");
     
@@ -31,12 +17,12 @@ int process_show_asset(int fd){
     read_word(fd, aid, AID_LEN);
 
     if (aid == NULL)
-        return -1;
+        return;
 
     if (strlen(aid) != AID_LEN){
         char response[SHOW_ASSET_ERR_LEN + 1];
         sprintf(response, "%s ERR\n", SHOW_ASSET_CMD);
-        return -1;
+        return;
     }
 
     char auction_dir[13];
@@ -47,8 +33,8 @@ int process_show_asset(int fd){
     if (stat(auction_dir, &filestat) == -1) {
         char response[SHOW_ASSET_ERR_LEN + 1];
         sprintf(response, "%s ERR\n", SHOW_ASSET_CMD);
-        printf("File does not exist\n");
-        return -1;
+        printf("%s does not exist\n", auction_dir);
+        return;
     }
 
     printf("Dir exists\n");
@@ -61,15 +47,15 @@ int process_show_asset(int fd){
     if (stat(start_file, &filestat) == -1){
         char response[SHOW_ASSET_ERR_LEN + 1];
         sprintf(response, "%s ERR\n", SHOW_ASSET_CMD);
-        printf("File does not exis0t egegeeggege\n");
-        return -1;
+        printf("%s does not exist\n", start_file);
+        return;
     }
 
     FILE *fp = fopen(start_file, "r");
     if (fp == NULL){
         char response[SHOW_ASSET_ERR_LEN + 1];
         sprintf(response, "%s ERR\n", SHOW_ASSET_CMD);
-        return -1;
+        return;
     }
 
     char start_file_content[filestat.st_size + 1];    // +1 for the null terminator
@@ -79,7 +65,7 @@ int process_show_asset(int fd){
         char response[SHOW_ASSET_ERR_LEN + 1];
         sprintf(response, "%s ERR\n", SHOW_ASSET_CMD);
         perror("Memory allocation failed");
-        return 1; // Exit with an error code
+        return;
     }
 
     // Read file contents 
@@ -88,7 +74,7 @@ int process_show_asset(int fd){
         char response[SHOW_ASSET_ERR_LEN + 1];
         sprintf(response, "%s ERR\n", SHOW_ASSET_CMD);
         perror("Error reading file");
-        return 1; // Exit with an error code
+        return;
     }
 
     start_file_content[filestat.st_size] = '\0';
@@ -104,7 +90,7 @@ int process_show_asset(int fd){
         char response[SHOW_ASSET_ERR_LEN + 1];
         sprintf(response, "%s ERR\n", SHOW_ASSET_CMD);
         printf("File does not exist\n");
-        return -1;
+        return;
     }
 
     char response[READ_WRITE_RATE];
@@ -114,10 +100,10 @@ int process_show_asset(int fd){
 
     if (write(fd, response , strlen(response)) == -1) {
         /*error*/
-        fprintf(stderr, "Error sending message to serve88888 8AAAAAAAAAAAAr\n");
+        fprintf(stderr, "Error sending message to server\n");
         free(response);
         close(fd);
-        return -1;
+        return;
     }
 
     // send the file to the client through the TCP socket
@@ -127,7 +113,7 @@ int process_show_asset(int fd){
     if (!file) {
         fprintf(stderr, "Error opening file\n");
         close(fd);
-        return -1;
+        return;
     }
 
     ssize_t bytes_sent;
@@ -139,7 +125,7 @@ int process_show_asset(int fd){
             fprintf(stderr, "Error sending data\n");
             fclose(file);
             close(fd);
-            return -1;
+            return;
         }
         printf("wrote %ld bytes\n", bytes_sent);
         total_bytes_sent += bytes_sent;

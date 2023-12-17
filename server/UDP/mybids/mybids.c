@@ -19,8 +19,6 @@ int get_bidded_list(char* uid, auction_list *list) {
 
     n_entries = scandir(dirname, &filelist, 0, alphasort);
 
-    printf("n_entries: %d\n", n_entries);
-
     if (n_entries <= 0) // Could test for −1 since n_entries count always with . and ..
         return 0;
 
@@ -32,13 +30,8 @@ int get_bidded_list(char* uid, auction_list *list) {
             char aid[4];
             strncpy(aid, filelist[n_entries]->d_name, AID_LEN);
 
-            printf("aid: %s\n", aid);
-
             load_auction(aid, &list[n_bids]);
             ++n_bids;
-
-            printf("%s\n", list[n_bids].auction_code);
-            printf("n_bids: %d\n", n_bids);
         }
             
         free(filelist[n_entries]);
@@ -52,14 +45,14 @@ int get_bidded_list(char* uid, auction_list *list) {
     return n_bids;
 }
 
-int process_mybids(char* input, char** response){
+void process_mybids(char* input, char** response){
 
     char* uid = strtok(input, " ");
 
     if (uid == NULL) {
         *response = (char*) malloc((strlen(MYB_CMD) + 2) * sizeof(char));
         sprintf(*response, "%s ERR", MYB_CMD);
-        return 0;
+        return;
     }
 
     char user_dir[strlen(USERS_DIR) + strlen(uid) + 2];
@@ -75,8 +68,6 @@ int process_mybids(char* input, char** response){
     if (stat(login_file, &st) == 0) {
         // user is logged in
 
-        printf("User %s is logged in, checking bids...\n", uid);
-
         auction_list list[50];
 
         int n_bids = get_bidded_list(uid, list);
@@ -85,7 +76,7 @@ int process_mybids(char* input, char** response){
             printf("User %s has no bids\n", uid);
             *response = (char*) malloc((strlen(MYB_CMD) + 2) * sizeof(char));
             sprintf(*response, "%s NOK", MYB_CMD);
-            return 0;
+            return;
         }
 
         *response = (char*) malloc((strlen(MYB_CMD) + strlen(OK_STATUS) + n_bids * 6) * sizeof(char));
@@ -105,6 +96,6 @@ int process_mybids(char* input, char** response){
         // user is not logged in
         *response = (char*) malloc((strlen(MYB_CMD) + 3 + 2) * sizeof(char));
         sprintf(*response, "%s NLG\n", MYB_CMD);
-        return 0;
+        return;
     }
 }

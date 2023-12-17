@@ -7,6 +7,6 @@
 
 int get_bidded_list(char* uid, auction_list *list);
 
-int process_mybids(char* input, char** response);
+void process_mybids(char* input, char** response);
 
 #endif  //MYBIDS_H

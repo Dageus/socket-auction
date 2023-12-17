@@ -8,6 +8,6 @@
 #define UNREGISTER_NOK_LEN 8
 #define UNREGISTER_UNR_LEN 8
 
-int process_unregister(char* input, char** response);
+void process_unregister(char* input, char** response);
 
 #endif //UNREGISTER_H

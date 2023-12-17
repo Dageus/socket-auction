@@ -18,6 +18,7 @@ int create_user_bid_dir(char* user_dir){
     sprintf(bids_dir, "%s/%s", user_dir, BIDDED);
 
     if (mkdir(bids_dir, 0777) == -1) {
+        printf("Error creating bids directory\n");
         return -1;
     }
 }
@@ -27,22 +28,19 @@ int create_user_auction_dir(char* user_dir){
         sprintf(auctions_dir, "%s/%s", user_dir, HOSTED);
 
         if (mkdir(auctions_dir, 0777) == -1) {
+            printf("Error creating auctions directory\n");
             return -1;
         }
 
-    return 0;
+    return 1;
 }
 
 int create_password_file(char* user_dir, char* uid, char* pwd){
     char pwd_file[strlen(uid) + strlen(PWD_SUFFIX) + 1];
     sprintf(pwd_file, "%s%s", uid, PWD_SUFFIX);
 
-    printf("pwd_file: %s\n", pwd_file);
-
     char pwd_dir[strlen(user_dir) + strlen(pwd_file) + 2];
     sprintf(pwd_dir, "%s/%s", user_dir, pwd_file);
-
-    printf("pwd_dir: %s\n", pwd_dir);
 
     FILE* fp = fopen(pwd_dir, "w");
 
@@ -51,11 +49,11 @@ int create_password_file(char* user_dir, char* uid, char* pwd){
         return -1;
     }
 
-    printf("writing pwd: %s\n", pwd);
-
     fprintf(fp, "%s\n", pwd);
 
     fclose(fp);
+
+    printf("[INFO]: Password file created\n");
 
     return 0;
 }
@@ -64,12 +62,8 @@ int create_login_file(char* user_dir, char* uid){
     char lin_file[strlen(uid) + strlen(LOGIN_SUFFIX) + 1];
     sprintf(lin_file, "%s%s", uid, LOGIN_SUFFIX);
 
-    printf("lin_file: %s\n", lin_file);
-
     char lin_dir[strlen(user_dir) + strlen(lin_file) + 2];
     sprintf(lin_dir, "%s/%s", user_dir, lin_file);
-
-    printf("lin_dir: %s\n", lin_dir);
 
     FILE* fp = fopen(lin_dir, "w");
 
@@ -80,23 +74,21 @@ int create_login_file(char* user_dir, char* uid){
 
     fclose(fp);
 
+    printf("[INFO]: Login file created\n");
+
     return 0;
 }
 
-int process_user_login(char* input, char** response){
+void process_user_login(char* input, char** response){
     char* uid = strtok(input, " ");
     char* pwd = strtok(NULL, " ");
 
-    printf("uid: %s with len: %ld\npwd: %s with len : %ld\n", uid, strlen(uid), pwd, strlen(pwd));
-
     if (strlen(uid) != UID_LEN || strlen(pwd) != PWD_LEN)
-        return -1;
+        return;
 
     // check if user already exists in USERS directory
     char user_dir[strlen(USERS_DIR) + strlen(uid) + 2];
     sprintf(user_dir, "%s/%s", USERS_DIR, uid);
-
-    printf("user_dir: %s\n", user_dir);
 
     struct stat st;
 
@@ -127,42 +119,40 @@ int process_user_login(char* input, char** response){
                         fprintf(stderr, "Error creating login file\n");
                         *response = (char*) malloc(sizeof(char) * (3 + 1));
                         sprintf(*response, "%s\n", ERR_STATUS);
-                        return -1;
+                        return;
                     }
 
                     *response = (char*) malloc(sizeof(char) * (OK_LEN + 1));
                     sprintf(*response, "%s %s\n", LOGIN_RESPONSE, OK_STATUS);
-                    return 0;
+                    return;
                 }
                 else {
                     // which means password is incorrect
                     *response = (char*) malloc(sizeof(char) * (OK_LEN + 1));
                     sprintf(*response, "%s %s\n", LOGIN_RESPONSE, NOK_STATUS);
-                    return 0;
+                    return;
                 }
             } else {
 
                 // create password file
-
                 if (create_password_file(user_dir, uid, pwd) == -1){
                     fprintf(stderr, "Error creating password file\n");
                     *response = (char*) malloc(sizeof(char) * (3 + 1));
                     sprintf(*response, "%s\n", ERR_STATUS);
-                    return -1;
+                    return;
                 }
 
                 // create login file
-
                 if (create_login_file(user_dir, uid) == -1){
                     fprintf(stderr, "Error creating login file\n");
                     *response = (char*) malloc(sizeof(char) * (3 + 1));
                     sprintf(*response, "%s\n", ERR_STATUS);
-                    return -1;
+                    return;
                 }
 
                 (*response) = (char*) malloc(sizeof(char) * (REG_LEN + 1));
                 sprintf(*response, "%s %s\n", LOGIN_RESPONSE, REG_STATUS);
-                return 0;
+                return;
             }
         }
     } else {
@@ -171,15 +161,12 @@ int process_user_login(char* input, char** response){
 
         printf("Creating new user...\n");
 
-        if (stat("USERS", &st) == 0)
-            printf("USERS directory exists\n");
-
         // create user directory
         if (mkdir(user_dir, S_IRWXU | S_IRWXG | S_IRWXO) == -1) {
             fprintf(stderr, "Error creating user directory\n");
             *response = (char*) malloc(sizeof(char) * (3 + 1));
             sprintf(*response, "%s\n", ERR_STATUS);
-            return -1;
+            return;
         }
 
         // create password file
@@ -187,7 +174,7 @@ int process_user_login(char* input, char** response){
             fprintf(stderr, "Error creating password file\n");
             *response = (char*) malloc(sizeof(char) * (3 + 1));
             sprintf(*response, "%s\n", ERR_STATUS);
-            return -1;
+            return;
         }
 
         // create login file
@@ -195,7 +182,7 @@ int process_user_login(char* input, char** response){
             fprintf(stderr, "Error creating login file\n");
             *response = (char*) malloc(sizeof(char) * (3 + 1));
             sprintf(*response, "%s\n", ERR_STATUS);
-            return -1;
+            return;
         }
 
         // create auctions directory
@@ -203,7 +190,7 @@ int process_user_login(char* input, char** response){
             fprintf(stderr, "Error creating auctions directory\n");
             *response = (char*) malloc(sizeof(char) * (3 + 1));
             sprintf(*response, "%s\n", ERR_STATUS);
-            return -1;
+            return;
         }
 
         // create bids directory
@@ -211,17 +198,10 @@ int process_user_login(char* input, char** response){
             fprintf(stderr, "Error creating bids directory\n");
             *response = (char*) malloc(sizeof(char) * (3 + 1));
             sprintf(*response, "%s\n", ERR_STATUS);
-            return -1;
+            return;
         }
-
-        // ! create response
-
-        printf("uid: %s\n", uid);
-        printf("pwd: %s\n", pwd);
 
         *response = (char*) malloc(sizeof(char) * (REG_LEN + 1));
         sprintf(*response, "%s %s\n", LOGIN_RESPONSE, REG_STATUS);
     }
-
-    return 0;
 }

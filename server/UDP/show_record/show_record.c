@@ -168,34 +168,51 @@ int get_record_list(int aid , bid_list *list) {
     return n_bids;
 }
 
-int process_show_record(char* input, char** response){
+void process_show_record(char* input, char** response){
 
     char *aid_ = strtok(input, " ");
 
-    if (aid_ == NULL)
-        return 0;
+    if (aid_ == NULL){
+        // error
+        (*response) = (char*) malloc(SHOW_RECORD_NOK_LEN * sizeof(char));
+        sprintf((*response), "%s NOK\n", SHOW_RECORD_COMMAND);
+        return;
+    }
 
     int aid = atoi(aid_);
 
-    if (aid < 1 || aid > 999)
-        return 0;
+    if (aid < 1 || aid > 999){
+        // error
+        (*response) = (char*) malloc(SHOW_RECORD_NOK_LEN * sizeof(char));
+        sprintf((*response), "%s NOK\n", SHOW_RECORD_COMMAND);
+        return;
+    }
 
     bid_list list[50];
     auction auc;
 
-    if (!load_auction_info(aid, &auc))
-        return 0;
+    if (!load_auction_info(aid, &auc)){
+        // error
+        (*response) = (char*) malloc(SHOW_RECORD_NOK_LEN * sizeof(char));
+        sprintf((*response), "%s NOK\n", SHOW_RECORD_COMMAND);
+        return;
+    }
 
     int n_bids = get_record_list(aid, list);
 
-    if (n_bids == 0)
-        // error
-        return 0;
+    (*response) = (char*) malloc((n_bids * 32 + 128) * sizeof(char));
 
-    // ! criar mensagem de resposta
+    sprintf((*response), "%s OK %s %s %s %d %s %d ", SHOW_RECORD_COMMAND, auc.host_uid, auc.name, auc.asset, auc.start_value, auc.start_time, auc.time_active);
     
+    // add bids to response
 
+    for (int i = 0; i < n_bids; i++){
+        sprintf((*response) + strlen((*response)), "B %s %d %s %d ", list[i].bidder_uid, list[i].bid_value, list[i].bid_time, list[i].bid_sec_time);
+    }
 
-    return 1;
+    if (auc.active == 0){
+        sprintf((*response) + strlen((*response)), "E %s %d", auc.end.end_time, auc.end.end_sec_time);
+    }
 
+    return;
 }

@@ -24,7 +24,7 @@ int get_hosted_list(char* uid, auction_list *list) {
     n_entries = scandir(dirname, &filelist, 0, alphasort);
 
     if (n_entries <= 0) // Could test for −1 since n_entries count always with . and ..
-        return 0;
+        return;
 
     n_bids = 0;
 
@@ -34,13 +34,8 @@ int get_hosted_list(char* uid, auction_list *list) {
             char aid[4];
             strncpy(aid, filelist[n_entries]->d_name, AID_LEN);
             aid[3] = '\0';
-
-            printf("aid: %s\n", aid);
             
             load_auction(aid, &list[n_bids]);
-            
-            printf("auction code: %s\n", list[n_bids].auction_code);
-            printf("auction : %s\n", list[n_bids].active);
             
             ++n_bids;
         }
@@ -53,29 +48,22 @@ int get_hosted_list(char* uid, auction_list *list) {
     return n_bids;
 }
 
-int process_myauctions(char* input, char** response){
+void process_myauctions(char* input, char** response){
     char* uid = strtok(input, " ");
 
-    printf("uid: %s\n", uid);
-
-    char user_dir[strlen(USERS_DIR) + 2*strlen(uid) + strlen(LOGIN_SUFFIX) + 4];
-    sprintf(user_dir, "%s/%s/%s%s", USERS_DIR, uid, uid, LOGIN_SUFFIX);
-
-    printf("user_dir: %s\n", user_dir);
+    char login_dir[strlen(USERS_DIR) + 2*strlen(uid) + strlen(LOGIN_SUFFIX) + 4];
+    sprintf(login_dir, "%s/%s/%s%s", USERS_DIR, uid, uid, LOGIN_SUFFIX);
 
     // check if user exists
 
     struct stat st;
 
-    if (stat(user_dir, &st) == -1) {
+    if (stat(login_dir, &st) == -1) {
         // user is not logged in
         printf("User is not logged in\n");
         *response = (char*) malloc((strlen(MYA_CMD) + 3 + 2) * sizeof(char));
         sprintf(*response, "%s NLG\n", MYA_CMD);
-        return 0;
-        return -1;
     }
-
 
     auction_list list[999];
 
@@ -87,7 +75,7 @@ int process_myauctions(char* input, char** response){
         printf("No auctions found\n");
         *response = (char*) malloc((strlen(MYA_CMD) + 2) * sizeof(char));
         sprintf(*response, "%s NOK", MYA_CMD);
-        return -1;
+        return;
     }
 
     *response = (char*) malloc((strlen(MYA_CMD) + strlen(OK_STATUS) + n_bids * 6) * sizeof(char));
@@ -102,6 +90,4 @@ int process_myauctions(char* input, char** response){
     }
 
     (*response)[strlen(*response) - 1] = '\n';
-
-    printf("response: %s\n", *response);
 }

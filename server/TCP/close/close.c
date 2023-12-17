@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-int process_close(int fd, char **response){
+void process_close(int fd, char **response){
 
     char uid[UID_LEN + 1];
     char pwd[PWD_LEN + 1];
@@ -19,14 +19,10 @@ int process_close(int fd, char **response){
     read_word(fd, pwd, PWD_LEN + 1);
     read_word(fd, aid, AID_LEN + 1);
 
-    printf("uid: %s\n", uid);
-    printf("pwd: %s\n", pwd);
-    printf("aid: %s\n", aid);
-
     if (uid == NULL || pwd == NULL || aid == NULL) {
         *response = (char*) malloc((CLOSE_CMD_ERR_LEN) * sizeof(char));
         sprintf(*response, "%s %s\n", CLOSE_CMD, ERR_STATUS);
-        return 0;
+        return;
     }
 
     // check if user is logged in
@@ -62,7 +58,7 @@ int process_close(int fd, char **response){
                 fprintf(stderr, "Error opening start file\n");
                 (*response) = (char*) malloc((CLOSE_CMD_ERR_LEN) * sizeof(char));
                 sprintf(*response, "%s %s\n", CLOSE_CMD, ERR_STATUS);
-                return 0;
+                return;
             }
 
             // read start file
@@ -76,7 +72,7 @@ int process_close(int fd, char **response){
                 // auction was not started by user
                 *response = (char*) malloc((CLOSE_CMD_EOW_LEN) * sizeof(char));
                 sprintf(*response, "%s %s\n", CLOSE_CMD, EOW_STATUS);
-                return 0;
+                return;
             }
 
             // check if auction already closed
@@ -88,7 +84,7 @@ int process_close(int fd, char **response){
                 // auction already closed
                 *response = (char*) malloc((CLOSE_CMD_END_LEN) * sizeof(char));
                 sprintf(*response, "%s %s\n", CLOSE_CMD, END_STATUS);
-                return 0;
+                return;
             }
 
             strtok(NULL, " ");
@@ -113,7 +109,7 @@ int process_close(int fd, char **response){
                 fprintf(stderr, "Error creating end file\n");
                 (*response) = (char*) malloc((CLOSE_CMD_ERR_LEN) * sizeof(char));
                 sprintf(*response, "%s %s\n", CLOSE_CMD, ERR_STATUS);
-                return 0;
+                return;
             }
 
             // check if auction should've ended already
@@ -146,23 +142,20 @@ int process_close(int fd, char **response){
             (*response) = (char*) malloc((CLOSE_CMD_OK_LEN) * sizeof(char));            
             sprintf(*response, "%s %s\n", CLOSE_CMD, OK_STATUS);
 
-            return 0;
+            return;
 
         } else {
             // auction does not exist
             *response = (char*) malloc((CLOSE_CMD_ERR_LEN) * sizeof(char));
             sprintf(*response, "%s %s\n", CLOSE_CMD, NO_AUCTION);
-            return 0;
+            return;
         }
 
     } else {
-        
         // user is not logged in
 
         *response = (char*) malloc((CLOSE_CMD_NLG_LEN) * sizeof(char));
         sprintf(*response, "%s %s\n", CLOSE_CMD, NLG_STATUS);
-        return 0;
+        return;
     }
-
-    return 0;
 }

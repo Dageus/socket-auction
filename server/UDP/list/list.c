@@ -9,10 +9,7 @@
 #include <dirent.h>
 #include "../UDP.h"
 
-int process_list(char** response){
-
-    printf("LIST command\n");
-    
+void process_list(char** response){    
     DIR *dir;
     struct dirent *entry;
     int auction_count = 0;
@@ -23,10 +20,8 @@ int process_list(char** response){
         (*response) = (char*) malloc(sizeof(char) * (LIST_ERR_LEN + 2));
         sprintf(*response, "%s %s\n", LIST_CMD, ERR_STATUS);
         printf("%s\n", *response);
-        return -1;
+        return;
     }
-
-    printf("Auctions:\n");
     
     auction_list auctions[999]; 
 
@@ -39,11 +34,8 @@ int process_list(char** response){
             auction_list new_auction;
 
             strncpy(new_auction.auction_code, entry->d_name, 3);
-
-            printf("auction code: %s\n", new_auction.auction_code);
             
             // check if END_(AID).txt exists
-            
             struct stat st;
             char end_file[strlen(AUCTIONS_DIR) + 2 * 3 + strlen(END_PREFIX) + strlen(TXT_SUFFIX) + 2];
             sprintf(end_file, "%s/%s/%s%s%s", AUCTIONS_DIR, new_auction.auction_code, END_PREFIX, new_auction.auction_code, TXT_SUFFIX);
@@ -56,10 +48,6 @@ int process_list(char** response){
             auctions[auction_count] = new_auction;
             auction_count++;
         }
-    }
-
-    for (int i = 0; i < auction_count; i++) {
-        printf("%s %s\n", auctions[i].auction_code, auctions[i].active);
     }
 
     closedir(dir);

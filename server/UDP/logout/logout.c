@@ -13,7 +13,7 @@
 #include <sys/stat.h>
 #include "../UDP.h"
 
-int process_user_logout(char* input, char** response){
+void process_user_logout(char* input, char** response){
     char* uid = strtok(input, " ");
     char *pwd = strtok(NULL, " ");
 
@@ -28,8 +28,6 @@ int process_user_logout(char* input, char** response){
 
     sprintf(login_dir, "%s/%s/%s%s", USERS_DIR, uid, uid, LOGIN_SUFFIX);
 
-    printf("login_dir: %s\n", login_dir);
-
     // check if file exists
 
     struct stat st;
@@ -43,14 +41,14 @@ int process_user_logout(char* input, char** response){
         if (return_code == -1) {
             fprintf(stderr, "Error deleting login for user: %s\n", uid);
             *response = (char*) malloc(sizeof(char) * (3 + 1));
-            sprintf(*response, "%s\n", ERR_STATUS);
-            return -1;
+            sprintf(*response, "RLO %s\n", ERR_STATUS);
+            return;
         }
 
         (*response) = (char*) malloc(sizeof(char) * (LOGOUT_OK_LEN + 1));
         sprintf(*response, "%s %s\n", LOGOUT_CMD, OK_STATUS);
 
-        return 0;
+        return;
         
     } else {
 
@@ -59,20 +57,18 @@ int process_user_logout(char* input, char** response){
         char user_dir[strlen(USERS_DIR) + strlen(uid) + 2];
         sprintf(user_dir, "%s/%s", USERS_DIR, uid);
 
-        printf("user_dir: %s\n", user_dir);
-
         if (stat(user_dir, &st) == 0){
             // user is registered but not logged in
             (*response) = (char*) malloc(sizeof(char) * (LOGOUT_NOK_LEN + 1));
             sprintf(*response, "%s %s\n", LOGOUT_CMD, NOK_STATUS);
 
-            return 0;
+            return;
         } else {
             // user is not registered
             (*response) = (char*) malloc(sizeof(char) * (LOGOUT_UNR_LEN + 1));
             sprintf(*response, "%s %s\n", LOGOUT_CMD, UNR_CMD);
             
-            return 0;
+            return;
         }
     }
 }

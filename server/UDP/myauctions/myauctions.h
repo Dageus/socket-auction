@@ -6,6 +6,6 @@
 #define MYA_CMD "LMA"
 
 int get_hosted_list(char* uid, auction_list *list);
-int process_myauctions(char* input, char** response);
+void process_myauctions(char* input, char** response);
 
 #endif  //MYAUCTIONS_H

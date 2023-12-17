@@ -14,13 +14,16 @@
 #include <dirent.h>
 #include "../UDP.h"
 
-int process_unregister(char* input, char** response){
+void process_unregister(char* input, char** response){
     char* uid = strtok(input, " ");
     char* pwd = strtok(NULL, " ");
 
-    if (strlen(uid) != UID_LEN || strlen(pwd) != PWD_LEN)
+    if (strlen(uid) != UID_LEN || strlen(pwd) != PWD_LEN){
         /* wrong format */
-        return 0;
+        (*response) = (char*) malloc(sizeof(char) * (UNREGISTER_NOK_LEN + 1));
+        sprintf(*response, "%s %s\n", RUR_CMD, NOK_STATUS);
+        return;
+    }
 
     // find directory
     struct stat st;
@@ -41,13 +44,17 @@ int process_unregister(char* input, char** response){
 
             if (unlink(pwd_dir) == -1) {
                 printf("Error removing login file\n");
-                return -1;
+                (*response) = (char*) malloc(sizeof(char) * (UNREGISTER_NOK_LEN + 1));
+                sprintf(*response, "%s %s\n", RUR_CMD, ERR_STATUS);
+                return;
             }
 
             // remove login file as well
             if (unlink(login_dir) == -1) {
                 printf("Error removing login file\n");
-                return -1;
+                (*response) = (char*) malloc(sizeof(char) * (UNREGISTER_NOK_LEN + 1));
+                sprintf(*response, "%s %s\n", RUR_CMD, ERR_STATUS);
+                return;
             }
 
             (*response) = (char*) malloc(sizeof(char) * (UNREGISTER_OK_LEN + 1));
@@ -58,7 +65,7 @@ int process_unregister(char* input, char** response){
             (*response) = (char*) malloc(sizeof(char) * (UNREGISTER_NOK_LEN + 1));
             sprintf(*response, "%s %s\n", RUR_CMD, NOK_STATUS);
 
-            return -1;
+            return;
         }
     } else {
         // user is not registered
@@ -66,7 +73,4 @@ int process_unregister(char* input, char** response){
         (*response) = (char*) malloc(sizeof(char) * (UNREGISTER_UNR_LEN + 1));
         sprintf(*response, "%s %s\n", RUR_CMD, UNR_CMD);
     }
-
-
-    return 1;
 }

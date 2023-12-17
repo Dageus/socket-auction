@@ -29,7 +29,7 @@ int check_password(char* user_dir, char* uid, char* pwd){
         return 0;
     }
     else {
-        printf("password is different\n");
+        printf("password is incorrect\n");
         fclose(fp);
         return -1;
     }

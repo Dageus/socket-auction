@@ -6,6 +6,6 @@
 #define BID_ERR_LEN     8
 #define BID_ACC_LEN     8
 
-int process_bid(int fd, char **response);
+void process_bid(int fd, char **response);
 
 #endif // BID_H
