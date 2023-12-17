@@ -7,6 +7,11 @@
 
 int process_bid(char *input, client* user, TCP_response** response){
 
+    if (strcmp(user->uid, NO_UID) == 0) {
+        printf("You must be logged in to bid\n");
+        return -1;
+    }
+
     (*response)->msg = (char *) malloc(sizeof(char) * 50);
     (*response)->file = NULL;
     

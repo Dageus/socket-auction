@@ -31,6 +31,8 @@ void process_bid(int fd, char** response){
         return;
     }
 
+    check_auction_end(atoi(aid));
+
     // struct to store directory
     struct stat st;
 
@@ -39,6 +41,7 @@ void process_bid(int fd, char** response){
     sprintf(end_file, "%s/%s/%s%s%s", AUCTIONS_DIR, aid, END_PREFIX, aid, TXT_SUFFIX);
 
     if (stat(end_file, &st) == 0) {
+        printf("auction is closed\n");
         // auction is closed
         (*response) = (char*) malloc(BID_NOK_LEN + 1);
         sprintf((*response), "%s NOK\n", BID_CMD);
@@ -121,13 +124,14 @@ void process_bid(int fd, char** response){
             sprintf((*response), "%s ERR\n", BID_CMD);
             return;
         }
-    
+
         int bid_files = 0;
 
-        while (n_entries--) {
-            if (bid_file_list[n_entries]->d_type == DT_REG)
+        int entries = n_entries;
+
+        while (entries--) {
+            if (bid_file_list[entries]->d_type == DT_REG)
                 bid_files++;
-            free(bid_file_list[n_entries]);
         }
 
         if (bid_files == 0){
@@ -162,8 +166,6 @@ void process_bid(int fd, char** response){
             strtok(NULL, " ");
             int startvalue = atoi(strtok(NULL, " "));
 
-            printf("startvalue: %d\n", startvalue);
-
             if (atoi(amount) < startvalue){
                 // bid is lower than start value
                 (*response) = (char*) malloc(BID_NOK_LEN + 1);
@@ -194,22 +196,31 @@ void process_bid(int fd, char** response){
 
         // check highest bid
         char highest_bid_file[7];
+
+        printf("d->d_name: %s\n", bid_file_list[n_entries - 1]->d_name);
         strncpy(highest_bid_file, bid_file_list[n_entries - 1]->d_name, 6);
 
         int highest_bid = atoi(highest_bid_file);
-
-        printf("highest bid: %d\n", highest_bid);
 
         if (atoi(amount) <= highest_bid) {
             // bid is lower than highest bid
             (*response) = (char*) malloc(BID_NOK_LEN + 1);
             sprintf((*response), "%s REF\n", BID_CMD);
+            while (n_entries--) {
+                printf("freeing bid_file_list[%d]\n", n_entries);
+                free(bid_file_list[n_entries]);
+            }
+
+            free(bid_file_list);
             return;
         }
 
-        free(bid_file_list);
+        while (n_entries--) {
+            printf("freeing bid_file_list[%d]\n", n_entries);
+            free(bid_file_list[n_entries]);
+        }
 
-        return;
+        free(bid_file_list);
 
     } else {
         // directory doesn't exist
@@ -219,7 +230,20 @@ void process_bid(int fd, char** response){
         return;
     }
 
-    (*response) = (char*) malloc(BID_ACC_LEN + 1);
+    FILE *bfile = fopen(bid_file, "w");
 
+    if (bfile == NULL){
+        // error reading start file
+        (*response) = (char*) malloc(BID_ERR_LEN + 1);
+        sprintf((*response), "%s ERR\n", BID_CMD);
+        return;
+    }
+
+    fprintf(bfile, "%s", uid);
+
+    fclose(bfile);
+
+    (*response) = (char*) malloc(BID_ACC_LEN + 1);
     sprintf((*response), "%s ACC\n", BID_CMD);
+    return;
 }

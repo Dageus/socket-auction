@@ -77,13 +77,23 @@ int get_global_aid_number(){
     return ++aid;
 }
 
-int check_auction_end(int aid){
+int check_auction_end(int aid) {
 
     char pathname[strlen(AUCTIONS_DIR) + AID_LEN + 2];
-    sprintf(pathname, "%s/%d", AUCTIONS_DIR, aid);
+    sprintf(pathname, "%s/%03d", AUCTIONS_DIR, aid);
 
     char start_file[strlen(pathname) + strlen(START_PREFIX) + AID_LEN + strlen(TXT_SUFFIX) + 2];
-    sprintf(start_file, "%s/%s%d%s", pathname, START_PREFIX, aid, TXT_SUFFIX);
+    sprintf(start_file, "%s/%s%03d%s", pathname, START_PREFIX, aid, TXT_SUFFIX);
+
+    char end_file[strlen(pathname) + strlen(END_PREFIX) + AID_LEN + strlen(TXT_SUFFIX) + 2];
+    sprintf(end_file, "%s/%s%03d%s", pathname, END_PREFIX, aid, TXT_SUFFIX);
+
+    struct stat file_stat;
+
+    if (stat(end_file, &file_stat) == 0) {
+        // end file exists
+        return 0;
+    }
 
     FILE* fp = fopen(start_file, "r");
 
@@ -107,14 +117,23 @@ int check_auction_end(int aid){
     
     time_t timeactive = atoi(strtok(NULL, " "));
 
+    printf("timeactive: %ld\n", timeactive);
+
+    strtok(NULL, " ");
     strtok(NULL, " ");
 
     time_t full_time = atoi(strtok(NULL, " "));
+
+    printf("full_time: %ld\n", full_time);
 
     // now to check if the auction should've ended already or not
 
     time_t fulltime;
     struct tm * timeinfo;
+
+    printf("time: %ld\n", time(&fulltime)); 
+
+    printf("timeactive + full_time: %ld\n", (timeactive + full_time));
 
     if (time(&fulltime) > timeactive + full_time) {
         // auction should've ended already
@@ -127,11 +146,6 @@ int check_auction_end(int aid){
         sprintf(time_str, "%4d-%02d-%02d %02d:%02d:%02d", 
             timeinfo->tm_year + 1900, timeinfo->tm_mon + 1, timeinfo->tm_mday,
             timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
-
-        // create the end file
-
-        char end_file[strlen(pathname) + strlen(END_PREFIX) + AID_LEN + strlen(TXT_SUFFIX) + 2];
-        sprintf(end_file, "%s/%s%03d%s", pathname, END_PREFIX, aid, TXT_SUFFIX);
 
         FILE *end_fp = fopen(end_file, "w");
 
