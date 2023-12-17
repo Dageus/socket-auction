@@ -13,6 +13,24 @@
 
 char input[READ_WRITE_RATE];
 
+int check_alphanumeric(char* str) {
+    for (int i = 0; i < (int) strlen(str); i++){
+        if (!isalnum(str[i])){
+            return -1;
+        }
+    }
+    return 1;
+}
+
+int check_digits(char* str) {
+    for (int i = 0; i < (int) strlen(str); i++){
+        if (!isdigit(str[i])){
+            return -1;
+        }
+    }
+    return 1;
+}
+
 int create_start_file(int aid, char* uid, char* name, char* fname, char* start_value, char* timeactive) {
     
     time_t fulltime;
@@ -113,7 +131,7 @@ void process_open_auction(int fd, int* aid, char** response){
     struct stat st;
 
     if (stat(user_dir, &st) == -1){
-        *response = (char*) malloc(sizeof(char) * (3 + 1 + 3 + 1));
+        *response = (char*) malloc(sizeof(char) * (OPEN_NOK_LEN));
         sprintf(*response, "%s %s\n", OPEN_RESPONSE, NOK_STATUS);
         fprintf(stderr, "User does not exist\n");
         close(fd);
@@ -124,7 +142,7 @@ void process_open_auction(int fd, int* aid, char** response){
 
     // Check if password is correct
     if (check_password(user_dir, uid, pwd) == -1){
-        *response = (char*)malloc(sizeof(char) * (3 + 1 + 3 + 1));
+        *response = (char*)malloc(sizeof(char) * (OPEN_NOK_LEN));
         sprintf(*response, "%s %s\n", OPEN_RESPONSE, NOK_STATUS);
         fprintf(stderr, "Password is incorrect\n");
         close(fd);
@@ -134,9 +152,49 @@ void process_open_auction(int fd, int* aid, char** response){
     // Check if auction name is valid
 
     if (strlen(name) > 10){
-        *response = (char*)malloc(sizeof(char) * (3 + 1 + 3 + 1));
+        *response = (char*)malloc(sizeof(char) * (OPEN_NOK_LEN));
         sprintf(*response, "%s %s\n", OPEN_RESPONSE, NOK_STATUS);
         fprintf(stderr, "Auction name is too long\n");
+        close(fd);
+        return;
+    }
+
+    if (check_alphanumeric(name) == -1){
+        *response = (char*) malloc (sizeof(char) * (OPEN_NOK_LEN));
+        sprintf(*response, "%s %s\n", OPEN_RESPONSE, NOK_STATUS);
+        fprintf(stderr, "Auction name is not alphanumeric\n");
+        close(fd);
+        return;
+    }
+
+    if (strlen(start_value) > 6){
+        *response = (char*) malloc (sizeof(char) * (OPEN_NOK_LEN));
+        sprintf(*response, "%s %s\n", OPEN_RESPONSE, NOK_STATUS);
+        fprintf(stderr, "Start value is too long\n");
+        close(fd);
+        return;
+    }
+
+    if (strlen(timeactive) > 5){
+        *response = (char*) malloc (sizeof(char) * (OPEN_NOK_LEN));
+        sprintf(*response, "%s %s\n", OPEN_RESPONSE, NOK_STATUS);
+        fprintf(stderr, "Time active is too long\n");
+        close(fd);
+        return;
+    }
+
+    if (check_digits(start_value) == -1){
+        *response = (char*) malloc (sizeof(char) * (OPEN_NOK_LEN));
+        sprintf(*response, "%s %s\n", OPEN_RESPONSE, NOK_STATUS);
+        fprintf(stderr, "Start value is not numeric\n");
+        close(fd);
+        return;
+    }
+
+    if (check_digits(timeactive) == -1){
+        *response = (char*) malloc (sizeof(char) * (OPEN_NOK_LEN));
+        sprintf(*response, "%s %s\n", OPEN_RESPONSE, NOK_STATUS);
+        fprintf(stderr, "Time active is not numeric\n");
         close(fd);
         return;
     }
@@ -146,7 +204,7 @@ void process_open_auction(int fd, int* aid, char** response){
     // Create directory for auction
 
     if (create_auction_dir(*aid, uid, name, fname, start_value, timeactive) == -1){
-        *response = (char*) malloc(sizeof(char) * (3 + 1 + 3 + 1));
+        *response = (char*) malloc(sizeof(char) * (OPEN_NOK_LEN));
         sprintf(*response, "%s %s\n", OPEN_RESPONSE, ERR_STATUS);
         fprintf(stderr, "Error creating auction directory\n");
         close(fd);
@@ -164,7 +222,7 @@ void process_open_auction(int fd, int* aid, char** response){
     sprintf(asset_dir, "AUCTIONS/%03d/ASSET", *aid);
 
     if (mkdir(asset_dir, 0700) == -1){
-        *response = (char*) malloc(sizeof(char) * (3 + 1 + 3 + 1));
+        *response = (char*) malloc(sizeof(char) * (OPEN_NOK_LEN));
         sprintf(*response, "%s %s\n", OPEN_RESPONSE, ERR_STATUS);
         fprintf(stderr, "Error creating asset directory\n");
         close(fd);
@@ -177,7 +235,7 @@ void process_open_auction(int fd, int* aid, char** response){
     FILE *file = fopen(dir_fname, "wb");
     
     if (!file) {
-        *response = (char*)malloc(sizeof(char) * (3 + 1 + 3 + 1));
+        *response = (char*)malloc(sizeof(char) * (OPEN_NOK_LEN));
         sprintf(*response, "%s %s\n", OPEN_RESPONSE, ERR_STATUS);
         fprintf(stderr, "Error opening file\n");
         fclose(file);
@@ -191,7 +249,7 @@ void process_open_auction(int fd, int* aid, char** response){
         bytes_received = read(fd, input, READ_WRITE_RATE);
         
         if (bytes_received < 0){
-            *response = (char*) malloc(sizeof(char) * (3 + 1 + 3 + 1));
+            *response = (char*) malloc(sizeof(char) * (OPEN_NOK_LEN));
             sprintf(*response, "%s %s\n", OPEN_RESPONSE, ERR_STATUS);
             fprintf(stderr, "Error reading from TCP socket\n");
             fclose(file);
@@ -202,7 +260,7 @@ void process_open_auction(int fd, int* aid, char** response){
         total_bytes_received += bytes_received;
 
         if (fwrite(input, 1 , bytes_received, file) != (size_t) bytes_received){
-            *response = (char*)malloc(sizeof(char) * (3 + 1 + 3 + 1));
+            *response = (char*)malloc(sizeof(char) * (OPEN_NOK_LEN));
             sprintf(*response, "%s %s\n", OPEN_RESPONSE, ERR_STATUS);     
             fprintf(stderr, "Error writing file\n");
             fclose(file);
@@ -226,7 +284,7 @@ void process_open_auction(int fd, int* aid, char** response){
     FILE* fp = fopen(hosted_file, "w");
 
     if (fp == NULL){
-        *response = (char*)malloc(sizeof(char) * (3 + 1 + 3 + 1));
+        *response = (char*)malloc(sizeof(char) * (OPEN_NOK_LEN));
         sprintf(*response, "%s %s\n", OPEN_RESPONSE, ERR_STATUS);
         fprintf(stderr, "Error opening file\n");
         fclose(fp);
@@ -237,7 +295,7 @@ void process_open_auction(int fd, int* aid, char** response){
     fclose(fp);
 
 
-    *response = (char*)malloc(sizeof(char) * (3 + 1 + 3 + 1 + 3 + 1 ));
+    *response = (char*)malloc(sizeof(char) * (OPEN_OK_LEN));
     sprintf(*response, "%s %s %03d\n", OPEN_RESPONSE, OK_STATUS, *aid);
     
     printf("Auction opened with aid: %d\n", *aid);
@@ -255,32 +313,6 @@ FAZEM COM QUE O FILE DESCRIPTOR SE FECHE A TOA E PARTE ISTO TUDO
 
 */
 
-// if (uid == NULL || pwd == NULL || name == NULL || start_value == NULL || timeactive == NULL || fname == NULL || file_size == 0) {
-    //     *response = (char*)malloc(sizeof(char) * (3 + 1 + 3 + 1));
-    //     sprintf(*response, "%s %s", OPEN_RESPONSE, NOK_STATUS);
-    //     fprintf(stderr, "Error reading from TCP socket\n");
-    //     close(fd);
-    //     return -1;
-    // }
-
-    // if (strlen(uid) != UID_LEN || strlen(pwd) != PWD_LEN || strlen(name) > 10 ||
-    //     strlen(start_value) > 6 || strlen(timeactive) > 5 || strlen(fname) > 24 || file_size > 10000000) {
-    //     *response = (char*)malloc(sizeof(char) * (3 + 1 + 3 + 1));
-    //     sprintf(*response, "%s %s", OPEN_RESPONSE, NOK_STATUS);
-    //     fprintf(stderr, "Error reading from TCP socket\n");
-    //     close(fd);
-    //     return -1;
-    // }
-
-    // for (int i = 0; i < (int) strlen(name); i++){
-    //     if (!isalnum(name[i]) || name[i] == '_' || name[i] == '-' || name[i] == '.'){
-    //         *response = (char*) malloc (sizeof(char) * (3 + 1 + 3 + 1));
-    //         sprintf(*response, "%s %s", OPEN_RESPONSE, NOK_STATUS);
-    //         fprintf(stderr, "Auction name is not alphanumeric\n");
-    //         close(fd);
-    //         return -1;
-    //     }
-    // }
 
     // for (int i = 0; i < (int) strlen(start_value); i++){
     //     if (!isdigit(start_value[i])){

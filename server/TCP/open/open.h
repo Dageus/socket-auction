@@ -2,7 +2,7 @@
 #define OPEN_H
 
 #define OPEN_RESPONSE       "ROA"
-#define OPEN_OK_LEN         7
+#define OPEN_OK_LEN         12
 #define OPEN_ERR_LEN        8
 #define OPEN_NOK_LEN        8
 
