@@ -117,6 +117,74 @@ void process_bid(int fd, char** response){
             sprintf((*response), "%s ERR\n", BID_CMD);
             return;
         }
+    
+        int bid_files = 0;
+
+        while (n_entries--) {
+            if (bid_file_list[n_entries]->d_type == DT_REG)
+                bid_files++;
+            free(bid_file_list[n_entries]);
+        }
+
+        if (n_entries == 0){
+
+            printf("n_entries: %d\n", n_entries);
+
+            char start_file[strlen(AUCTIONS_DIR) + strlen(aid) + strlen(START_PREFIX) + strlen(aid) + strlen(TXT_SUFFIX) + 3];
+            sprintf(start_file, "%s/%s/%s%s%s", AUCTIONS_DIR, aid, START_PREFIX, aid, TXT_SUFFIX);
+            
+            FILE *sfile = fopen(start_file, "r");
+
+            if (sfile == NULL){
+                // error reading start file
+                (*response) = (char*) malloc(BID_ERR_LEN + 1);
+                sprintf((*response), "%s ERR\n", BID_CMD);
+                return;
+            }
+
+            char file_content[50];
+
+            if (fgets(file_content, 50, sfile) == NULL) {
+                // error reading start file
+                (*response) = (char*) malloc(BID_ERR_LEN + 1);
+                sprintf((*response), "%s ERR\n", BID_CMD);
+                return;
+            }
+
+            fclose(sfile);
+
+            strtok(file_content, " ");
+            strtok(NULL, " ");
+            strtok(NULL, " ");
+            int starvalue = atoi(strtok(NULL, " "));
+
+            if (atoi(amount) < starvalue){
+                // bid is lower than start value
+                (*response) = (char*) malloc(BID_NOK_LEN + 1);
+                sprintf((*response), "%s REF\n", BID_CMD);
+                return;
+            } else{
+
+                FILE *bfile = fopen(bid_file, "w");
+
+                if (bfile == NULL){
+                    // error reading start file
+                    (*response) = (char*) malloc(BID_ERR_LEN + 1);
+                    sprintf((*response), "%s ERR\n", BID_CMD);
+                    return;
+                }
+
+                fprintf(bfile, "%s", uid);
+
+                fclose(bfile);
+
+                (*response) = (char*) malloc(BID_ACC_LEN + 1);
+                sprintf((*response), "%s ACC\n", BID_CMD);
+                return;
+            
+            }
+
+        }
 
         // check highest bid
         char highest_bid_file[7];
@@ -132,6 +200,8 @@ void process_bid(int fd, char** response){
             sprintf((*response), "%s REF\n", BID_CMD);
             return;
         }
+
+        free(bid_file_list);
 
         return;
 

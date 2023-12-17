@@ -14,7 +14,7 @@ void process_show_asset(int fd){
     printf("Processing show asset\n");
     
     char aid[AID_LEN + 1];
-    read_word(fd, aid, AID_LEN);
+    read_word(fd, aid, AID_LEN + 1);
 
     if (aid == NULL)
         return;
