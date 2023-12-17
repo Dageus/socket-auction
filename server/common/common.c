@@ -1,6 +1,15 @@
 #include "../constants.h"
 #include "common.h"
 
+
+void clear_socket(int fd) {
+    char receive[1024];
+    int nread;
+    while((nread = read(fd, receive, sizeof(receive)-1)) > 0) {
+        receive[nread]='\0';    // explicit null termination: updated based on comments
+    }
+}
+
 int check_password(char* user_dir, char* uid, char* pwd){
 
     char pwd_file[strlen(uid) + strlen(PWD_SUFFIX) + 1];
@@ -47,6 +56,11 @@ int read_word(int fd, char *buffer, int size) {
             printf("finished reading word\n");
             memset(buffer + i, '\0', 1);
             break;
+        }
+        if (i == size) {
+            printf("End of word not found.\n");
+            buffer = NULL;
+            return -1;
         }
         printf("buffer[%d]: %c\n", i, buffer[i]);
         i++;
