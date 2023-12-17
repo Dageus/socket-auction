@@ -252,7 +252,7 @@ int create_tcp_socket(){
     hints.ai_flags = AI_PASSIVE;
 
     if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &(int){ 1 }, sizeof(int)) < 0)
-        error("setsockopt(SO_REUSEADDR) failed");
+        perror("setsockopt(SO_REUSEADDR) failed");
 
     errcode = getaddrinfo(NULL, port, &hints, &res);
     if ((errcode) != 0){
