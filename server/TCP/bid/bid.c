@@ -65,6 +65,7 @@ void process_bid(int fd, char** response){
     // open start file
     FILE* start_file = fopen(auction_dir, "r");
     if (start_file == NULL) {
+        printf("error opening start file\n");
         // user didn't start the auction
         (*response) = (char*) malloc(BID_ERR_LEN + 1);
         sprintf((*response), "%s ERR\n", BID_CMD);
@@ -75,6 +76,7 @@ void process_bid(int fd, char** response){
     char start_uid[UID_LEN + 1];
 
     if (fscanf(start_file, "%s", start_uid) != 1) {
+        printf("error reading start file\n");
         // error reading start file
         (*response) = (char*) malloc(BID_ERR_LEN + 1);
         sprintf((*response), "%s ERR\n", BID_CMD);
@@ -111,6 +113,8 @@ void process_bid(int fd, char** response){
 
         n_entries = scandir(bid_dir, &bid_file_list, 0, alphasort);
 
+        printf("scanning bid directory\n");
+
         if (n_entries < 0) {
             // error reading directory
             (*response) = (char*) malloc(BID_ERR_LEN + 1);
@@ -126,9 +130,9 @@ void process_bid(int fd, char** response){
             free(bid_file_list[n_entries]);
         }
 
-        if (n_entries == 0){
+        if (bid_files == 0){
 
-            printf("n_entries: %d\n", n_entries);
+            printf("bid_files: %d\n", bid_files);
 
             char start_file[strlen(AUCTIONS_DIR) + strlen(aid) + strlen(START_PREFIX) + strlen(aid) + strlen(TXT_SUFFIX) + 3];
             sprintf(start_file, "%s/%s/%s%s%s", AUCTIONS_DIR, aid, START_PREFIX, aid, TXT_SUFFIX);
@@ -156,9 +160,11 @@ void process_bid(int fd, char** response){
             strtok(file_content, " ");
             strtok(NULL, " ");
             strtok(NULL, " ");
-            int starvalue = atoi(strtok(NULL, " "));
+            int startvalue = atoi(strtok(NULL, " "));
 
-            if (atoi(amount) < starvalue){
+            printf("startvalue: %d\n", startvalue);
+
+            if (atoi(amount) < startvalue){
                 // bid is lower than start value
                 (*response) = (char*) malloc(BID_NOK_LEN + 1);
                 sprintf((*response), "%s REF\n", BID_CMD);

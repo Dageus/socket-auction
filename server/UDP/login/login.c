@@ -83,8 +83,11 @@ void process_user_login(char* input, char** response){
     char* uid = strtok(input, " ");
     char* pwd = strtok(NULL, " ");
 
-    if (strlen(uid) != UID_LEN || strlen(pwd) != PWD_LEN)
+    if (strlen(uid) != UID_LEN || strlen(pwd) != PWD_LEN){
+        (*response) = (char*) malloc(sizeof(char) * (8));
+        sprintf(*response, "RLI NOK\n");
         return;
+    }
 
     // check if user already exists in USERS directory
     char user_dir[strlen(USERS_DIR) + strlen(uid) + 2];
