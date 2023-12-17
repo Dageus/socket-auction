@@ -1,6 +1,23 @@
 #include "../constants.h"
 #include "common.h"
 
+int check_alphanumeric(char* str) {
+    for (int i = 0; i < (int) strlen(str); i++){
+        if (!isalnum(str[i]) && str[i] != '_' && str[i] != '-' && str[i] != '.'){
+            return -1;
+        }
+    }
+    return 1;
+}
+
+int check_digits(char* str) {
+    for (int i = 0; i < (int) strlen(str); i++){
+        if (!isdigit(str[i])){
+            return -1;
+        }
+    }
+    return 1;
+}
 
 void clear_socket(int fd) {
     char receive[1024];

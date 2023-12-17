@@ -18,10 +18,10 @@ void process_unregister(char* input, char** response){
     char* uid = strtok(input, " ");
     char* pwd = strtok(NULL, " ");
 
-    if (strlen(uid) != UID_LEN || strlen(pwd) != PWD_LEN){
+    if (uid == NULL || pwd == NULL || strlen(uid) != UID_LEN || strlen(pwd) != PWD_LEN || check_alphanumeric(pwd) == -1 || check_digits(uid) == -1){
         /* wrong format */
         (*response) = (char*) malloc(sizeof(char) * (UNREGISTER_NOK_LEN + 1));
-        sprintf(*response, "%s %s\n", RUR_CMD, NOK_STATUS);
+        sprintf(*response, "%s %s\n", RUR_CMD, ERR_STATUS);
         return;
     }
 

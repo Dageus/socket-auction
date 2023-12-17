@@ -172,7 +172,7 @@ void process_show_record(char* input, char** response){
 
     char *aid_ = strtok(input, " ");
 
-    if (aid_ == NULL){
+    if (aid_ == NULL || strlen(aid_) != AID_LEN || check_digits(aid_) == -1) {
         // error
         (*response) = (char*) malloc(SHOW_RECORD_NOK_LEN * sizeof(char));
         sprintf((*response), "%s NOK\n", SHOW_RECORD_COMMAND);
@@ -180,13 +180,6 @@ void process_show_record(char* input, char** response){
     }
 
     int aid = atoi(aid_);
-
-    if (aid < 1 || aid > 999){
-        // error
-        (*response) = (char*) malloc(SHOW_RECORD_NOK_LEN * sizeof(char));
-        sprintf((*response), "%s NOK\n", SHOW_RECORD_COMMAND);
-        return;
-    }
 
     bid_list list[50];
     auction auc;

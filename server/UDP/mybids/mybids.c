@@ -49,7 +49,7 @@ void process_mybids(char* input, char** response){
 
     char* uid = strtok(input, " ");
 
-    if (uid == NULL) {
+    if (uid == NULL || strlen(uid) != UID_LEN || check_digits(uid) == -1) {
         *response = (char*) malloc((strlen(MYB_CMD) + 2) * sizeof(char));
         sprintf(*response, "%s ERR", MYB_CMD);
         return;

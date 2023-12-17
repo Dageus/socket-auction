@@ -14,10 +14,10 @@
 #include "../UDP.h"
 
 void process_user_logout(char* input, char** response){
-    char* uid = strtok(input, " ");
+    char *uid = strtok(input, " ");
     char *pwd = strtok(NULL, " ");
 
-    if (uid == NULL || pwd == NULL || strlen(uid) != UID_LEN || strlen(pwd) != PWD_LEN){
+    if (uid == NULL || pwd == NULL || strlen(uid) != UID_LEN || strlen(pwd) != PWD_LEN || check_alphanumeric(pwd) == -1 || check_digits(uid) == -1) {
         (*response) = (char*) malloc(sizeof(char) * (LOGOUT_UNR_LEN + 1));
         sprintf(*response, "%s %s\n", LOGOUT_CMD, UNR_CMD);
     }

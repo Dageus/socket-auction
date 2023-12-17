@@ -16,15 +16,32 @@ void process_close(int fd, char **response){
     char aid[AID_LEN + 1];
 
     read_word(fd, uid, UID_LEN + 1);
-    read_word(fd, pwd, PWD_LEN + 1);
-    read_word(fd, aid, AID_LEN + 1);
 
-    if (uid == NULL || pwd == NULL || aid == NULL) {
-        *response = (char*) malloc((CLOSE_CMD_ERR_LEN) * sizeof(char));
-        sprintf(*response, "%s %s\n", CLOSE_CMD, ERR_STATUS);
+    if (uid == NULL || check_digits(uid) == -1) {
+        /* wrong format */
+        (*response) = (char*) malloc((CLOSE_CMD_ERR_LEN) * sizeof(char));
+        sprintf((*response), "%s %s\n", CLOSE_CMD, ERR_STATUS);
         return;
     }
 
+    read_word(fd, pwd, PWD_LEN + 1);
+
+    if (pwd == NULL || check_alphanumeric(pwd) == -1) {
+        /* wrong format */
+        (*response) = (char*) malloc((CLOSE_CMD_ERR_LEN) * sizeof(char));
+        sprintf((*response), "%s %s\n", CLOSE_CMD, ERR_STATUS);
+        return;
+    }
+
+    read_word(fd, aid, AID_LEN + 1);
+
+    if (aid == NULL || check_digits(aid) == -1) {
+        /* wrong format */
+        (*response) = (char*) malloc((CLOSE_CMD_ERR_LEN) * sizeof(char));
+        sprintf((*response), "%s %s\n", CLOSE_CMD, ERR_STATUS);
+        return;
+    }
+    
     // check if user is logged in
 
     char user_dir[strlen(USERS_DIR) + 2*strlen(uid) + strlen(LOGIN_SUFFIX) + 4];

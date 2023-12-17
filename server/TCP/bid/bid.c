@@ -18,19 +18,39 @@ void process_bid(int fd, char** response){
 
     read_word(fd, uid, UID_LEN + 1);
 
-    if (strlen(uid) != UID_LEN) {
+    if (uid == NULL || check_digits(uid) == -1) {
         /* wrong format */
-        clear_socket(fd);
         (*response) = (char*) malloc(BID_NOK_LEN + 1);
         sprintf((*response), "%s NOK\n", BID_CMD);
         return;
     }
 
     read_word(fd, pwd, PWD_LEN + 1);
+
+    if (pwd == NULL || check_alphanumeric(pwd) == -1) {
+        /* wrong format */
+        (*response) = (char*) malloc(BID_NOK_LEN + 1);
+        sprintf((*response), "%s NOK\n", BID_CMD);
+        return;
+    }
     
     read_word(fd, aid, AID_LEN + 1);
+
+    if (aid == NULL || check_digits(aid) == -1) {
+        /* wrong format */
+        (*response) = (char*) malloc(BID_NOK_LEN + 1);
+        sprintf((*response), "%s NOK\n", BID_CMD);
+        return;
+    }
     
     read_word(fd, amount, MAX_BIDDING_LEN + 1);
+
+    if (amount == NULL || check_digits(amount) == -1) {
+        /* wrong format */
+        (*response) = (char*) malloc(BID_NOK_LEN + 1);
+        sprintf((*response), "%s NOK\n", BID_CMD);
+        return;
+    }
 
     check_auction_end(atoi(aid));
 
@@ -198,7 +218,6 @@ void process_bid(int fd, char** response){
         // check highest bid
         char highest_bid_file[7];
 
-        printf("d->d_name: %s\n", bid_file_list[n_entries - 1]->d_name);
         strncpy(highest_bid_file, bid_file_list[n_entries - 1]->d_name, 6);
 
         int highest_bid = atoi(highest_bid_file);

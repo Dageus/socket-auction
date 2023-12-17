@@ -51,6 +51,13 @@ int get_hosted_list(char* uid, auction_list *list) {
 void process_myauctions(char* input, char** response){
     char* uid = strtok(input, " ");
 
+    if (uid == NULL || check_digits(uid) == -1 || strlen(uid) != UID_LEN) {
+        /* wrong format */
+        *response = (char*) malloc((strlen(MYA_CMD) + 2) * sizeof(char));
+        sprintf(*response, "%s NOK", MYA_CMD);
+        return;
+    }
+
     char login_dir[strlen(USERS_DIR) + 2*strlen(uid) + strlen(LOGIN_SUFFIX) + 4];
     sprintf(login_dir, "%s/%s/%s%s", USERS_DIR, uid, uid, LOGIN_SUFFIX);
 
@@ -60,7 +67,6 @@ void process_myauctions(char* input, char** response){
 
     if (stat(login_dir, &st) == -1) {
         // user is not logged in
-        printf("User is not logged in\n");
         *response = (char*) malloc((strlen(MYA_CMD) + 3 + 2) * sizeof(char));
         sprintf(*response, "%s NLG\n", MYA_CMD);
     }

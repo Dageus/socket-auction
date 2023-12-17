@@ -15,6 +15,9 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 
+
+int check_alphanumeric(char* str);
+int check_digits(char* str);
 void clear_socket(int fd);
 int get_global_aid_number();
 int check_password(char* user_dir, char* uid, char* pwd);

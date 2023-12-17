@@ -83,7 +83,7 @@ void process_user_login(char* input, char** response){
     char* uid = strtok(input, " ");
     char* pwd = strtok(NULL, " ");
 
-    if (strlen(uid) != UID_LEN || strlen(pwd) != PWD_LEN){
+    if (uid == NULL || pwd == NULL || strlen(uid) != UID_LEN || strlen(pwd) != PWD_LEN || check_alphanumeric(pwd) == -1 || check_digits(uid) == -1){
         (*response) = (char*) malloc(sizeof(char) * (8));
         sprintf(*response, "RLI NOK\n");
         return;
@@ -102,12 +102,8 @@ void process_user_login(char* input, char** response){
             char pwd_file[strlen(uid) + strlen(PWD_SUFFIX) + 1];
             sprintf(pwd_file, "%s%s", uid, PWD_SUFFIX);
 
-            printf("pwd_file: %s\n", pwd_file);
-
             char pwd_dir[strlen(user_dir) + strlen(pwd_file) + 2];
             sprintf(pwd_dir, "%s/%s", user_dir, pwd_file);
-
-            printf("pwd_dir: %s\n", pwd_dir);
 
             if (stat(pwd_dir, &st) == 0){
 

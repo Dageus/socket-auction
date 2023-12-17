@@ -13,24 +13,6 @@
 
 char input[READ_WRITE_RATE];
 
-int check_alphanumeric(char* str) {
-    for (int i = 0; i < (int) strlen(str); i++){
-        if (!isalnum(str[i]) && str[i] != '_' && str[i] != '-' && str[i] != '.'){
-            return -1;
-        }
-    }
-    return 1;
-}
-
-int check_digits(char* str) {
-    for (int i = 0; i < (int) strlen(str); i++){
-        if (!isdigit(str[i])){
-            return -1;
-        }
-    }
-    return 1;
-}
-
 int create_start_file(int aid, char* uid, char* name, char* fname, char* start_value, char* timeactive) {
     
     time_t fulltime;
@@ -118,6 +100,13 @@ void process_open_auction(int fd, int* aid, char** response){
     read_word(fd, uid, UID_LEN + 1);
     read_word(fd, pwd, PWD_LEN + 1);
 
+    if (uid == NULL || pwd == NULL || strlen(uid) != UID_LEN || strlen(pwd) != PWD_LEN || check_digits(uid) == -1 || check_digits(pwd) == -1){
+        *response = (char*) malloc(sizeof(char) * (OPEN_NOK_LEN));
+        sprintf(*response, "%s %s\n", OPEN_RESPONSE, NOK_STATUS);
+        close(fd);
+        return;
+    }
+
     // Check if user exists
     char user_dir[13];
     sprintf(user_dir, "USERS/%s", uid);
@@ -135,7 +124,7 @@ void process_open_auction(int fd, int* aid, char** response){
     printf("User exists\n");
 
     // Check if password is correct
-    if (check_password(user_dir, uid, pwd) == -1){
+    if (check_password(user_dir, uid, pwd) == -1) {
         *response = (char*)malloc(sizeof(char) * (OPEN_NOK_LEN));
         sprintf(*response, "%s %s\n", OPEN_RESPONSE, NOK_STATUS);
         fprintf(stderr, "Password is incorrect\n");
@@ -145,96 +134,53 @@ void process_open_auction(int fd, int* aid, char** response){
 
     read_word(fd, name, MAX_NAME + 1);
 
-    if (strlen(name) > 10){
+    if (name == NULL || check_alphanumeric(name) == -1){
         *response = (char*)malloc(sizeof(char) * (OPEN_NOK_LEN));
         sprintf(*response, "%s %s\n", OPEN_RESPONSE, NOK_STATUS);
-        fprintf(stderr, "Auction name is too long\n");
+        fprintf(stderr, "Auction name is incorrect\n");
         close(fd);
         return;
     }
 
-    if (check_alphanumeric(name) == -1){
+    read_word(fd, start_value, 6 + 1);
+
+    if (start_value == NULL || check_digits(start_value) == -1){
         *response = (char*) malloc (sizeof(char) * (OPEN_NOK_LEN));
         sprintf(*response, "%s %s\n", OPEN_RESPONSE, NOK_STATUS);
-        fprintf(stderr, "Auction name is not alphanumeric\n");
-        close(fd);
-        return;
-    }
-
-    read_word(fd, start_value, 7 + 1);
-
-    if (strlen(start_value) > 6){
-        *response = (char*) malloc (sizeof(char) * (OPEN_NOK_LEN));
-        sprintf(*response, "%s %s\n", OPEN_RESPONSE, NOK_STATUS);
-        fprintf(stderr, "Start value is too long\n");
-        close(fd);
-        return;
-    }
-
-    if (check_digits(start_value) == -1){
-        *response = (char*) malloc (sizeof(char) * (OPEN_NOK_LEN));
-        sprintf(*response, "%s %s\n", OPEN_RESPONSE, NOK_STATUS);
-        fprintf(stderr, "Start value is not numeric\n");
+        fprintf(stderr, "Start value is incorrect\n");
         close(fd);
         return;
     }
    
     read_word(fd, timeactive, 5 + 1);
 
-    if (strlen(timeactive) > 5){
+    if (timeactive == NULL || check_digits(timeactive) == -1){
         *response = (char*) malloc (sizeof(char) * (OPEN_NOK_LEN));
         sprintf(*response, "%s %s\n", OPEN_RESPONSE, NOK_STATUS);
-        fprintf(stderr, "Time active is too long\n");
-        close(fd);
-        return;
-    }
-
-
-    if (check_digits(timeactive) == -1){
-        *response = (char*) malloc (sizeof(char) * (OPEN_NOK_LEN));
-        sprintf(*response, "%s %s\n", OPEN_RESPONSE, NOK_STATUS);
-        fprintf(stderr, "Time active is not numeric\n");
+        fprintf(stderr, "Time active is incorrect\n");
         close(fd);
         return;
     }
 
     read_word(fd, fname, MAX_FNAME_LEN + 1);
 
-    if (strlen(fname) > 24){
+    if (fname == NULL || check_alphanumeric(fname) == -1){
         *response = (char*) malloc (sizeof(char) * (OPEN_NOK_LEN));
         sprintf(*response, "%s %s\n", OPEN_RESPONSE, NOK_STATUS);
-        fprintf(stderr, "Image name is too long\n");
-        close(fd);
-        return;
-    }
-
-    if (check_alphanumeric(fname) == -1){
-        *response = (char*) malloc (sizeof(char) * (OPEN_NOK_LEN));
-        sprintf(*response, "%s %s\n", OPEN_RESPONSE, NOK_STATUS);
-        fprintf(stderr, "Image name is not alphanumeric\n");
+        fprintf(stderr, "File name is incorrect\n");
         close(fd);
         return;
     }
 
     read_word(fd, file_size_str, 10 + 1);
 
-    if (strlen(file_size_str) > 10){
+    if (file_size_str == NULL || check_digits(file_size_str) == -1){
         *response = (char*) malloc (sizeof(char) * (OPEN_NOK_LEN));
         sprintf(*response, "%s %s\n", OPEN_RESPONSE, NOK_STATUS);
-        fprintf(stderr, "File size is too long\n");
+        fprintf(stderr, "File size is incorrect\n");
         close(fd);
         return;
     }
-
-    if (check_digits(file_size_str) == -1){
-        *response = (char*) malloc (sizeof(char) * (OPEN_NOK_LEN));
-        sprintf(*response, "%s %s\n", OPEN_RESPONSE, NOK_STATUS);
-        fprintf(stderr, "File size is not numeric\n");
-        close(fd);
-        return;
-    }  
-
-    printf("Auction name is valid\n");
 
     // Create directory for auction
 
