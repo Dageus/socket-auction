@@ -50,7 +50,6 @@
 
 #define READ_WRITE_RATE 1024
 
-#define 
 
 typedef struct {
     char host_uid[UID_LEN + 1];

@@ -15,7 +15,7 @@ char input[READ_WRITE_RATE];
 
 int check_alphanumeric(char* str) {
     for (int i = 0; i < (int) strlen(str); i++){
-        if (!isalnum(str[i])){
+        if (!isalnum(str[i]) && str[i] != '_' && str[i] != '-' && str[i] != '.'){
             return -1;
         }
     }
@@ -117,14 +117,8 @@ void process_open_auction(int fd, int* aid, char** response){
 
     read_word(fd, uid, UID_LEN + 1);
     read_word(fd, pwd, PWD_LEN + 1);
-    read_word(fd, name, MAX_NAME + 1);
-    read_word(fd, start_value, 7 + 1);
-    read_word(fd, timeactive, 5 + 1);
-    read_word(fd, fname, MAX_FNAME_LEN + 1);
-    read_word(fd, file_size_str, 10 + 1);
 
     // Check if user exists
-
     char user_dir[13];
     sprintf(user_dir, "USERS/%s", uid);
 
@@ -149,7 +143,7 @@ void process_open_auction(int fd, int* aid, char** response){
         return;
     }
 
-    // Check if auction name is valid
+    read_word(fd, name, MAX_NAME + 1);
 
     if (strlen(name) > 10){
         *response = (char*)malloc(sizeof(char) * (OPEN_NOK_LEN));
@@ -167,18 +161,12 @@ void process_open_auction(int fd, int* aid, char** response){
         return;
     }
 
+    read_word(fd, start_value, 7 + 1);
+
     if (strlen(start_value) > 6){
         *response = (char*) malloc (sizeof(char) * (OPEN_NOK_LEN));
         sprintf(*response, "%s %s\n", OPEN_RESPONSE, NOK_STATUS);
         fprintf(stderr, "Start value is too long\n");
-        close(fd);
-        return;
-    }
-
-    if (strlen(timeactive) > 5){
-        *response = (char*) malloc (sizeof(char) * (OPEN_NOK_LEN));
-        sprintf(*response, "%s %s\n", OPEN_RESPONSE, NOK_STATUS);
-        fprintf(stderr, "Time active is too long\n");
         close(fd);
         return;
     }
@@ -190,6 +178,17 @@ void process_open_auction(int fd, int* aid, char** response){
         close(fd);
         return;
     }
+   
+    read_word(fd, timeactive, 5 + 1);
+
+    if (strlen(timeactive) > 5){
+        *response = (char*) malloc (sizeof(char) * (OPEN_NOK_LEN));
+        sprintf(*response, "%s %s\n", OPEN_RESPONSE, NOK_STATUS);
+        fprintf(stderr, "Time active is too long\n");
+        close(fd);
+        return;
+    }
+
 
     if (check_digits(timeactive) == -1){
         *response = (char*) malloc (sizeof(char) * (OPEN_NOK_LEN));
@@ -198,6 +197,42 @@ void process_open_auction(int fd, int* aid, char** response){
         close(fd);
         return;
     }
+
+    read_word(fd, fname, MAX_FNAME_LEN + 1);
+
+    if (strlen(fname) > 24){
+        *response = (char*) malloc (sizeof(char) * (OPEN_NOK_LEN));
+        sprintf(*response, "%s %s\n", OPEN_RESPONSE, NOK_STATUS);
+        fprintf(stderr, "Image name is too long\n");
+        close(fd);
+        return;
+    }
+
+    if (check_alphanumeric(fname) == -1){
+        *response = (char*) malloc (sizeof(char) * (OPEN_NOK_LEN));
+        sprintf(*response, "%s %s\n", OPEN_RESPONSE, NOK_STATUS);
+        fprintf(stderr, "Image name is not alphanumeric\n");
+        close(fd);
+        return;
+    }
+
+    read_word(fd, file_size_str, 10 + 1);
+
+    if (strlen(file_size_str) > 10){
+        *response = (char*) malloc (sizeof(char) * (OPEN_NOK_LEN));
+        sprintf(*response, "%s %s\n", OPEN_RESPONSE, NOK_STATUS);
+        fprintf(stderr, "File size is too long\n");
+        close(fd);
+        return;
+    }
+
+    if (check_digits(file_size_str) == -1){
+        *response = (char*) malloc (sizeof(char) * (OPEN_NOK_LEN));
+        sprintf(*response, "%s %s\n", OPEN_RESPONSE, NOK_STATUS);
+        fprintf(stderr, "File size is not numeric\n");
+        close(fd);
+        return;
+    }  
 
     printf("Auction name is valid\n");
 
@@ -303,64 +338,3 @@ void process_open_auction(int fd, int* aid, char** response){
 
     return;
 }
-
-/*
-
-
-FUNCOES QUE PARTIRAM O CODIGO TODO
-
-FAZEM COM QUE O FILE DESCRIPTOR SE FECHE A TOA E PARTE ISTO TUDO
-
-*/
-
-
-    // for (int i = 0; i < (int) strlen(start_value); i++){
-    //     if (!isdigit(start_value[i])){
-    //         *response = (char*)malloc(sizeof(char) * (3 + 1 + 3 + 1));
-    //         sprintf(*response, "%s %s", OPEN_RESPONSE, NOK_STATUS);
-    //         fprintf(stderr, "Start value is not numeric\n");
-    //         close(fd);
-    //         return -1;
-    //     }
-    // }
-
-    // for (int i = 0; i < (int) strlen(timeactive); i++){
-    //     if (!isdigit(timeactive[i])){
-    //         *response = (char*)malloc(sizeof(char) * (3 + 1 + 3 + 1));
-    //         sprintf(*response, "%s %s", OPEN_RESPONSE, NOK_STATUS);
-    //         fprintf(stderr, "Time active is not numeric\n");
-    //         close(fd);
-    //         return -1;
-    //     }
-    // }
-
-    //check if image name is alphanumeric and if after the dot the len is 3
-
-    // for (int i = 0; i < (int) strlen(fname); i++){
-
-    //     printf("fname[%d]: %c\n", i, fname[i]);
-
-    //     if(!isalnum(fname[i]) ){
-    //         *response = (char*)malloc(sizeof(char) * (3 + 1 + 3 + 1));
-    //         sprintf(*response, "%s %s", OPEN_RESPONSE, NOK_STATUS);
-    //         fprintf(stderr, "Image name is not alphanumeric\n");
-    //         close(fd);
-    //         return -1;
-    //     }
-
-    //     else if(fname[strlen(fname) - 4] != '.'){
-    //         *response = (char*)malloc(sizeof(char) * (3 + 1 + 3 + 1));
-    //         sprintf(*response, "%s %s", OPEN_RESPONSE, NOK_STATUS);
-    //         fprintf(stderr, "Not a file\n");
-    //         close(fd);
-    //         return -1;
-    //     }
-
-    //     else if(!isalnum(fname[strlen(fname) - 3]) || !isalnum(fname[strlen(fname) - 2]) || !isalnum(fname[strlen(fname) - 1])){
-    //         *response = (char*)malloc(sizeof(char) * (3 + 1 + 3 + 1));
-    //         sprintf(*response, "%s %s", OPEN_RESPONSE, NOK_STATUS);
-    //         fprintf(stderr, "fily type not alphanumeric\n");
-    //         close(fd);
-    //         return -1;
-    //     }
-    // }
