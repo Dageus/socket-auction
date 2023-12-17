@@ -204,7 +204,7 @@ void check_TCP_command(char *command, int fd){
 
     // send response to client through TCP socket
     if (strcmp(command, "SAS") != 0){
-        printf("TCP response: %s\n", response);
+        printf("TCP response: %s", response);
         char* response_ptr = response;
         int response_len = strlen(response);
         int bytes_sent = 0;
