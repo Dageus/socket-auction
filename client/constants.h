@@ -15,7 +15,7 @@ typedef struct client {
 #define TRUE 1
 #define FALSE 0
 
-#define MAX_COMMAND_LEN 56
+#define MAX_COMMAND_LEN 64
 
 #define UID_LENGTH 6
 #define PASSWORD_LEN 8
