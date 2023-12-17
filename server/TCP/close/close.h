@@ -12,6 +12,6 @@
 #define NO_AUCTION          "EAU"
 #define NLG_STATUS          "NLG"
 
-int process_close(char *input, char **response);
+int process_close(int fd, char **response);
 
 #endif // CLOSE_H

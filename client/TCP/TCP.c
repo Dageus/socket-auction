@@ -65,9 +65,9 @@ int TCP_cmd(char* cmd){
 
 int null_file_message(int fd, char* msg){
 
-    printf("msg: %s\n", msg);
+    printf("msg: %s, with len: %ld\n", msg, strlen(msg));
 
-    if ((send(fd, msg , MAX_TCP_NULL_FILE, 0)) == -1) {
+    if (send(fd, msg , strlen(msg), 0) == -1) {
         /*error*/
         fprintf(stderr, "Error sending message to server\n");
         return -1;
@@ -80,6 +80,10 @@ int null_file_message(int fd, char* msg){
         fprintf(stderr, "Error receiving message to server\n"); 
         return -1;
     } 
+
+    printf("received %ld bytes\n", tcp_n);
+
+    printf("received message from server: %s\n", buffer);
 
     return 1;
 }
@@ -160,8 +164,10 @@ int open_auction_message(int fd, char* filename, char* msg){
 }
 
 int receive_asset_message(int fd, char* msg){
+
+    printf("msg: %s, with len: %ld\n", msg, strlen(msg));
     
-    if ((send(fd, msg , 8, 0)) == -1) {
+    if ((send(fd, msg , strlen(msg), 0)) == -1) {
         /* error */
         fprintf(stderr, "Error sending message to server\n");
         return -1;
@@ -289,7 +295,7 @@ int send_TCP(TCP_response* response, char* ip, char* port){
     }
 
 
-    if (response->file == NULL){
+    if (response->file == NULL) {
         
         if (null_file_message(fd, response->msg) == -1){
             fprintf(stderr, "[ERROR]: null file message\n");

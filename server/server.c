@@ -72,27 +72,27 @@ void check_UDP_command(cmds command, int fd, struct sockaddr_in addr, socklen_t 
 
     printf("Command: %s, with len: %ld\n", command.cmd, strlen(command.cmd));
 
-    if(strcmp(command.cmd, "LIN") == 0){
+    if (strcmp(command.cmd, "LIN") == 0){
         printf("LIN command\n");
-        if(process_user_login(command.input, &response) == -1)
+        if (process_user_login(command.input, &response) == -1)
             printf("Error in LIN command\n");
-    } else if(strcmp(command.cmd, "LOU") == 0){
-        if(process_user_logout(command.input, &response) == -1)
+    } else if (strcmp(command.cmd, "LOU") == 0){
+        if (process_user_logout(command.input, &response) == -1)
             printf("Error in LOU command\n");
-    } else if(strcmp(command.cmd, "UNR") == 0){
-        if(process_unregister(command.input, &response) == -1)
+    } else if (strcmp(command.cmd, "UNR") == 0){
+        if (process_unregister(command.input, &response) == -1)
             printf("Error in UNR command\n"); 
-    } else if(strcmp(command.cmd, "LMA") == 0){
-        if(process_myauctions(command.input, &response) == -1)
+    } else if (strcmp(command.cmd, "LMA") == 0){
+        if (process_myauctions(command.input, &response) == -1)
             printf("Error in LMA command\n");
-    } else if(strcmp(command.cmd, "LMB") == 0){
-        if(process_mybids(command.input, &response) == -1)
+    } else if (strcmp(command.cmd, "LMB") == 0){
+        if (process_mybids(command.input, &response) == -1)
             printf("Error in LMB command\n");
-    } else if(strcmp(command.cmd, "LST") == 0){
-        if(process_list( &response) == -1)
+    } else if (strcmp(command.cmd, "LST") == 0){
+        if (process_list( &response) == -1)
             printf("Error in LST command\n");
-    } else if(strcmp(command.cmd, "SRC") == 0){
-        if(process_show_record(command.input, &response) == -1)
+    } else if (strcmp(command.cmd, "SRC") == 0){
+        if (process_show_record(command.input, &response) == -1)
             printf("Error in SRC command\n");
     } else {
         printf("Invalid command\n");
@@ -208,14 +208,15 @@ void check_TCP_command(char *command, int fd){
             aid++;
         }
     } else if (strcmp(command, "CLS") == 0){
-         if (process_close(command, &response) == -1)
+         if (process_close(fd, &response) == -1)
             printf("Error in CLS command\n");
     } else if (strcmp(command, "SAS") == 0){
         if (process_show_asset(fd) == -1)
             printf("Error in SAS command\n");
-    }else if(strcmp(command, "BID") == 0){
-        if(process_bid(fd, &response) == -1)
+    } else if (strcmp(command, "BID") == 0){
+        if (process_bid(fd, &response) == -1)
             printf("Error in BID command\n");
+        printf("what even\n");
     }
 
     

@@ -18,7 +18,7 @@
 #include "myauctions/myauctions.h"
 #include "mybids/mybids.h"
 
-void load_auction(char* aid, auction_list *list_item);
+void load_auction(char* aid, auction_list* list_item);
 
 int UDP_cmd(char* cmd);
 

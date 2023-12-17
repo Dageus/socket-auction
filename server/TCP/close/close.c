@@ -1,5 +1,6 @@
 #include "close.h"
 #include "../../constants.h"
+#include "../../common/common.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <string.h>
@@ -8,11 +9,19 @@
 #include <stdlib.h>
 #include <time.h>
 
-int process_close(char *input, char **response){
+int process_close(int fd, char **response){
 
-    char *uid = strtok(input, " ");
-    char *pwd = strtok(NULL, " ");
-    char *aid = strtok(NULL, " ");
+    char uid[UID_LEN + 1];
+    char pwd[PWD_LEN + 1];
+    char aid[AID_LEN + 1];
+
+    read_word(fd, uid, UID_LEN + 1);
+    read_word(fd, pwd, PWD_LEN + 1);
+    read_word(fd, aid, AID_LEN + 1);
+
+    printf("uid: %s\n", uid);
+    printf("pwd: %s\n", pwd);
+    printf("aid: %s\n", aid);
 
     if (uid == NULL || pwd == NULL || aid == NULL) {
         *response = (char*) malloc((CLOSE_CMD_ERR_LEN) * sizeof(char));
@@ -121,7 +130,7 @@ int process_close(char *input, char **response){
                 sprintf(time_str, "%4d-%02d-%02d %02d:%02d:%02d", 
                     time_ended->tm_year + 1900, time_ended->tm_mon + 1, time_ended->tm_mday,
                     time_ended->tm_hour, time_ended->tm_min, time_ended->tm_sec);
-                fprintf(end_fp, "%s %ld\n", time_str,  timeactive);
+                fprintf(end_fp, "%s %ld", time_str,  timeactive);
             } else {
                 // auction ended before time
                 time_ended = gmtime(&fulltime);
@@ -129,7 +138,7 @@ int process_close(char *input, char **response){
                 sprintf(time_str, "%4d-%02d-%02d %02d:%02d:%02d", 
                     time_ended->tm_year + 1900, time_ended->tm_mon + 1, time_ended->tm_mday,
                     time_ended->tm_hour, time_ended->tm_min, time_ended->tm_sec);
-                fprintf(end_fp, "%s %ld\n", time_str, timeactive);
+                fprintf(end_fp, "%s %ld", time_str, timeactive);
             }
 
             fclose(end_fp);

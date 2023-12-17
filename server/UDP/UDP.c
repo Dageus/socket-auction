@@ -22,21 +22,26 @@ const char* UDP_commands[] = {
 };
 
 
-void load_auction(char* aid, auction_list *list_item){
+void load_auction(char* aid, auction_list* list_item){
+
+    printf("[INSIDE FUNCTION] auction code: %s\n", aid);
 
     char end_file[12 + strlen(END_PREFIX) + AID_LEN + strlen(TXT_SUFFIX) + 2];
     sprintf(end_file, "%s/%s/%s%s%s", AUCTIONS_DIR, aid, END_PREFIX, aid, TXT_SUFFIX);
     struct stat st;
 
-    strcpy((*list_item).auction_code, aid);
+    printf("[INSIDE FUNCTION] end_file: %s\n", end_file);
+
+    strcpy(list_item->auction_code, aid);
+    printf("[INSIDE FUNCTION] auction code: %s\n", list_item->auction_code);
 
     if (stat(end_file, &st) == 0) {
         // file exists
 
-        strcpy((*list_item).active, ACTIVE);
+        strcpy(list_item->active, NOT_ACTIVE);
     } else {
-        // directory doesn't exist
-        strcpy((*list_item).active, NOT_ACTIVE);
+        // directory doesn't exist, so the auction is active
+        strcpy(list_item->active, ACTIVE);
     }
 }
 

@@ -68,55 +68,43 @@ int process_mybids(char* input, char** response){
 
     struct stat st;
 
-    if (stat(user_dir, &st) == 0) {
-        // user exists
+    char login_file[strlen(user_dir) + UID_LEN + strlen(LOGIN_SUFFIX) + 2];
 
-        // check if user is logged in
+    sprintf(login_file, "%s/%s%s", user_dir, uid,  LOGIN_SUFFIX);
 
-        char login_file[strlen(user_dir) + UID_LEN + strlen(LOGIN_SUFFIX) + 2];
+    if (stat(login_file, &st) == 0) {
+        // user is logged in
 
-        sprintf(login_file, "%s/%s%s", user_dir, uid,  LOGIN_SUFFIX);
+        printf("User %s is logged in, checking bids...\n", uid);
 
-        if (stat(login_file, &st) == 0) {
-            // user is logged in
+        auction_list list[50];
 
-            printf("User %s is logged in, checking bids...\n", uid);
+        int n_bids = get_bidded_list(uid, list);
 
-            auction_list list[50];
-
-            int n_bids = get_bidded_list(uid, list);
-
-            if (n_bids == 0) {
-                printf("User %s has no bids\n", uid);
-                *response = (char*) malloc((strlen(MYB_CMD) + 2) * sizeof(char));
-                sprintf(*response, "%s NOK", MYB_CMD);
-                return 0;
-            }
-
-            *response = (char*) malloc((strlen(MYB_CMD) + strlen(OK_STATUS) + n_bids * 6) * sizeof(char));
-
-            sprintf(*response, "%s %s ", MYB_CMD, OK_STATUS);
-
-            for (int i = 0; i < n_bids; i++) {
-                strcat(*response, list[i].auction_code);
-                strcat(*response, " ");
-                strcat(*response, list[i].active);
-                strcat(*response, " ");
-            }
-
-            (*response)[strlen(*response) - 1] = '\n';
-
-        } else {
-            // user is not logged in
-            *response = (char*) malloc((strlen(MYB_CMD) + 3 + 2) * sizeof(char));
-            sprintf(*response, "%s NLG\n", MYB_CMD);
+        if (n_bids == 0) {
+            printf("User %s has no bids\n", uid);
+            *response = (char*) malloc((strlen(MYB_CMD) + 2) * sizeof(char));
+            sprintf(*response, "%s NOK", MYB_CMD);
             return 0;
         }
 
+        *response = (char*) malloc((strlen(MYB_CMD) + strlen(OK_STATUS) + n_bids * 6) * sizeof(char));
+
+        sprintf(*response, "%s %s ", MYB_CMD, OK_STATUS);
+
+        for (int i = 0; i < n_bids; i++) {
+            strcat(*response, list[i].auction_code);
+            strcat(*response, " ");
+            strcat(*response, list[i].active);
+            strcat(*response, " ");
+        }
+
+        (*response)[strlen(*response) - 1] = '\n';
+
     } else {
-        // user does not exist
+        // user is not logged in
         *response = (char*) malloc((strlen(MYB_CMD) + 3 + 2) * sizeof(char));
-        sprintf(*response, "%s ERR\n", MYB_CMD);
+        sprintf(*response, "%s NLG\n", MYB_CMD);
         return 0;
     }
 }

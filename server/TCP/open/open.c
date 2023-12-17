@@ -102,15 +102,6 @@ int process_open_auction(int fd, int aid, char** response){
     read_word(fd, fname, MAX_FNAME_LEN + 1);
     read_word(fd, file_size_str, 10 + 1);
 
-    printf("--------------------\n");
-    printf("uid: %s\n", uid);
-    printf("pwd: %s\n", pwd);
-    printf("name: %s\n", name);
-    printf("start_value: %s\n", start_value);
-    printf("timeactive: %s\n", timeactive);
-    printf("fname: %s\n", fname);
-    printf("file_size: %s\n", file_size_str);
-    printf("--------------------\n");
     // Check if user exists
 
     char user_dir[13];
@@ -235,7 +226,29 @@ int process_open_auction(int fd, int aid, char** response){
     printf("received %d bytes\n", total_bytes_received);
     printf("\n");
 
+    printf("total_bytes_received: %d\n", total_bytes_received);
+
     fclose(file);
+
+    printf("File closed\n");
+
+    // add auction to HOSTED auction of user
+
+    char hosted_file[30];
+    sprintf(hosted_file, "USERS/%s/HOSTED/%03d%s", uid, aid, TXT_SUFFIX);
+
+    FILE* fp = fopen(hosted_file, "w");
+
+    if (fp == NULL){
+        *response = (char*)malloc(sizeof(char) * (3 + 1 + 3 + 1));
+        sprintf(*response, "%s %s", OPEN_RESPONSE, NOK_STATUS);
+        fprintf(stderr, "Error opening file\n");
+        fclose(fp);
+        close(fd);
+        return -1;
+    }
+
+    fclose(fp);
 
 
     *response = (char*)malloc(sizeof(char) * (3 + 1 + 3 + 1 + 3 + 1 ));

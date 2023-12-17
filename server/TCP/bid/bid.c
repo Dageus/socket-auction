@@ -1,12 +1,13 @@
 #include "bid.h"
 #include "../../constants.h"
 #include "../../common/common.h"
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
 #include <sys/stat.h>
 #include <dirent.h>
-#include "../TCP.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/socket.h>
 
 int process_bid(int fd, char** response){
 
@@ -15,17 +16,20 @@ int process_bid(int fd, char** response){
     char aid[AID_LEN + 1];
     char amount[MAX_BIDDING_LEN + 1];
 
-    read_word(fd, uid, UID_LEN);
-    read_word(fd, pwd, PWD_LEN);
-    read_word(fd, aid, AID_LEN);
-    read_word(fd, amount, MAX_BIDDING_LEN);
-
+    read_word(fd, uid, UID_LEN + 1);
     printf("uid: %s\n", uid);
+
+    read_word(fd, pwd, PWD_LEN + 1);
     printf("pwd: %s\n", pwd);
+    
+    read_word(fd, aid, AID_LEN + 1);
     printf("aid: %s\n", aid);
+    
+    read_word(fd, amount, MAX_BIDDING_LEN + 1);
     printf("amount: %s\n", amount);
 
-    if (strlen(uid) != UID_LEN || strlen(pwd) != PWD_LEN || strlen(aid) != AID_LEN || strlen(amount) > 8)
+
+    if (strlen(uid) != UID_LEN)
         /* wrong format */
         return 0;
 
@@ -55,8 +59,10 @@ int process_bid(int fd, char** response){
     }
 
     // check if user started the auction
-    char auction_dir[strlen(AUCTIONS_DIR) + strlen(aid) + strlen(START_PREFIX) + strlen(uid) + strlen(TXT_SUFFIX) + 3];
-    sprintf(auction_dir, "%s/%s/%s%s%s%s", AUCTIONS_DIR, aid, START_PREFIX, uid, aid, TXT_SUFFIX);
+    char auction_dir[strlen(AUCTIONS_DIR) + strlen(aid) + strlen(START_PREFIX) + strlen(aid) + strlen(TXT_SUFFIX) + 3];
+    sprintf(auction_dir, "%s/%s/%s%s%s", AUCTIONS_DIR, aid, START_PREFIX, aid, TXT_SUFFIX);
+
+    printf("auction_dir: %s\n", auction_dir);
 
     // open start file
     FILE* start_file = fopen(auction_dir, "r");

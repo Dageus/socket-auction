@@ -17,9 +17,7 @@ int process_list(char** response){
     struct dirent *entry;
     int auction_count = 0;
 
-    printf("trying to open dir: %s\n", AUCTIONS_DIR);
     dir = opendir(AUCTIONS_DIR);
-    printf("after \n");
     if (dir == NULL) {
         perror("Unable to open directory");
         (*response) = (char*) malloc(sizeof(char) * (LIST_ERR_LEN + 2));
@@ -39,8 +37,6 @@ int process_list(char** response){
                 continue;
 
             auction_list new_auction;
-
-            printf("auction code: %s\n", entry->d_name);
 
             strncpy(new_auction.auction_code, entry->d_name, 3);
 

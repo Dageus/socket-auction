@@ -37,19 +37,18 @@ int check_password(char* user_dir, char* uid, char* pwd){
 
 int read_word(int fd, char *buffer, int size) {
     int i = 0;
-    while (i < size)
-    {
-        if (read(fd, buffer + i, sizeof(char)) == -1)
-        {
+    while (i < size) {
+        if (read(fd, buffer + i, sizeof(char)) == -1) {
             printf("Error while reading from socket.\n");
             buffer = NULL;
             return -1;
         }
-        if (buffer[i] == ' ' || buffer[i] == '\n')
-        {
+        if (buffer[i] == ' ' || buffer[i] == '\n') {
+            printf("finished reading word\n");
             memset(buffer + i, '\0', 1);
             break;
         }
+        printf("buffer[%d]: %c\n", i, buffer[i]);
         i++;
     }
     return 0;
