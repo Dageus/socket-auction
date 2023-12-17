@@ -10,7 +10,7 @@ int process_show_asset(char* input, TCP_response** response){
     (*response)->msg = (char *) malloc(sizeof(char) * SHOW_ASSET_LEN);
     (*response)->file = (file *) malloc(sizeof(file));
     (*response)->file->code = FILE_TO_BE_RECEIVED;
-    (*response)->file->filename = NULL; // ! not sure se devia ser NULL ou nao
+    (*response)->file->filename = NULL; 
 
     char* asset_id = strtok(NULL, " ");
 
@@ -20,8 +20,6 @@ int process_show_asset(char* input, TCP_response** response){
     }
     
     sprintf((*response)->msg, "SAS %s\n", asset_id);
-
-    printf("%s\n", (*response)->msg);
 
 
     return 0;

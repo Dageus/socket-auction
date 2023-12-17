@@ -74,7 +74,7 @@ void print_UDPresponse(char response[TRANSMISSION_RATE])  {
         }
         else if (strcmp(token, "NOK") == 0)
             printf("Logout unsuccessful\n");
-    } else if (strcmp(token, "RUR") == 0){
+    } else if (strcmp(token, "RUR") == 0) {
         token = strtok(NULL, " ");
         token[strlen(token) - 1] = '\0'; // remove \n from token
         if(strcmp(token, "OK") == 0){
@@ -102,7 +102,7 @@ void print_UDPresponse(char response[TRANSMISSION_RATE])  {
         }    
     }  
     else 
-        printf("Unknown response\n");
+        printf("There was an error server side\n");
 }
 
 void check_UDP_cmd(char* input, char* cmd) {
@@ -112,43 +112,48 @@ void check_UDP_cmd(char* input, char* cmd) {
 
     if (strcmp(cmd, "login") == 0) {
         if (process_login(input, &user, &request) == -1)
-            printf("error: login\n");
-        printf("user->uid: %s\n", user->uid);
+            fprintf(stderr, "[ERROR]: login\n");
     } else if (strcmp(cmd, "logout") == 0) {
         if (process_logout(user, &request) == -1)
-            printf("error: logout\n");
+            fprintf(stderr, "[ERROR]: logout\n");
     } else if (strcmp(cmd, "unregister") == 0) {
         if (process_unregister(user, &request) == -1)
-            printf("error: unregister\n");
+            fprintf(stderr, "[ERROR]: unregister\n");
     } else if (strcmp(cmd, "exit") == 0) {
-        printf("exiting...\n");
         if (process_exit(&user) == -1)
-            printf("error: please log out first\n");
+            fprintf(stderr, "[ERROR]: please log out first\n");
+        else
+            printf("exiting...\n");
     } else if (strcmp(cmd, "myauctions") == 0 || strcmp(cmd, "ma") == 0) {
         if (process_myauctions(user, &request) == -1)
-            printf("error: auctions\n");
+            fprintf(stderr, "[ERROR]: auctions\n");
     } else if (strcmp(cmd, "mybids") == 0 || strcmp(cmd, "mb") == 0) {
         if (process_my_bids(user, &request) == -1)
-            printf("error: bids\n");
+            fprintf(stderr, "[ERROR]: bids\n");
     } else if (strcmp(cmd, "list") == 0 || strcmp(cmd, "l") == 0) {
         if (process_list(&request) == -1)
-            printf("error: list\n");
+            fprintf(stderr, "[ERROR]: list\n");
     } else if (strcmp(cmd, "show_record") == 0 || strcmp(cmd, "sr") == 0){
         if (process_show_record(user, input, &request) == -1)
-            printf("error: show_record\n"); 
+            fprintf(stderr, "[ERROR]: show_record\n"); 
     }
 
     if (request != NULL){
-        printf("UDP request: %s", request);
+        if (send_UDP(request, &UDP_buffer, ip, port) == -1){
+            printf("error: server did not respond\n");
 
-        send_UDP(request, &UDP_buffer, ip, port);
-
-        free(request);
-
-        printf("UDP response: %s\n", UDP_buffer);
+            if (strcmp(cmd, "login") == 0) {
+                printf("[INFO]: reverse login changes\n");
+                strcpy(user->uid, NO_UID);
+                strcpy(user->pwd, NO_PWD);
+            }
+            
+            free(request);
+            
+            return;
+        }
 
         print_UDPresponse(UDP_buffer);    
-
     }
 }
 
@@ -156,8 +161,6 @@ void check_TCP_cmd(char* input, char* cmd) {
 
     TCP_response* request;
     request = (TCP_response *) malloc(sizeof(TCP_response));
-
-    printf("input: %s\n", input);
 
     if (strcmp(cmd, "bid") == 0 || strcmp(cmd, "b") == 0) {
         if (process_bid(input, user, &request) == -1)
@@ -189,22 +192,18 @@ void process_cmd(char* input){
 
     strcpy(input_copy, input);
 
-    printf("input_copy: %s\n", input_copy);
-
     cmd = strtok(input, " ");
 
 
     if (cmd[strlen(cmd) - 1] == '\n')
         cmd[strlen(cmd) - 1] = '\0';
 
-    printf("cmd: %s\n", cmd);
-
     if (UDP_cmd(cmd))
         check_UDP_cmd(input_copy, cmd);
     else if (TCP_cmd(cmd))
         check_TCP_cmd(input_copy, cmd);
     else
-        fprintf(stderr, "error: unkown_command\n");
+        fprintf(stderr, "[ERROR]: unkown_command\n");
 }
 
 
@@ -241,23 +240,12 @@ int main(int argc, char** argv) {
         }
 
         int n_char = strcspn(input, "\n");
-        if (input[n_char] == '\n')
-        {
+
+        if (input[n_char] == '\n') {
             input[n_char] = '\0';
         }
 
-        printf("input: %s\n", input);
-
-
-        // // read from terminal
-        // fgets(input, MAX_COMMAND_LEN, stdin);
-
-        // size_t len = strcspn(input, "\n");
-        // if (len > 0 && input[len-1] == '\n') {
-        //     input[len-1] = '\0';
-        // }
-
-        // see which command was inputted
+        // see which command was inputed
         process_cmd(input);
     }
 

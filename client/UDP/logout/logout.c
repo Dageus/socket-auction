@@ -6,8 +6,6 @@
 
 int process_logout(client* user, char** response){
 
-    printf("logout command\n");
-
     if (strcmp(user->uid, NO_UID) == 0) {
         printf("error: please login first\n");
         return -1;

@@ -29,25 +29,15 @@ int process_open(char* input, client* user, TCP_response** response){
         return -1;
     }
 
-    printf("cmd: %s\n", cmd);
-    printf("name: %s\n", name);
-    printf("fname: %s\n", fname);
-    printf("start: %s\n", start);
-    printf("duration: %s\n", duration);
-
     strcpy((*response)->file->filename, fname);
 
     int return_code = sprintf((*response)->msg, "OPA %s %s %s %s %s %s ", 
             user->uid, user->pwd, name, start, duration, fname);
 
-    printf("msg: %s\n", (*response)->msg);
-
-
     if (return_code < 0) {
         fprintf(stderr, "error: open\n");
         return -1;
     }
-
     
     return 0;
 }
