@@ -77,13 +77,13 @@ int get_global_aid_number(){
     return ++aid;
 }
 
-int check_auction_end(int aid){
+int check_auction_end(int aid) {
 
     char pathname[strlen(AUCTIONS_DIR) + AID_LEN + 2];
-    sprintf(pathname, "%s/%d", AUCTIONS_DIR, aid);
+    sprintf(pathname, "%s/%03d", AUCTIONS_DIR, aid);
 
     char start_file[strlen(pathname) + strlen(START_PREFIX) + AID_LEN + strlen(TXT_SUFFIX) + 2];
-    sprintf(start_file, "%s/%s%d%s", pathname, START_PREFIX, aid, TXT_SUFFIX);
+    sprintf(start_file, "%s/%s%03d%s", pathname, START_PREFIX, aid, TXT_SUFFIX);
 
     FILE* fp = fopen(start_file, "r");
 
@@ -107,14 +107,23 @@ int check_auction_end(int aid){
     
     time_t timeactive = atoi(strtok(NULL, " "));
 
+    printf("timeactive: %ld\n", timeactive);
+
+    strtok(NULL, " ");
     strtok(NULL, " ");
 
     time_t full_time = atoi(strtok(NULL, " "));
+
+    printf("full_time: %ld\n", full_time);
 
     // now to check if the auction should've ended already or not
 
     time_t fulltime;
     struct tm * timeinfo;
+
+    printf("time: %ld\n", time(&fulltime)); 
+
+    printf("timeactive + full_time: %ld\n", (timeactive + full_time));
 
     if (time(&fulltime) > timeactive + full_time) {
         // auction should've ended already

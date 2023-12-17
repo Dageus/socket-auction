@@ -31,6 +31,8 @@ void process_bid(int fd, char** response){
         return;
     }
 
+    check_auction_end(atoi(aid));
+
     // struct to store directory
     struct stat st;
 
@@ -39,6 +41,7 @@ void process_bid(int fd, char** response){
     sprintf(end_file, "%s/%s/%s%s%s", AUCTIONS_DIR, aid, END_PREFIX, aid, TXT_SUFFIX);
 
     if (stat(end_file, &st) == 0) {
+        printf("auction is closed\n");
         // auction is closed
         (*response) = (char*) malloc(BID_NOK_LEN + 1);
         sprintf((*response), "%s NOK\n", BID_CMD);
