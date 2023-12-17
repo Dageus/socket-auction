@@ -6,7 +6,6 @@
 #define OPEN_ERR_LEN        8
 #define OPEN_NOK_LEN        8
 
-
 #include <stdio.h>
 
 void process_open_auction(int fd, int* aid, char** response);

@@ -9,6 +9,11 @@
 
 int process_close(char *input, client* user, TCP_response** response){
 
+    if (strcmp(user->uid, NO_UID) == 0) {
+        printf("You must be logged in to close an auction\n");
+        return -1;
+    }
+
     (*response)->msg = (char *) malloc(sizeof(char) * CLOSE_LEN);
     (*response)->file = NULL;
 
